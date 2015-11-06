@@ -1,0 +1,46 @@
+<h4>{{ player.name }}</h4>
+
+<table>
+
+  <tr>
+    <th>Kills</th>
+    <td>{{ player.kills  }}</td>
+  </tr>
+
+  <tr>
+    <th>Deaths</th>
+    <td>{{ player.deaths  }}</td>
+  </tr>
+
+  <tr>
+    <th>Last Seen</th>
+    <td>{{ player.lastseen }}</td>
+  </tr>
+
+  <tr>
+    <th>First Seen</th>
+    <td>{{ player.firstseen }}</td>
+  </tr>
+
+</table>
+
+<h4>Weapons</h4>
+<table>
+
+  <tr>
+    <th>Wep</th>
+    <th>Kills</th>
+    <th>Deaths</th>
+  </tr>
+
+{% for name, stats in player.weapons.iteritems() %}
+
+  <tr>
+    <td>{{ name }}</td>
+    <td>{{ stats.kills }}</td>
+    <td>{{ stats.deaths }}</td>
+  </tr>
+
+{% endfor %}
+
+</table>

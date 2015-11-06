@@ -1,0 +1,21 @@
+<html>
+<head>
+<title>Soldat - pystats</title>
+<link href="/static/styles.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+<h4>Top Killers</h4>
+<table>
+
+{% for p in top %}
+
+<tr>
+  <td><a href="{{ url_for('player', name=p.name) }}">{{p.name}}</a></td>
+  <td>{{p.kills}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+</body>
+</html>
