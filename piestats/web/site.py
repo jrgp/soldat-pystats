@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from results import stats
+from piestats.web.results import stats
 
 app = Flask(__name__)
 
@@ -12,7 +12,10 @@ def player(name):
 
 @app.route('/')
 def index():
-  return render_template('index.html', top=stats().get_top_killers())
+  s = stats()
+  return render_template('index.html',
+    top=s.get_top_killers(),
+    kills=s.get_last_kills())
 
-if __name__ == '__main__':
+def main():
   app.run(host='0.0.0.0', debug=True)

@@ -15,7 +15,31 @@
 </tr>
 
 {% endfor %}
+</table>
+
+<h4>Latest Kills</h4>
+
+<table>
+
+<tr>
+  <th>Killer</th>
+  <th>Victim</th>
+  <th>Weapon</th>
+  <th>When</th>
+</tr>
+
+{% for k in kills %}
+
+<tr>
+  <td>{{ k.killer.name }}</td>
+  <td>{{ k.victim.name }}</td>
+  <td>{{ k.weapon }}</td>
+  <td>{{ k.timestamp }}</td>
+</tr>
+
+{% endfor %}
 
 </table>
+
 </body>
 </html>

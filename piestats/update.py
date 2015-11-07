@@ -5,26 +5,16 @@ import glob
 import re
 import string
 from dateutil import parser
-from collections import namedtuple
+import cPickle as pickle
 
-KillObj = namedtuple('Kill', ['killer', 'victim', 'weapon', 'timestamp', 'suicide'])
-
-
-class player():
-  def __init__(self, name):
-    self._name = name
-  @property
-  def name(self):
-    return self._name
-  @property
-  def data_key(self):
-    return 'pystats:playerdata:{name}'.format(name=self.name)
-  def __str__(self):
-    return self.name
-
+from piestats.kill import KillObj
+from piestats.player import PlayerObj
 
 def updateStats(r):
   for kill in getKills(r):
+
+    r.lpush('pystats:latestkills', pickle.dumps(kill))
+
     r.zadd('pystats:playerslastseen', kill.killer.name, kill.timestamp)
 
     if kill.killer.name != kill.victim.name:
@@ -63,8 +53,8 @@ def parseKills(contents):
 
       unixtime = int(time.mktime(parser.parse(timestamp, parser.parserinfo(yearfirst=True)).timetuple()))
       yield KillObj(
-        player(killer),
-        player(victim),
+        PlayerObj(killer),
+        PlayerObj(victim),
         weapon,
         unixtime,
         suicide
