@@ -11,5 +11,13 @@ class PlayerObj():
   def data_key(self):
     return 'pystats:playerdata:{name}'.format(name=self.name)
 
+  @property
+  def top_enemies_key(self):
+    return 'pystats:players:topenemies:{name}'.format(name=self.name)
+
+  @property
+  def top_victims_key(self):
+    return 'pystats:players:topvictims:{name}'.format(name=self.name)
+
   def __str__(self):
     return self.name

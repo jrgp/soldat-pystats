@@ -3,6 +3,7 @@ import glob
 import re
 import string
 from dateutil import parser
+from datetime import datetime
 import time
 
 try:
@@ -21,6 +22,8 @@ def get_kills(r, soldat_dir):
   # our global kill log after items are inserted.
   files = sorted(map(os.path.basename, glob.glob(os.path.join(root, '*.txt'))))
 
+  skipped_files = 0
+
   for filename in files:
     key = 'pystats:logs:{filename}'.format(filename=filename)
     path = os.path.join(root, filename)
@@ -29,8 +32,8 @@ def get_kills(r, soldat_dir):
     if prev is None:
       pos = 0
     else:
-      pos = prev
-    if size > prev:
+      pos = int(prev)
+    if size > pos:
       print 'reading {filename} from offset {pos}'.format(filename=filename, pos=pos)
       with open(path, 'r') as h:
         h.seek(pos)
@@ -38,7 +41,9 @@ def get_kills(r, soldat_dir):
           yield kill
       r.set(key, size)
     else:
-      print 'skipping unchanged {filename}'.format(filename=filename)
+      skipped_files += 1
+
+  print 'skipped {count} unchanged kill logs'.format(count=skipped_files)
 
 
 def update_kills(r, soldat_dir):
@@ -79,7 +84,18 @@ def update_kills(r, soldat_dir):
       r.hincrby(kill.victim.data_key, 'deaths:' + kill.weapon, 1)
 
     # If we're not a suicide, update top enemy kills for player..
-    # todo once more of the UI is done..
+    if not kill.suicide:
+      # Top people the killer has killed
+      r.zincrby(kill.killer.top_victims_key, kill.victim.name)
+
+      # Top people the victim has died by
+      r.zincrby(kill.victim.top_enemies_key, kill.killer.name)
+
+    # If we're not a sucide, add this legit kill to the number of kills for this
+    # day
+    if not kill.suicide:
+      text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
+      r.incr('pystats:killsperday:{day}'.format(day=text_today))
 
 
 def parse_kills(contents):

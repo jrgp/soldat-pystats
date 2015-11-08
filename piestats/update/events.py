@@ -10,6 +10,7 @@ EventNextMap = namedtuple('EventNextMap', ['map'])
 
 
 def get_events(r, soldat_dir):
+  skipped_files = 0
   root = os.path.join(soldat_dir, 'logs')
   for path in glob.glob(os.path.join(root, 'consolelog-*.txt')):
     filename = os.path.basename(path)
@@ -28,7 +29,9 @@ def get_events(r, soldat_dir):
           yield event
       r.set(key, size)
     else:
-      print 'skipping unchanged {filename}'.format(filename=filename)
+      skipped_files += 1
+
+  print 'skipped {count} unchanged console logs'.format(count=skipped_files)
 
 
 def parse_events(contents):

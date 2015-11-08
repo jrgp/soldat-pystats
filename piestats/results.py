@@ -1,6 +1,6 @@
 import redis
-from datetime import datetime
-from collections import defaultdict
+from datetime import datetime, timedelta
+from collections import defaultdict, OrderedDict
 from piestats.player import PlayerObj  # noqa
 
 try:
@@ -102,3 +102,22 @@ class stats():
   def get_top_weapons(self):
     results = self.r.zrevrange('pystats:weaponkills', 0, 20, withscores=True)
     return results
+
+  def get_kills_for_date_range(self, startdate=None, previous_days=7):
+    if not isinstance(startdate, datetime):
+      startdate = datetime.now()
+
+    stats = OrderedDict()
+
+    keyformat = 'pystats:killsperday:{day}'
+
+    for x in range(previous_days):
+      current_date = startdate - timedelta(days=x)
+      key = keyformat.format(day=str(current_date.date()))
+      try:
+        count = int(self.r.get(key))
+      except (TypeError, ValueError):
+        count = 0
+      stats[str(current_date.date())] = count
+
+    return stats

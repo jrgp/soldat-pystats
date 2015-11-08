@@ -77,7 +77,8 @@ def weapons():
 
 @app.route('/')
 def index():
-  return render_template('index.html')
+  s = stats()
+  return render_template('index.html', killsperdate=s.get_kills_for_date_range())
 
 
 def main():
