@@ -60,6 +60,10 @@ class player:
   def weapons(self):
     return self.wepstats
 
+  @property
+  def lastcountry(self):
+    return self.get('lastcountry')
+
 
 class stats():
 
@@ -72,7 +76,7 @@ class stats():
     results = self.r.zrevrange('pystats:playerstopkills', startat, startat + incr, withscores=True)
     for name, kills in results:
       more = {}
-      for key in ['deaths', 'lastseen', 'firstseen']:
+      for key in ['deaths', 'lastseen', 'firstseen', 'lastcountry']:
         more[key] = self.r.hget(self.player_hash_key.format(player=name), key)
       yield player(name=name,
                    kills=kills,
@@ -85,7 +89,16 @@ class stats():
       return None
     return player(name=_player, **info)
 
+  def get_player_fields(self, _player, fields=[]):
+      info = {}
+      for key in fields:
+        info[key] = self.r.hget(self.player_hash_key.format(player=_player), key)
+      return player(name=_player, **info)
+
   def get_last_kills(self, startat=0, incr=20):
     for kill in self.r.lrange('pystats:latestkills', startat, startat + incr):
-      data = pickle.loads(kill)
-      yield data
+      yield pickle.loads(kill)
+
+  def get_top_weapons(self):
+    results = self.r.zrevrange('pystats:weaponkills', 0, 20, withscores=True)
+    return results

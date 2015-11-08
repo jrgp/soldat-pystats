@@ -6,49 +6,67 @@
 
 {% block content %}
 
-<table>
+<div class="row">
+  <div class="col-xs-6  col-sm-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Overview</h3>
+      </div>
+      <table class="table">
+        <tr>
+          <th>Name</th>
+          <td>{{ player.name }}</td>
+        </tr>
+        <tr>
+        <tr>
+          <th>Kills</th>
+          <td>{{ player.kills }}</td>
+        </tr>
+        <tr>
+          <th>Deaths</th>
+          <td>{{ player.deaths }}</td>
+        </tr>
+        <tr>
+          <th>Last Seen</th>
+          <td>{{ player.lastseen }}</td>
+        </tr>
+        <tr>
+          <th>First Seen</th>
+          <td>{{ player.firstseen }}</td>
+        </tr>
+        {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
+        <tr>
+          <th>Last country</th>
+          <td>
+            <img width="16" height="11" src="{{ url_for('static', filename='flags/'+player.lastcountry.lower()+'.png') }}" title="{{ player.lastcountry }}">
+          </td>
+        </tr>
+        {% endif %}
+      </table>
+    </div>
+  </div>
 
-  <tr>
-    <th>Kills</th>
-    <td>{{ player.kills  }}</td>
-  </tr>
-
-  <tr>
-    <th>Deaths</th>
-    <td>{{ player.deaths  }}</td>
-  </tr>
-
-  <tr>
-    <th>Last Seen</th>
-    <td>{{ player.lastseen }}</td>
-  </tr>
-
-  <tr>
-    <th>First Seen</th>
-    <td>{{ player.firstseen }}</td>
-  </tr>
-
-</table>
-
-<h4>Weapons</h4>
-<table>
-
-  <tr>
-    <th>Wep</th>
-    <th>Kills</th>
-    <th>Deaths</th>
-  </tr>
-
-{% for wep in player.weapons.values()|sort(attribute='kills', reverse=True) %}
-
-  <tr>
-    <td style="text-align: center;"><img src="{{ gunpic(wep.name) }}" title="{{ wep.name }}"></td>
-    <td>{{ wep.kills }}</td>
-    <td>{{ wep.deaths }}</td>
-  </tr>
-
-{% endfor %}
-
-</table>
+  <div class="col-xs-6  col-sm-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Weapons</h3>
+      </div>
+      <table class="table" style="text-align: center;">
+        <tr>
+          <th style="text-align: center;">Wep</th>
+          <th style="text-align: center;">Kills</th>
+          <th style="text-align: center;">Deaths</th>
+        </tr>
+      {% for wep in player.weapons.values()|sort(attribute='kills', reverse=True) %}
+        <tr>
+          <td><img src="{{ gunpic(wep.name) }}" title="{{ wep.name }}"></td>
+          <td>{{ wep.kills }}</td>
+          <td>{{ wep.deaths }}</td>
+        </tr>
+      {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

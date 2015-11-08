@@ -5,7 +5,7 @@ setup(name='piestats',
       packages=['piestats'],
       entry_points={
           'console_scripts': [
-              'update = piestats.update:main',
+              'runupdate = piestats.update:main',
               'runsite = piestats.web.site:main',
           ]
       }

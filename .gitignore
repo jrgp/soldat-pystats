@@ -5,3 +5,6 @@ env/
 kills/
 piestats.egg-info
 soldat/
+activate
+build/
+dist/

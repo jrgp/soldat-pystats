@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for
 from piestats.results import stats
 from piestats.web.pics import gunpic
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -21,10 +22,17 @@ def latestkills(startat):
   if (startat % 20):
     startat = 0
 
+  def kill_decorate(kill):
+    info = kill._asdict()
+    info['killer_obj'] = s.get_player_fields(kill.killer, ['lastcountry'])
+    info['victim_obj'] = s.get_player_fields(kill.victim, ['lastcountry'])
+    return info
+
   data = {
       'next_url': url_for('latestkills', startat=startat + 20),
-      'kills': s.get_last_kills(startat),
-      'gunpic': gunpic
+      'kills': map(kill_decorate, s.get_last_kills(startat)),
+      'gunpic': gunpic,
+      'fixdate': lambda x: datetime.utcfromtimestamp(int(x))
   }
 
   if startat >= 20:
@@ -54,6 +62,17 @@ def top_players(startat):
     data['prev_url'] = False
 
   return render_template('players.html', **data)
+
+
+@app.route('/weapons')
+def weapons():
+  s = stats()
+
+  data = {
+      'weapons': s.get_top_weapons(),
+  }
+
+  return render_template('weapons.html', **data)
 
 
 @app.route('/')

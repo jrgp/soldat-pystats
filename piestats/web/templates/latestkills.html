@@ -1,3 +1,4 @@
+{% import 'macro.html' as macro %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -29,10 +30,10 @@ Latest Kills
 {% for k in kills %}
 
 <tr>
-  <td>{{ k.killer.name }}</td>
-  <td>{{ k.victim.name }}</td>
+  <td>{{ macro.playerlink(k.killer_obj) }}</td>
+  <td>{{ macro.playerlink(k.victim_obj) }}</td>
   <td style="text-align: center;"><img src="{{ gunpic(k.weapon) }}" title="{{ k.weapon }}"></td>
-  <td>{{ k.timestamp }}</td>
+  <td>{{ fixdate(k.timestamp) }}</td>
 </tr>
 
 {% endfor %}

@@ -16,9 +16,14 @@ from piestats.player import PlayerObj
 
 def get_kills(r, soldat_dir):
   root = os.path.join(soldat_dir, 'logs', 'kills')
-  for path in glob.glob(os.path.join(root, '*.txt')):
-    filename = os.path.basename(path)
+
+  # Make sure we go by filename sorted in ascending order, as we can't sort
+  # our global kill log after items are inserted.
+  files = sorted(map(os.path.basename, glob.glob(os.path.join(root, '*.txt'))))
+
+  for filename in files:
     key = 'pystats:logs:{filename}'.format(filename=filename)
+    path = os.path.join(root, filename)
     size = os.path.getsize(path)
     prev = r.get(key)
     if prev is None:
@@ -29,8 +34,7 @@ def get_kills(r, soldat_dir):
       print 'reading {filename} from offset {pos}'.format(filename=filename, pos=pos)
       with open(path, 'r') as h:
         h.seek(pos)
-        contents = h.read()
-        for kill in parse_kills(contents):
+        for kill in parse_kills(h.read()):
           yield kill
       r.set(key, size)
     else:
@@ -67,7 +71,8 @@ def update_kills(r, soldat_dir):
 
     # Update weapon stats..
     if kill.suicide:
-      r.zincrby('pystats:weaponsuicides', kill.weapon)
+      if kill.weapon != 'Selfkill':
+        r.zincrby('pystats:weaponsuicides', kill.weapon)
     else:
       r.zincrby('pystats:weaponkills', kill.weapon)
       r.hincrby(kill.killer.data_key, 'kills:' + kill.weapon, 1)

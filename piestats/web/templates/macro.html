@@ -1,0 +1,14 @@
+{% macro playerlink(player) %}
+  {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
+    <img width="16" height="11" src="{{ url_for('static', filename='flags/'+player.lastcountry.lower()+'.png') }}" title="{{ player.lastcountry }}">
+  {% endif %}
+  <a href="{{ url_for('player', name=player.name) }}">{{player.name}}</a>
+{% endmacro %}
+
+{% macro weaponpic(weapon) %}
+    <img src="{{ url_for('static', filename='soldatguns/'+weapon.replace(' ', '_')+'.png') }}" title="{{ weapon }}">
+{% endmacro %}
+
+{% macro weaponlink(weapon) %}
+    <a href="">{{ weapon }}</a>
+{% endmacro %}

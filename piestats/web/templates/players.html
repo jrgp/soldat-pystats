@@ -1,3 +1,4 @@
+{% import 'macro.html' as macro %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -5,7 +6,6 @@ Top Players
 {% endblock %}
 
 {% block content %}
-
 
 <nav>
   <ul class="pager">
@@ -31,7 +31,7 @@ Top Players
 {% for player in players %}
 
 <tr>
-  <td><a href="{{ url_for('player', name=player.name) }}">{{player.name}}</a></td>
+  <td>{{macro.playerlink(player)}}</td>
   <td>{{player.kills}}</td>
   <td>{{player.deaths}}</td>
   <td>{{player.firstseen}}</td>

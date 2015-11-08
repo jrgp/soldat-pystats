@@ -1,0 +1,29 @@
+{% import 'macro.html' as macro %}
+{% extends "layout.html" %}
+
+{% block title %}
+Top Weapons
+{% endblock %}
+
+{% block content %}
+
+<table class="table">
+
+<tr>
+  <th colspan="2">Weapon</th>
+  <th>Kills</th>
+</tr>
+
+{% for weapon, kills in weapons %}
+
+<tr>
+  <td width="10" style="text-align: right;">{{macro.weaponpic(weapon)}}</td>
+  <td>{{macro.weaponlink(weapon)}}</td>
+  <td>{{kills}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

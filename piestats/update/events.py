@@ -34,14 +34,14 @@ def get_events(r, soldat_dir):
 def parse_events(contents):
   header = '\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d '
   event_regexen = [
-      (EventPlayerJoin, re.compile(''.join(header, '(?P<player>+) joining game \((?P<ip>[^:]+):\d+\) HWID:\S+'))),
-      (EventNextMap, re.compile(''.join(header, 'Next map: (?P<map>[^$]+)'))),
+      (EventPlayerJoin, re.compile(''.join([header, '(?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:\S+']))),
+      (EventNextMap, re.compile(''.join([header, 'Next map: (?P<map>[^$]+)']))),
   ]
 
   for line in contents:
     for event, regex in event_regexen:
       m = regex.match(line)
-      if not line:
+      if not m:
         continue
       yield event(**m.groupdict())
 
