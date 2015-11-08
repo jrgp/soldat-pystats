@@ -1,9 +1,13 @@
 import redis
 from datetime import datetime
 from collections import defaultdict
-import cPickle as pickle
-from collections import namedtuple
-from piestats.player import PlayerObj
+from piestats.player import PlayerObj  # noqa
+
+try:
+  import cPickle as pickle
+except ImportError:
+  import pickle
+
 
 class player:
   def __init__(self, *args, **kwargs):
@@ -49,6 +53,7 @@ class player:
   def weapons(self):
     return self.wepstats
 
+
 class stats():
 
   player_hash_key = 'pystats:playerdata:{player}'
@@ -68,6 +73,6 @@ class stats():
     return player(name=_player, **info)
 
   def get_last_kills(self, startat=0, incr=20):
-    for kill in  self.r.lrange('pystats:latestkills', startat, startat + incr):
+    for kill in self.r.lrange('pystats:latestkills', startat, startat + incr):
       data = pickle.loads(kill)
       yield data
