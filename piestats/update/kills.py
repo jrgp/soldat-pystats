@@ -14,8 +14,8 @@ from piestats.kill import KillObj
 from piestats.player import PlayerObj
 
 
-def get_kills(r):
-  root = '/root/pyredis_stats/kills'
+def get_kills(r, soldat_dir):
+  root = os.path.join(soldat_dir, 'logs', 'kills')
   for path in glob.glob(os.path.join(root, '*.txt')):
     filename = os.path.basename(path)
     key = 'pystats:logs:{filename}'.format(filename=filename)
@@ -37,8 +37,8 @@ def get_kills(r):
       print 'skipping unchanged {filename}'.format(filename=filename)
 
 
-def update_kills(r):
-  for kill in get_kills(r):
+def update_kills(r, soldat_dir):
+  for kill in get_kills(r, soldat_dir):
 
     # Add kill to global kill log
     r.lpush('pystats:latestkills', pickle.dumps(kill))
