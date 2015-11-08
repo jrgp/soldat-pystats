@@ -78,7 +78,26 @@ def weapons():
 @app.route('/')
 def index():
   s = stats()
-  return render_template('index.html', killsperdate=s.get_kills_for_date_range())
+  colors = [
+      'red',
+      'blue',
+      'green',
+      'orange',
+      'pink',
+      'brown',
+      'purple',
+  ]
+  data = dict(
+      killsperdate=s.get_kills_for_date_range(),
+      topcountries=[
+          dict(
+              value=players,
+              label=country,
+              color=colors.pop(),
+          )
+          for country, players in s.get_top_countries(len(colors) - 1)]
+  )
+  return render_template('index.html', **data)
 
 
 def main():

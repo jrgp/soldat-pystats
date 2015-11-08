@@ -121,3 +121,6 @@ class stats():
       stats[str(current_date.date())] = count
 
     return stats
+
+  def get_top_countries(self, limit=10):
+    return self.r.zrevrange('pystats:topcountries', 0, limit, withscores=True)
