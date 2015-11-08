@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Latest Kills
+{% endblock %}
+
+{% block content %}
+
+<nav>
+  <ul class="pager">
+  {% if prev_url %}
+    <li><a href="{{ prev_url }}">Newer</a></li>
+  {% else %}
+    <li class="disabled"><a href="" onclick="return false;"><span aria-hidden="true">Newer</span></a></li>
+  {% endif %}
+    <li><a href="{{ next_url }}">Older</a></li>
+  </ul>
+</nav>
+
+<table class="table">
+
+<tr>
+  <th>Killer</th>
+  <th>Victim</th>
+  <th>Weapon</th>
+  <th>When</th>
+</tr>
+
+{% for k in kills %}
+
+<tr>
+  <td>{{ k.killer.name }}</td>
+  <td>{{ k.victim.name }}</td>
+  <td style="text-align: center;"><img src="{{ gunpic(k.weapon) }}" title="{{ k.weapon }}"></td>
+  <td>{{ k.timestamp }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+{% endblock %}

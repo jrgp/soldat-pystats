@@ -12,11 +12,12 @@ except ImportError:
 class player:
   def __init__(self, *args, **kwargs):
     self.info = kwargs
-    self.wepstats = defaultdict(dict)
+    self.wepstats = defaultdict(lambda: defaultdict(int))
     for key, value in kwargs.iteritems():
       if key.startswith('kills:') or key.startswith('deaths:'):
         stat, wep = key.split(':')
-        self.wepstats[wep][stat] = value
+        self.wepstats[wep][stat] = int(value)
+        self.wepstats[wep]['name'] = wep
 
   def get(self, key):
     if key not in self.info:
@@ -29,11 +30,17 @@ class player:
 
   @property
   def kills(self):
-    return self.get('kills')
+    try:
+      return int(self.get('kills'))
+    except (KeyError, TypeError):
+      return 0
 
   @property
   def deaths(self):
-    return self.get('deaths')
+    try:
+      return int(self.get('deaths'))
+    except (KeyError, TypeError):
+      return 0
 
   @property
   def firstseen(self):
@@ -61,10 +68,16 @@ class stats():
   def __init__(self):
     self.r = redis.Redis()
 
-  def get_top_killers(self, top=20):
-    results = self.r.zrevrange('pystats:playerstopkills', 0, top, withscores=True)
+  def get_top_killers(self, startat=0, incr=20):
+    results = self.r.zrevrange('pystats:playerstopkills', startat, startat + incr, withscores=True)
     for name, kills in results:
-      yield player(name=name, kills=int(kills))
+      more = {}
+      for key in ['deaths', 'lastseen', 'firstseen']:
+        more[key] = self.r.hget(self.player_hash_key.format(player=name), key)
+      yield player(name=name,
+                   kills=kills,
+                   **more
+                   )
 
   def get_player(self, _player):
     info = self.r.hgetall(self.player_hash_key.format(player=_player))

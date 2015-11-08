@@ -1,4 +1,10 @@
-<h4>{{ player.name }}</h4>
+{% extends "layout.html" %}
+
+{% block title %}
+{{ player.name }}
+{% endblock %}
+
+{% block content %}
 
 <table>
 
@@ -33,14 +39,16 @@
     <th>Deaths</th>
   </tr>
 
-{% for name, stats in player.weapons.iteritems() %}
+{% for wep in player.weapons.values()|sort(attribute='kills', reverse=True) %}
 
   <tr>
-    <td>{{ name }}</td>
-    <td>{{ stats.kills }}</td>
-    <td>{{ stats.deaths }}</td>
+    <td style="text-align: center;"><img src="{{ gunpic(wep.name) }}" title="{{ wep.name }}"></td>
+    <td>{{ wep.kills }}</td>
+    <td>{{ wep.deaths }}</td>
   </tr>
 
 {% endfor %}
 
 </table>
+
+{% endblock %}

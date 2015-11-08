@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Top Players
+{% endblock %}
+
+{% block content %}
+
+
+<nav>
+  <ul class="pager">
+  {% if prev_url %}
+    <li><a href="{{ prev_url }}">Previous</a></li>
+  {% else %}
+    <li class="disabled"><a href="" onclick="return false;"><span aria-hidden="true">Previous</span></a></li>
+  {% endif %}
+    <li><a href="{{ next_url }}">Next</a></li>
+  </ul>
+</nav>
+
+<table class="table">
+
+<tr>
+  <th>Player</th>
+  <th>Kills</th>
+  <th>Deaths</th>
+  <th>Firstseen</th>
+  <th>Lastseen</th>
+</tr>
+
+{% for player in players %}
+
+<tr>
+  <td><a href="{{ url_for('player', name=player.name) }}">{{player.name}}</a></td>
+  <td>{{player.kills}}</td>
+  <td>{{player.deaths}}</td>
+  <td>{{player.firstseen}}</td>
+  <td>{{player.lastseen}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

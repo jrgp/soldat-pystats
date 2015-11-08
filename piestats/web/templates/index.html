@@ -1,45 +1,11 @@
-<html>
-<head>
-<title>Soldat - pystats</title>
-<link href="/static/styles.css" type="text/css" rel="stylesheet">
-</head>
-<body>
-<h4>Top Killers</h4>
-<table>
+{% extends "layout.html" %}
 
-{% for p in top %}
+{% block title %}
+Stats Overview
+{% endblock %}
 
-<tr>
-  <td><a href="{{ url_for('player', name=p.name) }}">{{p.name}}</a></td>
-  <td>{{p.kills}}</td>
-</tr>
+{% block content %}
 
-{% endfor %}
-</table>
 
-<h4>Latest Kills</h4>
 
-<table>
-
-<tr>
-  <th>Killer</th>
-  <th>Victim</th>
-  <th>Weapon</th>
-  <th>When</th>
-</tr>
-
-{% for k in kills %}
-
-<tr>
-  <td>{{ k.killer.name }}</td>
-  <td>{{ k.victim.name }}</td>
-  <td>{{ k.weapon }}</td>
-  <td>{{ k.timestamp }}</td>
-</tr>
-
-{% endfor %}
-
-</table>
-
-</body>
-</html>
+{% endblock %}

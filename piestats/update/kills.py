@@ -1,10 +1,9 @@
-import redis
-import time
 import os
 import glob
 import re
 import string
 from dateutil import parser
+import time
 
 try:
   import cPickle as pickle
@@ -15,8 +14,31 @@ from piestats.kill import KillObj
 from piestats.player import PlayerObj
 
 
-def updateStats(r):
-  for kill in getKills(r):
+def get_kills(r):
+  root = '/root/pyredis_stats/kills'
+  for path in glob.glob(os.path.join(root, '*.txt')):
+    filename = os.path.basename(path)
+    key = 'pystats:logs:{filename}'.format(filename=filename)
+    size = os.path.getsize(path)
+    prev = r.get(key)
+    if prev is None:
+      pos = 0
+    else:
+      pos = prev
+    if size > prev:
+      print 'reading {filename} from offset {pos}'.format(filename=filename, pos=pos)
+      with open(path, 'r') as h:
+        h.seek(pos)
+        contents = h.read()
+        for kill in parse_kills(contents):
+          yield kill
+      r.set(key, size)
+    else:
+      print 'skipping unchanged {filename}'.format(filename=filename)
+
+
+def update_kills(r):
+  for kill in get_kills(r):
 
     # Add kill to global kill log
     r.lpush('pystats:latestkills', pickle.dumps(kill))
@@ -55,7 +77,7 @@ def updateStats(r):
     # todo once more of the UI is done..
 
 
-def parseKills(contents):
+def parse_kills(contents):
     m = re.findall('\-\-\- (\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d)\\n(.+)\\n(.+)\\n(Ak-74|Barrett M82A1|'
                    'Chainsaw|Cluster Grenades|Combat Knife|Desert Eagles|FN Minimi|Grenade|Hands|HK MP5|LAW|M79|Ruger '
                    '77|Selfkill|Spas-12|Stationary gun|Steyr AUG|USSOCOM|XM214 Minigun)\n', contents)
@@ -71,31 +93,3 @@ def parseKills(contents):
           unixtime,
           suicide
       )
-
-
-def getKills(r):
-  root = '/root/pyredis_stats/kills'
-  for path in glob.glob(os.path.join(root, '*.txt')):
-    filename = os.path.basename(path)
-    key = 'pystats:logs:{filename}'.format(filename=filename)
-    size = os.path.getsize(path)
-    prev = r.get(key)
-    if prev is None:
-      pos = 0
-    else:
-      pos = prev
-    if size > prev:
-      print 'reading {filename} from offset {pos}'.format(filename=filename, pos=pos)
-      with open(path, 'r') as h:
-        h.seek(pos)
-        contents = h.read()
-        for kill in parseKills(contents):
-          yield kill
-      r.set(key, size)
-    else:
-      print 'skipping unchanged {filename}'.format(filename=filename)
-
-
-def main():
-  r = redis.Redis()
-  updateStats(r)
