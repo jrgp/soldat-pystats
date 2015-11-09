@@ -6,7 +6,9 @@
 {% endmacro %}
 
 {% macro weaponpic(weapon) %}
+  {% if weapon != 'Selfkill' %}
     <img src="{{ url_for('static', filename='soldatguns/'+weapon.replace(' ', '_')+'.png') }}" title="{{ weapon }}">
+  {% endif %}
 {% endmacro %}
 
 {% macro weaponlink(weapon) %}

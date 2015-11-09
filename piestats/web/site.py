@@ -1,6 +1,5 @@
 from flask import Flask, render_template, url_for
 from piestats.results import stats
-from piestats.web.pics import gunpic
 from datetime import datetime
 
 app = Flask(__name__)
@@ -11,7 +10,7 @@ def player(name):
   player = stats().get_player(name)
   if not player:
     return render_template('player_not_found.html')
-  return render_template('player.html', player=player, gunpic=gunpic)
+  return render_template('player.html', player=player)
 
 
 @app.route('/kills', defaults=dict(startat=0))
@@ -31,7 +30,6 @@ def latestkills(startat):
   data = {
       'next_url': url_for('latestkills', startat=startat + 20),
       'kills': map(kill_decorate, s.get_last_kills(startat)),
-      'gunpic': gunpic,
       'fixdate': lambda x: datetime.utcfromtimestamp(int(x))
   }
 

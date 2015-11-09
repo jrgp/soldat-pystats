@@ -95,13 +95,19 @@ class stats():
         info[key] = self.r.hget(self.player_hash_key.format(player=_player), key)
       return player(name=_player, **info)
 
+  def get_player_top_enemies(self, player):
+    pass
+
+  def get_player_top_victims(self, player):
+    pass
+
   def get_last_kills(self, startat=0, incr=20):
     for kill in self.r.lrange('pystats:latestkills', startat, startat + incr):
       yield pickle.loads(kill)
 
   def get_top_weapons(self):
     results = self.r.zrevrange('pystats:weaponkills', 0, 20, withscores=True)
-    return results
+    return map(lambda x: (x[0], int(x[1])), results)
 
   def get_kills_for_date_range(self, startdate=None, previous_days=7):
     if not isinstance(startdate, datetime):

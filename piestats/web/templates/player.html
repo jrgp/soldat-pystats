@@ -1,3 +1,4 @@
+{% import 'macro.html' as macro %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -59,7 +60,7 @@
         </tr>
       {% for wep in player.weapons.values()|sort(attribute='kills', reverse=True) %}
         <tr>
-          <td><img src="{{ gunpic(wep.name) }}" title="{{ wep.name }}"></td>
+          <td>{{ macro.weaponpic(wep.name) }}</td>
           <td>{{ wep.kills }}</td>
           <td>{{ wep.deaths }}</td>
         </tr>
