@@ -14,7 +14,7 @@ except ImportError:
 from piestats.kill import KillObj
 
 
-def get_kills(r, keys, soldat_dir):
+def get_kills(r, keys, retention, soldat_dir):
   root = os.path.join(soldat_dir, 'logs', 'kills')
 
   # Make sure we go by filename sorted in ascending order, as we can't sort
@@ -36,7 +36,7 @@ def get_kills(r, keys, soldat_dir):
       print 'reading {filename} from offset {pos}'.format(filename=filename, pos=pos)
       with open(path, 'r') as h:
         h.seek(pos)
-        for kill in parse_kills(h.read()):
+        for kill in parse_kills(h.read(), retention):
           yield kill
       r.set(key, size)
     else:
@@ -45,8 +45,8 @@ def get_kills(r, keys, soldat_dir):
   print 'skipped {count} unchanged kill logs'.format(count=skipped_files)
 
 
-def update_kills(r, keys, soldat_dir):
-  for kill in get_kills(r, keys, soldat_dir):
+def update_kills(r, keys, retention, soldat_dir):
+  for kill in get_kills(r, keys, retention, soldat_dir):
 
     # Add kill to global kill log
     r.lpush(keys.kill_log, pickle.dumps(kill))
@@ -93,7 +93,7 @@ def update_kills(r, keys, soldat_dir):
       r.incr(keys.kills_per_day(text_today))
 
 
-def parse_kills(contents):
+def parse_kills(contents, retention):
     m = re.findall('\-\-\- (\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d)\\n(.+)\\n(.+)\\n(Ak-74|Barrett M82A1|'
                    'Chainsaw|Cluster Grenades|Combat Knife|Desert Eagles|FN Minimi|Grenade|Hands|HK MP5|LAW|M79|Ruger '
                    '77|Selfkill|Spas-12|Stationary gun|Steyr AUG|USSOCOM|XM214 Minigun)\n', contents)
@@ -101,7 +101,12 @@ def parse_kills(contents):
       timestamp, killer, victim, weapon = map(string.strip, kill)
       suicide = killer == victim or weapon == 'Selfkill'
 
-      unixtime = int(time.mktime(parser.parse(timestamp, parser.parserinfo(yearfirst=True)).timetuple()))
+      date = parser.parse(timestamp, parser.parserinfo(yearfirst=True))
+
+      if retention.too_old(date):
+        continue
+
+      unixtime = int(time.mktime(date.timetuple()))
       yield KillObj(
           killer,
           victim,

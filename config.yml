@@ -11,5 +11,5 @@ redis_connect:
 # types of servers if you wish.
 redis_prefix: 'piestats'
 
-# Days to keep track of stats (not yet implemented)
-data_retention: 365
+# Days to keep track of stats
+data_retention: 30

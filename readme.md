@@ -28,9 +28,8 @@ TODO:
  - Make updater script *and* web ui script both take in an argument or default
    path to a config file that includes the soldat server dir, prefix for all
    redis keys, redis server connect info, and data retention. **done**
-
- - Display each player's top enemies and victims
-
  - Data retention setting. Work by traversing kill log in reverse and decrementing
    stats each kill/event would have incremented if it is past the cutoff
-   point. Also delete players with 0 kills/etc.
+   point. Also delete players with 0 kills/etc. **works**
+
+ - Display each player's top enemies and victims
