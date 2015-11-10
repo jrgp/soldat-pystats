@@ -9,12 +9,12 @@ from piestats.keys import PystatsKeys
 
 @click.command()
 @click.option(
-  '--config_path',
-  '-c',
-  help='Path to config yaml file.',
-  default=lambda: os.getenv('PYSTATS_CONF'),
-  type=click.Path(exists=True, dir_okay=False),
-  required=True)
+    '--config_path',
+    '-c',
+    help='Path to config yaml file.',
+    default=lambda: os.getenv('PYSTATS_CONF'),
+    type=click.Path(exists=True, dir_okay=False),
+    required=True)
 def main(config_path):
   '''
     Run updates. Pass me path to config file which contains settings for redis

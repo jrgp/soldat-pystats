@@ -1,7 +1,6 @@
 class PystatsKeys():
   '''Convenient access to keys we use with redis'''
 
-
   def __init__(self, config):
     self.prefix = config.redis_prefix
 
