@@ -18,27 +18,29 @@ Top Players
   </ul>
 </nav>
 
-<table class="table">
+<table class="table table-striped">
 
-<tr>
-  <th>Player</th>
-  <th>Kills</th>
-  <th>Deaths</th>
-  <th>Firstseen</th>
-  <th>Lastseen</th>
-</tr>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Kills</th>
+      <th>Deaths</th>
+      <th>Firstseen</th>
+      <th>Lastseen</th>
+    </tr>
+  </thead>
 
-{% for player in players %}
-
-<tr>
-  <td>{{macro.playerlink(player)}}</td>
-  <td>{{player.kills}}</td>
-  <td>{{player.deaths}}</td>
-  <td>{{player.firstseen}}</td>
-  <td>{{player.lastseen}}</td>
-</tr>
-
-{% endfor %}
+  <tbody>
+    {% for player in players %}
+    <tr>
+      <td>{{macro.playerlink(player)}}</td>
+      <td>{{player.kills}}</td>
+      <td>{{player.deaths}}</td>
+      <td>{{player.firstseen}}</td>
+      <td>{{player.lastseen}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 
 </table>
 

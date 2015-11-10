@@ -7,22 +7,24 @@ Top Weapons
 
 {% block content %}
 
-<table class="table">
+<table class="table table-striped">
 
-<tr>
-  <th colspan="2">Weapon</th>
-  <th>Kills</th>
-</tr>
+  <thead>
+    <tr>
+      <th colspan="2">Weapon</th>
+      <th>Kills</th>
+    </tr>
+  </thead>
 
-{% for weapon, kills in weapons %}
-
-<tr>
-  <td width="10" style="text-align: right;">{{macro.weaponpic(weapon)}}</td>
-  <td>{{macro.weaponlink(weapon)}}</td>
-  <td>{{kills}}</td>
-</tr>
-
-{% endfor %}
+  <tbody>
+    {% for weapon, kills in weapons %}
+    <tr>
+      <td width="10" style="text-align: right;">{{macro.weaponpic(weapon)}}</td>
+      <td>{{macro.weaponlink(weapon)}}</td>
+      <td>{{kills}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 
 </table>
 

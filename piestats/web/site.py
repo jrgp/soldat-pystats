@@ -10,7 +10,7 @@ def player(name):
   player = stats().get_player(name)
   if not player:
     return render_template('player_not_found.html')
-  return render_template('player.html', player=player)
+  return render_template('player.html', page_title=player.name, player=player)
 
 
 @app.route('/kills', defaults=dict(startat=0))
@@ -28,6 +28,7 @@ def latestkills(startat):
     return info
 
   data = {
+      'page_title': 'Latest Kills',
       'next_url': url_for('latestkills', startat=startat + 20),
       'kills': map(kill_decorate, s.get_last_kills(startat)),
       'fixdate': lambda x: datetime.utcfromtimestamp(int(x))
@@ -50,6 +51,7 @@ def top_players(startat):
     startat = 0
 
   data = {
+      'page_title': 'Top Players',
       'next_url': url_for('top_players', startat=startat + 20),
       'players': s.get_top_killers(startat),
   }
@@ -67,6 +69,7 @@ def weapons():
   s = stats()
 
   data = {
+      'page_title': 'Weapons',
       'weapons': s.get_top_weapons(),
   }
 
@@ -86,6 +89,7 @@ def index():
       'purple',
   ]
   data = dict(
+      page_title='Stats overview',
       killsperdate=s.get_kills_for_date_range(),
       topcountries=[
           dict(

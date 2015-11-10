@@ -18,25 +18,27 @@ Latest Kills
   </ul>
 </nav>
 
-<table class="table">
+<table class="table table-striped">
 
-<tr>
-  <th>Killer</th>
-  <th>Victim</th>
-  <th>Weapon</th>
-  <th>When</th>
-</tr>
+<thead>
+  <tr>
+    <th>Killer</th>
+    <th>Victim</th>
+    <th>Weapon</th>
+    <th>When</th>
+  </tr>
+</thead>
 
+<tbody>
 {% for k in kills %}
-
 <tr>
   <td>{{ macro.playerlink(k.killer_obj) }}</td>
   <td>{{ macro.playerlink(k.victim_obj) }}</td>
   <td style="text-align: center;">{{ macro.weaponpic(k.weapon) }}</td>
   <td>{{ fixdate(k.timestamp) }}</td>
 </tr>
-
 {% endfor %}
+</tbody>
 
 </table>
 {% endblock %}
