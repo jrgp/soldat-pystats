@@ -71,6 +71,18 @@ class stats():
     self.r = redis.Redis(**config.redis_connect)
     self.keys = PystatsKeys(config)
 
+  def get_num_kills(self):
+    try:
+      return int(self.r.llen(self.keys.kill_log))
+    except ValueError:
+      return 0
+
+  def get_num_players(self):
+    try:
+      return int(self.r.zcard(self.keys.top_players))
+    except ValueError:
+      return 0
+
   def get_top_killers(self, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.top_players, startat, startat + incr, withscores=True)
     for name, kills in results:

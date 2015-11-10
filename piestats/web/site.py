@@ -1,11 +1,23 @@
 from flask import Flask, render_template, url_for
 from piestats.results import stats
 from piestats.config import PystatsConfig
-from datetime import datetime
+from datetime import datetime, timedelta
 import click
 import os
 
 app = Flask(__name__)
+
+
+@app.context_processor
+def more_context():
+  s = stats(app.config['config'])
+  return dict(
+      footer=dict(
+          num_kills=s.get_num_kills(),
+          num_players=s.get_num_players(),
+          since=(datetime.now() - timedelta(days=app.config['config'].data_retention)).date()
+      )
+  )
 
 
 @app.route('/player/<string:name>')

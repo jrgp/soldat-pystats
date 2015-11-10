@@ -1,18 +1,14 @@
+<!DOCTYPE html>
 <html>
 <head>
-<title>
-  {% if page_title %}{{ page_title }} - {% endif %} soldat piestats
-</title>
-<!--
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
--->
-
-<link rel="stylesheet" href="{{url_for('static', filename='sandstone.css')}}">
-
-{% block morehead %}{% endblock %}
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page_title %}{{ page_title }} - {% endif %} soldat-pystats</title>
+  <link rel="stylesheet" href="{{url_for('static', filename='sandstone.css')}}">
+  {% block morehead %}{% endblock %}
 </head>
 <body>
+
 <div class="container">
   <div class="page-header" style="border: none;">
     <h1>{% block title %}{%endblock%}</h1>
@@ -23,11 +19,18 @@
       <li {%if request.url_rule.endpoint == 'latestkills'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('latestkills') }}">Latest Kills</a></li>
     </ul>
   </div>
-
-<div class="panel">
-{% block content %}{% endblock%}
+  <div class="panel" style="margin-bottom: 100px;">
+  {% block content %}{% endblock%}
+  </div>
 </div>
 
+<div class="navbar navbar-default  navbar-fixed-bottom">
+  <div class="container">
+    <p class="navbar-text pull-left">
+      {{ footer.num_kills }} kills by {{ footer.num_players }} players since {{ footer.since }}
+    </p>
+  </div>
 </div>
+
 </body>
 </html>
