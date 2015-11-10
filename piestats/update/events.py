@@ -64,6 +64,8 @@ def update_events(r, keys, soldat_dir):
 
 
 def update_country(r, keys, ip, player):
+  if not r.exists(keys.player_hash(player)):
+    return
   match = geolite2.lookup(ip)
   if not match:
     return
