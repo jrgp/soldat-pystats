@@ -1,7 +1,7 @@
 import redis
 from datetime import datetime, timedelta
 from collections import defaultdict, OrderedDict
-from piestats.player import PlayerObj  # noqa
+from piestats.keys import PystatsKeys
 
 try:
   import cPickle as pickle
@@ -67,24 +67,23 @@ class player:
 
 class stats():
 
-  player_hash_key = 'pystats:playerdata:{player}'
-
-  def __init__(self):
-    self.r = redis.Redis()
+  def __init__(self, config):
+    self.r = redis.Redis(**config.redis_connect)
+    self.keys = PystatsKeys(config)
 
   def get_top_killers(self, startat=0, incr=20):
-    results = self.r.zrevrange('pystats:playerstopkills', startat, startat + incr, withscores=True)
+    results = self.r.zrevrange(self.keys.top_players, startat, startat + incr, withscores=True)
     for name, kills in results:
       more = {}
       for key in ['deaths', 'lastseen', 'firstseen', 'lastcountry']:
-        more[key] = self.r.hget(self.player_hash_key.format(player=name), key)
+        more[key] = self.r.hget(self.keys.player_hash(name), key)
       yield player(name=name,
                    kills=kills,
                    **more
                    )
 
   def get_player(self, _player):
-    info = self.r.hgetall(self.player_hash_key.format(player=_player))
+    info = self.r.hgetall(self.keys.player_hash(_player))
     if not info:
       return None
     return player(name=_player, **info)
@@ -92,7 +91,7 @@ class stats():
   def get_player_fields(self, _player, fields=[]):
       info = {}
       for key in fields:
-        info[key] = self.r.hget(self.player_hash_key.format(player=_player), key)
+        info[key] = self.r.hget(self.keys.player_hash(_player), key)
       return player(name=_player, **info)
 
   def get_player_top_enemies(self, player):
@@ -102,11 +101,11 @@ class stats():
     pass
 
   def get_last_kills(self, startat=0, incr=20):
-    for kill in self.r.lrange('pystats:latestkills', startat, startat + incr):
+    for kill in self.r.lrange(self.keys.kill_log, startat, startat + incr):
       yield pickle.loads(kill)
 
   def get_top_weapons(self):
-    results = self.r.zrevrange('pystats:weaponkills', 0, 20, withscores=True)
+    results = self.r.zrevrange(self.keys.top_weapons, 0, 20, withscores=True)
     return map(lambda x: (x[0], int(x[1])), results)
 
   def get_kills_for_date_range(self, startdate=None, previous_days=7):
@@ -115,18 +114,16 @@ class stats():
 
     stats = OrderedDict()
 
-    keyformat = 'pystats:killsperday:{day}'
-
     for x in range(previous_days):
-      current_date = startdate - timedelta(days=x)
-      key = keyformat.format(day=str(current_date.date()))
+      current_date = str((startdate - timedelta(days=x)).date())
+      key = self.keys.kills_per_day(current_date)
       try:
         count = int(self.r.get(key))
       except (TypeError, ValueError):
         count = 0
-      stats[str(current_date.date())] = count
+      stats[current_date] = count
 
     return stats
 
   def get_top_countries(self, limit=10):
-    return self.r.zrevrange('pystats:topcountries', 0, limit, withscores=True)
+    return self.r.zrevrange(self.keys.top_countries, 0, limit, withscores=True)

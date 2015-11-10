@@ -1,13 +1,16 @@
 from flask import Flask, render_template, url_for
 from piestats.results import stats
+from piestats.config import PystatsConfig
 from datetime import datetime
+import click
+import os
 
 app = Flask(__name__)
 
 
 @app.route('/player/<string:name>')
 def player(name):
-  player = stats().get_player(name)
+  player = stats(app.config['config']).get_player(name)
   if not player:
     return render_template('player_not_found.html')
   return render_template('player.html', page_title=player.name, player=player)
@@ -16,7 +19,7 @@ def player(name):
 @app.route('/kills', defaults=dict(startat=0))
 @app.route('/kills/pos/<int:startat>')
 def latestkills(startat):
-  s = stats()
+  s = stats(app.config['config'])
 
   if (startat % 20):
     startat = 0
@@ -45,7 +48,7 @@ def latestkills(startat):
 @app.route('/players', defaults=dict(startat=0))
 @app.route('/players/pos/<int:startat>')
 def top_players(startat):
-  s = stats()
+  s = stats(app.config['config'])
 
   if (startat % 20):
     startat = 0
@@ -66,7 +69,7 @@ def top_players(startat):
 
 @app.route('/weapons')
 def weapons():
-  s = stats()
+  s = stats(app.config['config'])
 
   data = {
       'page_title': 'Weapons',
@@ -78,7 +81,7 @@ def weapons():
 
 @app.route('/')
 def index():
-  s = stats()
+  s = stats(app.config['config'])
   colors = [
       'red',
       'blue',
@@ -102,5 +105,19 @@ def index():
   return render_template('index.html', **data)
 
 
-def main():
+@click.command()
+@click.option(
+  '--config_path',
+  '-c',
+  help='Path to config yaml file.',
+  default=lambda: os.getenv('PYSTATS_CONF'),
+  type=click.Path(exists=True, dir_okay=False),
+  required=True)
+def main(config_path):
+  '''
+    Spawn flask app. Pass me path to config file with redis connection + key
+    prefix settings.
+  '''
+
+  app.config['config'] = PystatsConfig(config_path)
   app.run(host='0.0.0.0', debug=True)

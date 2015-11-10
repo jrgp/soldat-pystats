@@ -3,24 +3,30 @@ from geoip import geolite2
 import re
 import os
 import glob
-from piestats.player import PlayerObj
 
 EventPlayerJoin = namedtuple('EventPlayerJoin', ['player', 'ip'])
 EventNextMap = namedtuple('EventNextMap', ['map'])
 
 
-def get_events(r, soldat_dir):
+def get_events(r, keys, soldat_dir):
   skipped_files = 0
   root = os.path.join(soldat_dir, 'logs')
-  for path in glob.glob(os.path.join(root, 'consolelog-*.txt')):
-    filename = os.path.basename(path)
-    key = 'pystats:logs:{filename}'.format(filename=filename)
+
+  # Make sure we go by filename sorted in ascending order, as we can't sort
+  # our global kill log after items are inserted.
+  files = sorted(map(os.path.basename, glob.glob(os.path.join(root, 'consolelog*.txt'))))
+
+  skipped_files = 0
+
+  for filename in files:
+    key = keys.log_file(filename=filename)
+    path = os.path.join(root, filename)
     size = os.path.getsize(path)
     prev = r.get(key)
     if prev is None:
       pos = 0
     else:
-      pos = prev
+      pos = int(prev)
     if size > prev:
       print 'reading {filename} from offset {pos}'.format(filename=filename, pos=pos)
       with open(path, 'r') as h:
@@ -49,22 +55,22 @@ def parse_events(contents):
       yield event(**m.groupdict())
 
 
-def update_events(r, soldat_dir):
-  for event in get_events(r, soldat_dir):
+def update_events(r, keys, soldat_dir):
+  for event in get_events(r, keys, soldat_dir):
     if isinstance(event, EventPlayerJoin):
-      update_country(r, event.ip, PlayerObj(event.player))
+      update_country(r, keys, event.ip, event.player)
     elif isinstance(event, EventNextMap):
-      update_maps(r, event.map)
+      update_map(r, keys, event.map)
 
 
-def update_country(r, ip, player):
+def update_country(r, keys, ip, player):
   match = geolite2.lookup(ip)
   if not match:
     return
   country_code = match.country
-  if r.hset(player.data_key, 'lastcountry', country_code):
-    r.zincrby('pystats:topcountries', country_code)
+  if r.hset(keys.player_hash(player), 'lastcountry', country_code):
+    r.zincrby(keys.top_countries, country_code)
 
 
-def update_maps(r, map):
-  r.zincrby('pystats:topmaps', map)
+def update_map(r, keys, map):
+  r.zincrby(keys.top_maps, map)

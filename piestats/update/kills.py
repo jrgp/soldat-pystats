@@ -12,10 +12,9 @@ except ImportError:
   import pickle
 
 from piestats.kill import KillObj
-from piestats.player import PlayerObj
 
 
-def get_kills(r, soldat_dir):
+def get_kills(r, keys, soldat_dir):
   root = os.path.join(soldat_dir, 'logs', 'kills')
 
   # Make sure we go by filename sorted in ascending order, as we can't sort
@@ -25,7 +24,7 @@ def get_kills(r, soldat_dir):
   skipped_files = 0
 
   for filename in files:
-    key = 'pystats:logs:{filename}'.format(filename=filename)
+    key = keys.log_file(filename=filename)
     path = os.path.join(root, filename)
     size = os.path.getsize(path)
     prev = r.get(key)
@@ -46,56 +45,52 @@ def get_kills(r, soldat_dir):
   print 'skipped {count} unchanged kill logs'.format(count=skipped_files)
 
 
-def update_kills(r, soldat_dir):
-  for kill in get_kills(r, soldat_dir):
+def update_kills(r, keys, soldat_dir):
+  for kill in get_kills(r, keys, soldat_dir):
 
     # Add kill to global kill log
-    r.lpush('pystats:latestkills', pickle.dumps(kill))
+    r.lpush(keys.kill_log, pickle.dumps(kill))
 
     # Update last seen time for this player instance
-    r.zadd('pystats:playerslastseen', kill.killer.name, kill.timestamp)
+    r.zadd(keys.players_last_seen, kill.killer, kill.timestamp)
 
     # Stuff that only makes sense for non suicides
     if not kill.suicide:
-      r.zadd('pystats:playerslastseen', kill.victim.name, kill.timestamp)
-      r.zincrby('pystats:playerstopkills', kill.killer.name)
-      r.zincrby('pystats:playerstopdeaths', kill.victim.name)
-      r.hincrby(kill.killer.data_key, 'kills', 1)
+      r.zadd(keys.players_last_seen, kill.victim, kill.timestamp)
+      r.zincrby(keys.top_players, kill.killer)
+      r.hincrby(keys.player_hash(kill.killer), 'kills', 1)
 
     # Increment number of deaths for victim
-    r.hincrby(kill.victim.data_key, 'deaths', 1)
+    r.hincrby(keys.player_hash(kill.victim), 'deaths', 1)
 
     # Update first/last time we saw player
-    r.hsetnx(kill.killer.data_key, 'firstseen', kill.timestamp)
-    r.hset(kill.killer.data_key, 'lastseen', kill.timestamp)
+    r.hsetnx(keys.player_hash(kill.killer), 'firstseen', kill.timestamp)
+    r.hset(keys.player_hash(kill.killer), 'lastseen', kill.timestamp)
 
     # Update first/last time we saw victim, if they're not the same..
     if not kill.suicide:
-      r.hsetnx(kill.victim.data_key, 'firstseen', kill.timestamp)
-      r.hset(kill.victim.data_key, 'lastseen', kill.timestamp)
+      r.hsetnx(keys.player_hash(kill.victim), 'firstseen', kill.timestamp)
+      r.hset(keys.player_hash(kill.victim), 'lastseen', kill.timestamp)
 
     # Update weapon stats..
-    if kill.suicide:
-      if kill.weapon != 'Selfkill':
-        r.zincrby('pystats:weaponsuicides', kill.weapon)
-    else:
-      r.zincrby('pystats:weaponkills', kill.weapon)
-      r.hincrby(kill.killer.data_key, 'kills:' + kill.weapon, 1)
-      r.hincrby(kill.victim.data_key, 'deaths:' + kill.weapon, 1)
+    if not kill.suicide:
+      r.zincrby(keys.top_weapons, kill.weapon)
+      r.hincrby(keys.player_hash(kill.killer), 'kills:' + kill.weapon, 1)
+      r.hincrby(keys.player_hash(kill.victim), 'deaths:' + kill.weapon, 1)
 
     # If we're not a suicide, update top enemy kills for player..
     if not kill.suicide:
       # Top people the killer has killed
-      r.zincrby(kill.killer.top_victims_key, kill.victim.name)
+      r.zincrby(keys.player_top_enemies(kill.killer), kill.victim)
 
       # Top people the victim has died by
-      r.zincrby(kill.victim.top_enemies_key, kill.killer.name)
+      r.zincrby(keys.player_top_victims(kill.victim), kill.killer)
 
     # If we're not a sucide, add this legit kill to the number of kills for this
     # day
     if not kill.suicide:
       text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
-      r.incr('pystats:killsperday:{day}'.format(day=text_today))
+      r.incr(keys.kills_per_day(text_today))
 
 
 def parse_kills(contents):
@@ -104,12 +99,12 @@ def parse_kills(contents):
                    '77|Selfkill|Spas-12|Stationary gun|Steyr AUG|USSOCOM|XM214 Minigun)\n', contents)
     for kill in m:
       timestamp, killer, victim, weapon = map(string.strip, kill)
-      suicide = killer == victim
+      suicide = killer == victim or weapon == 'Selfkill'
 
       unixtime = int(time.mktime(parser.parse(timestamp, parser.parserinfo(yearfirst=True)).timetuple()))
       yield KillObj(
-          PlayerObj(killer),
-          PlayerObj(victim),
+          killer,
+          victim,
           weapon,
           unixtime,
           suicide
