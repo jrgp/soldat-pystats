@@ -33,3 +33,12 @@ TODO:
    point. Also delete players with 0 kills/etc. **works**
 
  - Display each player's top enemies and victims
+
+ - Fix timezones. Store dates exclusively as pickled datetime objects, not stupid
+   unix timestamp interpretations. Soldat appears to log kills in UTC.
+
+ - Add realtime kill ingestion using beanstalkd or a similar job queue. This
+   will require a refactor to avoid a ton of code duplication.
+
+ - *Maybe* add functionality to hit the server admin port and provide current
+   stats from refreshx.
