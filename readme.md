@@ -31,8 +31,11 @@ TODO:
  - Data retention setting. Work by traversing kill log in reverse and decrementing
    stats each kill/event would have incremented if it is past the cutoff
    point. Also delete players with 0 kills/etc. **works**
+ - Display each player's top enemies and victims **done**
+ - Add support for multiple servers and a way to pick between them in the UI. **done**
 
- - Display each player's top enemies and victims
+ - Fix/refactor retention. Use a function for kill processing as well as kill
+   reverting in the same exact code, to avoid duplication.
 
  - Fix timezones. Store dates exclusively as pickled datetime objects, not stupid
    unix timestamp interpretations. Soldat appears to log kills in UTC.
