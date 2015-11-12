@@ -96,6 +96,23 @@ def weapons():
   return render_template('weapons.html', **data)
 
 
+@app.route('/weapons/<string:weapon>')
+def weapon(weapon):
+  s = stats(app.config['config'])
+
+  info = s.get_weapon_stats(weapon)
+
+  if not info:
+    return 'Weapon not found', 404
+
+  data = {
+      'page_title': weapon,
+      'weapon': info,
+  }
+
+  return render_template('weapon.html', **data)
+
+
 @app.route('/')
 def index():
   s = stats(app.config['config'])

@@ -66,7 +66,6 @@ class player:
 
 
 class stats():
-
   def __init__(self, config):
     self.r = redis.Redis(**config.redis_connect)
     self.keys = PystatsKeys(config)
@@ -155,3 +154,8 @@ class stats():
 
   def get_top_countries(self, limit=10):
     return self.r.zrevrange(self.keys.top_countries, 0, limit, withscores=True)
+
+  def get_weapon_stats(self, name):
+    kills = self.r.zscore(self.keys.top_weapons, name)
+    if kills is None:
+      return False

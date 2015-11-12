@@ -53,3 +53,7 @@ class PystatsKeys():
   def player_top_victims(self, player):
     ''' Sorted set of people killing ``player`` '''
     return ':'.join((self.prefix, 'player_top_victims', player))
+
+  def weapon_top_killers(self, weapon):
+    ''' Sorted set containing the amount of kills a player using a weapon has '''
+    return ':'.join((self.prefix, 'weapon_top_killers', weapon))
