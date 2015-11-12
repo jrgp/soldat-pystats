@@ -22,10 +22,15 @@ def more_context():
 
 @app.route('/player/<string:name>')
 def player(name):
-  player = stats(app.config['config']).get_player(name)
+  s = stats(app.config['config'])
+  data = dict(
+    player=s.get_player(name),
+    top_enemies=s.get_player_top_enemies(name, 0, 10),
+    top_victims=s.get_player_top_victims(name, 0, 10)
+  )
   if not player:
     return render_template('player_not_found.html')
-  return render_template('player.html', page_title=player.name, player=player)
+  return render_template('player.html', page_title=data['player'].name, **data)
 
 
 @app.route('/kills', defaults=dict(startat=0))

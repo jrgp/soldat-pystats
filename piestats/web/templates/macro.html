@@ -1,7 +1,13 @@
-{% macro playerlink(player) %}
+{% macro playerlink(player, tdsplit=False) %}
   {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
     <img width="16" height="11" src="{{ url_for('static', filename='flags/'+player.lastcountry.lower()+'.png') }}" title="{{ player.lastcountry }}">
   {% endif %}
+
+  {% if tdsplit %}
+    </td>
+    <td>
+  {% endif %}
+
   <a href="{{ url_for('player', name=player.name) }}">{{player.name}}</a>
 {% endmacro %}
 
@@ -12,5 +18,5 @@
 {% endmacro %}
 
 {% macro weaponlink(weapon) %}
-    <a href="">{{ weapon }}</a>
+    <a href="{{ url_for('weapon', weapon=weapon) }}">{{ weapon }}</a>
 {% endmacro %}

@@ -22,7 +22,7 @@ Top Players
 
   <thead>
     <tr>
-      <th>Player</th>
+      <th colspan="2">Player</th>
       <th>Kills</th>
       <th>Deaths</th>
       <th>Firstseen</th>
@@ -33,7 +33,7 @@ Top Players
   <tbody>
     {% for player in players %}
     <tr>
-      <td>{{macro.playerlink(player)}}</td>
+      <td style="width: 0;">{{macro.playerlink(player, true)}}</td>
       <td>{{player.kills}}</td>
       <td>{{player.deaths}}</td>
       <td>{{player.firstseen}}</td>

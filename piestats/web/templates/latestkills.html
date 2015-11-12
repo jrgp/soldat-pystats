@@ -22,9 +22,9 @@ Latest Kills
 
 <thead>
   <tr>
-    <th>Killer</th>
-    <th>Victim</th>
-    <th>Weapon</th>
+    <th colspan="2">Killer</th>
+    <th colspan="2">Victim</th>
+    <th colspan="2">Weapon</th>
     <th>When</th>
   </tr>
 </thead>
@@ -32,9 +32,10 @@ Latest Kills
 <tbody>
 {% for k in kills %}
 <tr>
-  <td>{{ macro.playerlink(k.killer_obj) }}</td>
-  <td>{{ macro.playerlink(k.victim_obj) }}</td>
-  <td style="text-align: center;">{{ macro.weaponpic(k.weapon) }}</td>
+  <td style="width: 0;">{{ macro.playerlink(k.killer_obj, true) }}</td>
+  <td style="width: 0;">{{ macro.playerlink(k.victim_obj, true) }}</td>
+  <td style="width: 0; text-align: right;">{{ macro.weaponpic(k.weapon) }}</td>
+  <td>{{ macro.weaponlink(k.weapon) }}</td>
   <td>{{ fixdate(k.timestamp) }}</td>
 </tr>
 {% endfor %}

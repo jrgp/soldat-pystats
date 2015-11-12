@@ -101,16 +101,32 @@ class stats():
     return player(name=_player, **info)
 
   def get_player_fields(self, _player, fields=[]):
-      info = {}
-      for key in fields:
-        info[key] = self.r.hget(self.keys.player_hash(_player), key)
-      return player(name=_player, **info)
+    info = {}
+    for key in fields:
+      info[key] = self.r.hget(self.keys.player_hash(_player), key)
+    return player(name=_player, **info)
 
-  def get_player_top_enemies(self, player):
-    pass
+  def get_player_top_enemies(self, _player, startat=0, incr=20):
+    results = self.r.zrevrange(self.keys.player_top_enemies(_player), 0, startat + incr, withscores=True)
+    for name, kills in results:
+      more = {}
+      for key in ['lastcountry']:
+        more[key] = self.r.hget(self.keys.player_hash(name), key)
+      yield player(name=name,
+                   kills=kills,
+                   **more
+                   )
 
-  def get_player_top_victims(self, player):
-    pass
+  def get_player_top_victims(self, _player, startat=0, incr=20):
+    results = self.r.zrevrange(self.keys.player_top_victims(_player), 0, startat + incr, withscores=True)
+    for name, kills in results:
+      more = {}
+      for key in ['lastcountry']:
+        more[key] = self.r.hget(self.keys.player_hash(name), key)
+      yield player(name=name,
+                   kills=kills,
+                   **more
+                   )
 
   def get_last_kills(self, startat=0, incr=20):
     for kill in self.r.lrange(self.keys.kill_log, startat, startat + incr):
