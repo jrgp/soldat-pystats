@@ -76,6 +76,11 @@ def latestkills(server_slug, startat):
   else:
     data['prev_url'] = False
 
+  num_kills = stats.get_num_kills()
+
+  if (startat + 20) > num_kills:
+    data['next_url'] = False
+
   return render_template('latestkills.html', **data)
 
 
@@ -103,6 +108,11 @@ def top_players(server_slug, startat):
     data['prev_url'] = url_for('top_players', startat=startat - 20, server_slug=server.url_slug)
   else:
     data['prev_url'] = False
+
+  num_players = stats.get_num_players()
+
+  if (startat + 20) > num_players:
+    data['next_url'] = False
 
   return render_template('players.html', **data)
 

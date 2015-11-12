@@ -14,7 +14,12 @@ Latest Kills
   {% else %}
     <li class="disabled"><a href="" onclick="return false;"><span aria-hidden="true">Newer</span></a></li>
   {% endif %}
+
+  {% if next_url %}
     <li><a href="{{ next_url }}">Older</a></li>
+  {% else %}
+    <li class="disabled"><a href="" onclick="return false;"><span aria-hidden="true">Older</span></a></li>
+  {% endif %}
   </ul>
 </nav>
 
