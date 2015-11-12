@@ -8,3 +8,4 @@ soldat/
 activate
 build/
 dist/
+.idea
