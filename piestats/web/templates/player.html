@@ -63,7 +63,7 @@
       {% for wep in player.weapons.values()|sort(attribute='kills', reverse=True) %}
         <tr>
           <td width="10" style="text-align: right;">{{macro.weaponpic(wep.name)}}</td>
-          <td>{{macro.weaponlink(wep.name)}}</td>
+          <td>{{macro.weaponlink(urlargs, wep.name)}}</td>
           <td>{{ wep.kills }}</td>
           <td>{{ wep.deaths }}</td>
         </tr>
@@ -88,7 +88,7 @@
          <tbody>
           {% for player in top_victims %}
             <tr>
-              <td style="text-align: right; width: 0;">{{ macro.playerlink(player, true) }}</td>
+              <td style="text-align: right; width: 0;">{{ macro.playerlink(urlargs, player, true) }}</td>
               <td style="width: 50%;">{{ player.kills }}</td>
             </tr>
           {% endfor %}
@@ -109,7 +109,7 @@
          <tbody>
           {% for player in top_enemies %}
             <tr>
-              <td style="text-align: right; width: 0;">{{ macro.playerlink(player, true) }}</td>
+              <td style="text-align: right; width: 0;">{{ macro.playerlink(urlargs, player, true) }}</td>
               <td style="width: 50%;">{{ player.kills }}</td>
             </tr>
           {% endfor %}

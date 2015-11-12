@@ -5,32 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% if page_title %}{{ page_title }} - {% endif %} soldat-pystats</title>
   <link rel="stylesheet" href="{{url_for('static', filename='sandstone.css')}}">
+  <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   {% block morehead %}{% endblock %}
 </head>
 <body>
 
-<div class="container">
+{% if servers|length > 1 %}
+
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="{{url_for('index', **urlargs)}}">{{current_server.title}}</a>
+    </div>
+    <div class="collapse navbar-collapse" id="top_nav_collapse">
+      <p class="navbar-text pull-right">
+        {{ footer.num_kills() }} kills by {{ footer.num_players() }} players since {{ footer.since() }}
+      </p>
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">More Servers<span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">
+            {% for server in servers %}
+              <li><a href="{{url_for('index', server_slug=server.url_slug)}}">{{server.title}}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{% endif %}
+
+<div class="container" style="margin-top: 100px; margin-bottom: 100px;">
   <div class="page-header" style="border: none;">
     <h1>{% block title %}{%endblock%}</h1>
     <ul class="nav nav-tabs">
-      <li {%if request.url_rule.endpoint == 'index'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('index') }}">Overview</a></li>
-      <li {%if request.url_rule.endpoint == 'top_players'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('top_players') }}">Top Players</a></li>
-      <li {%if request.url_rule.endpoint == 'weapons'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('weapons') }}">Top Weapons</a></li>
-      <li {%if request.url_rule.endpoint == 'latestkills'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('latestkills') }}">Latest Kills</a></li>
+      <li {%if request.url_rule.endpoint == 'index'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('index', **urlargs) }}">Overview</a></li>
+      <li {%if request.url_rule.endpoint == 'top_players'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('top_players', **urlargs) }}">Top Players</a></li>
+      <li {%if request.url_rule.endpoint == 'weapons'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('weapons', **urlargs) }}">Top Weapons</a></li>
+      <li {%if request.url_rule.endpoint == 'latestkills'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('latestkills', **urlargs) }}">Latest Kills</a></li>
     </ul>
   </div>
-  <div class="panel" style="margin-bottom: 100px;">
+  <div class="panel">
   {% block content %}{% endblock%}
   </div>
 </div>
 
-<div class="navbar navbar-default  navbar-fixed-bottom">
-  <div class="container">
-    <p class="navbar-text pull-left">
-      {{ footer.num_kills }} kills by {{ footer.num_players }} players since {{ footer.since }}
-    </p>
-  </div>
-</div>
 
 </body>
 </html>

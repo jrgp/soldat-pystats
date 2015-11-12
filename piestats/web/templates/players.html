@@ -33,7 +33,7 @@ Top Players
   <tbody>
     {% for player in players %}
     <tr>
-      <td style="width: 0;">{{macro.playerlink(player, true)}}</td>
+      <td style="width: 0;">{{macro.playerlink(urlargs, player, true)}}</td>
       <td>{{player.kills}}</td>
       <td>{{player.deaths}}</td>
       <td>{{player.firstseen}}</td>

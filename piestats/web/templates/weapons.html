@@ -20,7 +20,7 @@ Top Weapons
     {% for weapon, kills in weapons %}
     <tr>
       <td width="10" style="text-align: right;">{{macro.weaponpic(weapon)}}</td>
-      <td>{{macro.weaponlink(weapon)}}</td>
+      <td>{{macro.weaponlink(urlargs, weapon)}}</td>
       <td>{{kills}}</td>
     </tr>
     {% endfor %}

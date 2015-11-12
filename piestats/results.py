@@ -65,10 +65,11 @@ class player:
     return self.get('lastcountry')
 
 
-class stats():
-  def __init__(self, config):
+class PystatsResults():
+  def __init__(self, config, server):
     self.r = redis.Redis(**config.redis_connect)
-    self.keys = PystatsKeys(config)
+    self.keys = PystatsKeys(config, server)
+    self.server = server
 
   def get_num_kills(self):
     try:

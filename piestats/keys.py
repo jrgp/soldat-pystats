@@ -1,59 +1,60 @@
-class PystatsKeys():
-  '''Convenient access to keys we use with redis'''
+class PystatsKeys:
+  ''' Convenient access to keys we use with redis. Abstracts away different servers. '''
 
-  def __init__(self, config):
-    self.prefix = config.redis_prefix
+  def __init__(self, config, server):
+    self.redis_prefix = config.redis_prefix
+    self.server_prefix = server.redis_key_prefix
 
   @property
   def top_players(self):
     ''' Sorted set for number of kills per player '''
-    return ':'.join((self.prefix, 'top_players'))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'top_players'))
 
   @property
   def kill_log(self):
     ''' list containing pickled KillObj instances '''
-    return ':'.join((self.prefix, 'kill_log'))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'kill_log'))
 
   @property
   def top_weapons(self):
     ''' Sorted set for number of kills per weapon '''
-    return ':'.join((self.prefix, 'top_weapons'))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'top_weapons'))
 
   @property
   def top_countries(self):
     ''' Sorted set for number of players per country '''
-    return ':'.join((self.prefix, 'top_countries'))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'top_countries'))
 
   @property
   def top_maps(self):
     ''' Sorted set for number of times each map played '''
-    return ':'.join((self.prefix, 'top_maps'))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'top_maps'))
 
   @property
   def players_last_seen(self):
     ''' Sorted set with item being player name and score being unix time stamp  '''
-    return ':'.join((self.prefix, 'players_last_seen'))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'players_last_seen'))
 
   def kills_per_day(self, day):
     ''' Plain keys for number of kills that happened on ``day`` '''
-    return ':'.join((self.prefix, 'kills_per_day', day))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'kills_per_day', day))
 
   def player_hash(self, player):
     ''' Hash of data for player ``player``'''
-    return ':'.join((self.prefix, 'player', player))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'player', player))
 
   def log_file(self, filename):
     ''' Plain keys containing file size of ``filename`` '''
-    return ':'.join((self.prefix, 'logs', filename))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'logs', filename))
 
   def player_top_enemies(self, player):
     ''' Sorted set of people being killed by ``player`` '''
-    return ':'.join((self.prefix, 'player_top_enemies', player))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'player_top_enemies', player))
 
   def player_top_victims(self, player):
     ''' Sorted set of people killing ``player`` '''
-    return ':'.join((self.prefix, 'player_top_victims', player))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'player_top_victims', player))
 
   def weapon_top_killers(self, weapon):
     ''' Sorted set containing the amount of kills a player using a weapon has '''
-    return ':'.join((self.prefix, 'weapon_top_killers', weapon))
+    return ':'.join((self.redis_prefix, self.server_prefix, 'weapon_top_killers', weapon))

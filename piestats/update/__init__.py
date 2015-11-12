@@ -23,14 +23,14 @@ def main(config_path):
   '''
 
   config = PystatsConfig(config_path)
-  keys = PystatsKeys(config)
 
   r = redis.Redis(**config.redis_connect)
 
-  retention = PystatsRetention(config, keys, r)
-
-  for soldat_dir in config.soldat_dirs:
-    update_kills(r, keys, retention, soldat_dir)
-    update_events(r, keys, soldat_dir)
-
-  retention.run_retention()
+  for server in config.servers:
+    print 'Updating stats for {server}'.format(server=server.url_slug)
+    keys = PystatsKeys(config, server)
+    retention = PystatsRetention(config, keys, r)
+    for soldat_dir in server.dirs:
+      update_kills(r, keys, retention, soldat_dir)
+      update_events(r, keys, soldat_dir)
+    retention.run_retention()

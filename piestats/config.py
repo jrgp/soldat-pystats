@@ -1,9 +1,12 @@
 import yaml
+from piestats.server import PystatsServer
+from piestats.exceptions import InvalidServer
 
 
 class PystatsConfig():
 
   def __init__(self, conf_path):
+    ''' Pass me path to config file; I'll load usefulness out of it '''
     with open(conf_path, 'r') as h:
       data = yaml.load(h)
 
@@ -14,6 +17,7 @@ class PystatsConfig():
 
   @property
   def redis_prefix(self):
+    ''' Get global prefix we use with redis '''
     try:
       return self.config['redis_prefix']
     except KeyError:
@@ -21,18 +25,30 @@ class PystatsConfig():
 
   @property
   def redis_connect(self):
+    ''' Get the kwargs keypairs which will be shoved into redis connect '''
     if isinstance(self.config['redis_connect'], dict):
       return self.config['redis_connect']
     else:
       return {}
 
   @property
-  def soldat_dirs(self):
-    return self.config['soldat_dir']
+  def servers(self):
+    ''' Yield PystatsServer objects, one per our configured servers '''
+    servers = []
+    for server in self.config['soldat_servers']:
+      servers.append(PystatsServer(**server))
+    return servers
 
   @property
   def data_retention(self):
+    ''' Days of data to keep; defaults to 365 '''
     try:
       return int(self.config['data_retention'])
     except (ValueError, KeyError):
       return 365
+
+  def get_server(self, slug):
+    for server in self.servers:
+      if server.url_slug == slug:
+        return server
+    raise InvalidServer()
