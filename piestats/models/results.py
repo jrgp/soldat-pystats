@@ -1,68 +1,13 @@
 import redis
 from datetime import datetime, timedelta
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from piestats.keys import PystatsKeys
+from piestats.models.player import PystatsPlayer
 
 try:
   import cPickle as pickle
 except ImportError:
   import pickle
-
-
-class player:
-  def __init__(self, *args, **kwargs):
-    self.info = kwargs
-    self.wepstats = defaultdict(lambda: defaultdict(int))
-    for key, value in kwargs.iteritems():
-      if key.startswith('kills:') or key.startswith('deaths:'):
-        stat, wep = key.split(':')
-        self.wepstats[wep][stat] = int(value)
-        self.wepstats[wep]['name'] = wep
-
-  def get(self, key):
-    if key not in self.info:
-      return None
-    return self.info[key]
-
-  @property
-  def name(self):
-    return self.get('name')
-
-  @property
-  def kills(self):
-    try:
-      return int(self.get('kills'))
-    except (KeyError, TypeError):
-      return 0
-
-  @property
-  def deaths(self):
-    try:
-      return int(self.get('deaths'))
-    except (KeyError, TypeError):
-      return 0
-
-  @property
-  def firstseen(self):
-    timestamp = self.get('firstseen')
-    if not timestamp:
-      return None
-    return datetime.utcfromtimestamp(int(timestamp))
-
-  @property
-  def lastseen(self):
-    timestamp = self.get('lastseen')
-    if not timestamp:
-      return None
-    return datetime.utcfromtimestamp(int(timestamp))
-
-  @property
-  def weapons(self):
-    return self.wepstats
-
-  @property
-  def lastcountry(self):
-    return self.get('lastcountry')
 
 
 class PystatsResults():
@@ -89,22 +34,22 @@ class PystatsResults():
       more = {}
       for key in ['deaths', 'lastseen', 'firstseen', 'lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
-      yield player(name=name,
-                   kills=kills,
-                   **more
-                   )
+      yield PystatsPlayer(name=name,
+                          kills=kills,
+                          **more
+                          )
 
   def get_player(self, _player):
     info = self.r.hgetall(self.keys.player_hash(_player))
     if not info:
       return None
-    return player(name=_player, **info)
+    return PystatsPlayer(name=_player, **info)
 
   def get_player_fields(self, _player, fields=[]):
     info = {}
     for key in fields:
       info[key] = self.r.hget(self.keys.player_hash(_player), key)
-    return player(name=_player, **info)
+    return PystatsPlayer(name=_player, **info)
 
   def get_player_top_enemies(self, _player, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.player_top_enemies(_player), 0, startat + incr, withscores=True)
@@ -112,10 +57,10 @@ class PystatsResults():
       more = {}
       for key in ['lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
-      yield player(name=name,
-                   kills=kills,
-                   **more
-                   )
+      yield PystatsPlayer(name=name,
+                          kills=kills,
+                          **more
+                          )
 
   def get_player_top_victims(self, _player, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.player_top_victims(_player), 0, startat + incr, withscores=True)
@@ -123,10 +68,10 @@ class PystatsResults():
       more = {}
       for key in ['lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
-      yield player(name=name,
-                   kills=kills,
-                   **more
-                   )
+      yield PystatsPlayer(name=name,
+                          kills=kills,
+                          **more
+                          )
 
   def get_last_kills(self, startat=0, incr=20):
     for kill in self.r.lrange(self.keys.kill_log, startat, startat + incr):
@@ -160,3 +105,11 @@ class PystatsResults():
     kills = self.r.zscore(self.keys.top_weapons, name)
     if kills is None:
       return False
+
+  def player_search(self, name):
+    resultset = self.r.zscan(
+        self.keys.top_players,
+        0,
+        '*{name}*'.format(name=name),
+        self.get_num_players())
+    return resultset[1][:20]

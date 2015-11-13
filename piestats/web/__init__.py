@@ -1,5 +1,5 @@
-from flask import Flask, render_template, url_for, redirect
-from piestats.results import PystatsResults
+from flask import Flask, render_template, url_for, redirect, request
+from piestats.models.results import PystatsResults
 from piestats.exceptions import InvalidServer
 from datetime import datetime, timedelta
 
@@ -188,6 +188,37 @@ def index(server_slug):
   )
   data.update(more_params(stats, server))
   return render_template('index.html', **data)
+
+
+@app.route('/<string:server_slug>/search')
+def player_search(server_slug):
+  try:
+    server = app.config['config'].get_server(server_slug)
+  except InvalidServer:
+    return redirect(url_for('landing'))
+
+  stats = PystatsResults(app.config['config'], server)
+
+  try:
+    player_name = request.args['player']
+  except KeyError:
+    return render_template('player_not_found.html', **more_params(stats, server))
+
+  results = stats.player_search(player_name)
+
+  players = []
+
+  for player, kills in results:
+    players.append(stats.get_player_fields(player, ['lastcountry', 'lastseen', 'kills']))
+
+  data = {
+      'page_title': 'Search results',
+      'results': players,
+  }
+
+  data.update(more_params(stats, server))
+
+  return render_template('player_search.html', **data)
 
 
 @app.route('/')
