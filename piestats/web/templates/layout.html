@@ -27,7 +27,14 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">More Servers<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
             {% for server in servers %}
-              <li><a href="{{url_for('index', server_slug=server.url_slug)}}">{{server.title}}</a></li>
+              <li><a href="{{
+
+                url_for(
+                  request.url_rule.endpoint if request.url_rule.endpoint in ['weapons', 'top_players', 'latestkills'] else 'index',
+                  server_slug=server.url_slug
+                  )
+
+                }}">{{server.title}}</a></li>
             {% endfor %}
           </ul>
         </li>
