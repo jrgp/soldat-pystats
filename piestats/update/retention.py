@@ -1,4 +1,5 @@
 import datetime
+from piestats.update.kills import apply_kill
 
 try:
   import cPickle as pickle
@@ -26,34 +27,14 @@ class PystatsRetention:
 
   def undo_kill(self, kill):
     '''
-      Reverse the actions of a kill. Decrement counters/etc. Undo what the kills
-      parser/updater does. Need to find a good way of not duplicating code here..
+      Reverse the actions of a kill. Decrement counters/etc
     '''
-    if not kill.suicide:
-      self.r.zincrby(self.keys.top_players, kill.killer, -1)
-      self.r.hincrby(self.keys.player_hash(kill.killer), 'kills', -1)
 
-    self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths', -1)
+    apply_kill(self.r, self.keys, kill, -1)
 
-    # Update weapon stats..
-    if not kill.suicide:
-      self.r.zincrby(self.keys.top_weapons, kill.weapon)
-      self.r.hincrby(self.keys.player_hash(kill.killer), 'kills:' + kill.weapon, -1)
-      self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths:' + kill.weapon, -1)
-
-    # If we're not a suicide, update top enemy kills for playeself.r..
-    if not kill.suicide:
-      # Top people the killer has killed
-      self.r.zincrby(self.keys.player_top_enemies(kill.killer), kill.victim, -1)
-
-      # Top people the victim has died by
-      self.r.zincrby(self.keys.player_top_victims(kill.victim), kill.killer, -1)
-
-    # Kill current day key
     text_today = str(datetime.datetime.utcfromtimestamp(kill.timestamp).date())
     self.r.delete(self.keys.kills_per_day(text_today))
 
-    # kill this kill...
     self.r.rpop(self.keys.kill_log)
 
     print 'killed {0}'.format(kill)

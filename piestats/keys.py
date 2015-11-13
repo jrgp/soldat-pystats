@@ -30,11 +30,6 @@ class PystatsKeys:
     ''' Sorted set for number of times each map played '''
     return ':'.join((self.redis_prefix, self.server_prefix, 'top_maps'))
 
-  @property
-  def players_last_seen(self):
-    ''' Sorted set with item being player name and score being unix time stamp  '''
-    return ':'.join((self.redis_prefix, self.server_prefix, 'players_last_seen'))
-
   def kills_per_day(self, day):
     ''' Plain keys for number of kills that happened on ``day`` '''
     return ':'.join((self.redis_prefix, self.server_prefix, 'kills_per_day', day))
