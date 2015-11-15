@@ -1,7 +1,8 @@
-from flask import Flask, render_template, url_for, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, jsonify
 from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from datetime import datetime, timedelta
+from piestats.status import Status
 
 app = Flask(__name__)
 
@@ -158,38 +159,6 @@ def weapon(server_slug, weapon):
   return render_template('weapon.html', **data)
 
 
-@app.route('/<string:server_slug>')
-def index(server_slug):
-  try:
-    server = app.config['config'].get_server(server_slug)
-  except InvalidServer:
-    return redirect(url_for('landing'))
-  stats = Results(app.config['config'], server)
-
-  colors = [
-      'red',
-      'blue',
-      'green',
-      'orange',
-      'pink',
-      'brown',
-      'purple',
-  ]
-  data = dict(
-      page_title='Stats overview',
-      killsperdate=stats.get_kills_for_date_range(),
-      topcountries=[
-          dict(
-              value=players,
-              label=country,
-              color=colors.pop(),
-          )
-          for country, players in stats.get_top_countries(len(colors) - 1)]
-  )
-  data.update(more_params(stats, server))
-  return render_template('index.html', **data)
-
-
 @app.route('/<string:server_slug>/search')
 def player_search(server_slug):
   try:
@@ -219,6 +188,61 @@ def player_search(server_slug):
   data.update(more_params(stats, server))
 
   return render_template('player_search.html', **data)
+
+
+@app.route('/<string:server_slug>/status')
+def status(server_slug):
+  try:
+    server = app.config['config'].get_server(server_slug)
+  except InvalidServer:
+    return redirect(url_for('landing'))
+
+  admin_details = server.admin_details
+
+  if not admin_details:
+    return jsonify(dict(success=False, info='Admin settings not specified'))
+
+  status = Status(**admin_details)
+  info = status.get_info()
+
+  if not info:
+    return jsonify(dict(success=False, info='Failed getting server status'))
+
+  return jsonify(dict(success=True, info=info))
+
+
+@app.route('/<string:server_slug>')
+def index(server_slug):
+  try:
+    server = app.config['config'].get_server(server_slug)
+  except InvalidServer:
+    return redirect(url_for('landing'))
+  stats = Results(app.config['config'], server)
+
+  colors = [
+      'red',
+      'blue',
+      'green',
+      'orange',
+      'pink',
+      'brown',
+      'purple',
+  ]
+  data = dict(
+      page_title='Stats overview',
+      killsperdate=stats.get_kills_for_date_range(),
+      topcountries=[
+          dict(
+              value=players,
+              label=country,
+              color=colors.pop(),
+          )
+          for country, players in stats.get_top_countries(len(colors) - 1)],
+      show_server_status=server.admin_details is not None,
+      server_slug=server_slug
+  )
+  data.update(more_params(stats, server))
+  return render_template('index.html', **data)
 
 
 @app.route('/')

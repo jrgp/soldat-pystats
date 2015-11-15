@@ -1,5 +1,6 @@
 from collections import namedtuple
 from geoip import geolite2
+from IPy import IP
 import re
 import os
 import glob
@@ -65,6 +66,8 @@ def update_events(r, keys, soldat_dir):
 
 def update_country(r, keys, ip, player):
   if not r.exists(keys.player_hash(player)):
+    return
+  if IP(ip).iptype() != 'PUBLIC':
     return
   match = geolite2.lookup(ip)
   if not match:

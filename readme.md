@@ -33,15 +33,16 @@ TODO:
    point. Also delete players with 0 kills/etc. **works**
  - Display each player's top enemies and victims **done**
  - Add support for multiple servers and a way to pick between them in the UI. **done**
-
  - Fix/refactor retention. Use a function for kill processing as well as kill
-   reverting in the same exact code, to avoid duplication.
+   reverting in the same exact code, to avoid duplication. **done**
+
+ - Add ajax refresh parser to front page to get current server stats. **done**
 
  - Fix timezones. Store dates exclusively as pickled datetime objects, not stupid
    unix timestamp interpretations. Soldat appears to log kills in UTC.
 
  - Add realtime kill ingestion using beanstalkd or a similar job queue. This
-   will require a refactor to avoid a ton of code duplication.
+   will require a refactor to avoid a ton of code duplication. **fuck this**
 
  - *Maybe* add functionality to hit the server admin port and provide current
-   stats from refreshx.
+   stats from refreshx. **out of scope for now**

@@ -4,6 +4,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
 
 <!--<script src="{{url_for('static', filename='ChartNew.js')}}"></script>-->
+
+{% if show_server_status %}
+<script src="{{url_for('static', filename='status.js')}}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.4/handlebars.min.js"></script>
+{% endif %}
+
 {% endblock %}
 
 {% block title %}
@@ -55,12 +61,27 @@ Stats Overview
   };
   var latestKillsChart = new Chart(killsCtx).Line(data, {animation: false});
 
-
   // Our top countries pie chart
   var countriesCtx = document.getElementById('chart_top_countries').getContext('2d');
-
   var data = {{topcountries|safe}};
   var topCountriesChart = new Chart(countriesCtx).Pie(data, {animation: false});
-
 </script>
+
+{% if show_server_status %}
+<div class="row">
+  <div class="col-xs-12 col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Current Server Status</h3>
+      </div>
+      <div id="current_server_status">
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  load_server_status('{{url_for('status', server_slug=server_slug)}}', $('#current_server_status'));
+</script>
+{% endif %}
+
 {% endblock %}

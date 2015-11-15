@@ -1,6 +1,7 @@
 click==5.1
 flake8==2.5.0
 Flask==0.10.1
+IPy==0.83
 itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23

@@ -25,6 +25,7 @@ setup(name='piestats',
           'PyYAML==3.11',
           'redis==2.10.5',
           'six==1.10.0',
-          'Werkzeug==0.10.4'
+          'Werkzeug==0.10.4',
+          'IPy==0.83',
       ]
       )
