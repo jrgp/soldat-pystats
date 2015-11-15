@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
-from piestats.models.results import PystatsResults
+from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from datetime import datetime, timedelta
 
@@ -25,7 +25,7 @@ def player(server_slug, name):
     server = app.config['config'].get_server(server_slug)
   except InvalidServer:
     return redirect(url_for('landing'))
-  stats = PystatsResults(app.config['config'], server)
+  stats = Results(app.config['config'], server)
 
   data = dict(
       player=stats.get_player(name),
@@ -51,7 +51,7 @@ def latestkills(server_slug, startat):
     server = app.config['config'].get_server(server_slug)
   except InvalidServer:
     return redirect(url_for('landing'))
-  stats = PystatsResults(app.config['config'], server)
+  stats = Results(app.config['config'], server)
 
   if (startat % 20):
     startat = 0
@@ -91,7 +91,7 @@ def top_players(server_slug, startat):
     server = app.config['config'].get_server(server_slug)
   except InvalidServer:
     return redirect(url_for('landing'))
-  stats = PystatsResults(app.config['config'], server)
+  stats = Results(app.config['config'], server)
 
   if (startat % 20):
     startat = 0
@@ -123,7 +123,7 @@ def weapons(server_slug):
     server = app.config['config'].get_server(server_slug)
   except InvalidServer:
     return redirect(url_for('landing'))
-  stats = PystatsResults(app.config['config'], server)
+  stats = Results(app.config['config'], server)
 
   data = {
       'page_title': 'Weapons',
@@ -141,7 +141,7 @@ def weapon(server_slug, weapon):
     server = app.config['config'].get_server(server_slug)
   except InvalidServer:
     return redirect(url_for('landing'))
-  stats = PystatsResults(app.config['config'], server)
+  stats = Results(app.config['config'], server)
 
   info = stats.get_weapon_stats(weapon)
 
@@ -164,7 +164,7 @@ def index(server_slug):
     server = app.config['config'].get_server(server_slug)
   except InvalidServer:
     return redirect(url_for('landing'))
-  stats = PystatsResults(app.config['config'], server)
+  stats = Results(app.config['config'], server)
 
   colors = [
       'red',
@@ -197,7 +197,7 @@ def player_search(server_slug):
   except InvalidServer:
     return redirect(url_for('landing'))
 
-  stats = PystatsResults(app.config['config'], server)
+  stats = Results(app.config['config'], server)
 
   try:
     player_name = request.args['player']

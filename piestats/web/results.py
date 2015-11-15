@@ -10,7 +10,7 @@ except ImportError:
   import pickle
 
 
-class PystatsResults():
+class Results():
   def __init__(self, config, server):
     self.r = redis.Redis(**config.redis_connect)
     self.keys = Keys(config, server)
