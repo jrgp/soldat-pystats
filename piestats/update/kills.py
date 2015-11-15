@@ -11,7 +11,7 @@ try:
 except ImportError:
   import pickle
 
-from piestats.kill import KillObj
+from piestats.models.kill import Kill
 
 
 def get_kills(r, keys, retention, soldat_dir):
@@ -59,7 +59,7 @@ def parse_kills(contents, retention):
         continue
 
       unixtime = int(time.mktime(date.timetuple()))
-      yield KillObj(
+      yield Kill(
           killer,
           victim,
           weapon,
@@ -81,8 +81,6 @@ def apply_kill(r, keys, kill, incr=1):
 
   # Stuff that only makes sense for non suicides
   if not kill.suicide:
-    if incr == 1:
-      r.zadd(keys.players_last_seen, kill.victim, kill.timestamp)
     r.zincrby(keys.top_players, kill.killer, incr)
     r.hincrby(keys.player_hash(kill.killer), 'kills', incr)
 

@@ -1,9 +1,9 @@
 import yaml
-from piestats.server import PystatsServer
+from piestats.models.server import Server
 from piestats.exceptions import InvalidServer
 
 
-class PystatsConfig():
+class Config():
 
   def __init__(self, conf_path):
     ''' Pass me path to config file; I'll load usefulness out of it '''
@@ -33,10 +33,10 @@ class PystatsConfig():
 
   @property
   def servers(self):
-    ''' Yield PystatsServer objects, one per our configured servers '''
+    ''' Give Server objects, one per our configured servers '''
     servers = []
     for server in self.config['soldat_servers']:
-      servers.append(PystatsServer(**server))
+      servers.append(Server(**server))
     return servers
 
   @property

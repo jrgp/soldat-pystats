@@ -7,7 +7,7 @@ except ImportError:
   import pickle
 
 
-class PystatsRetention:
+class Retention:
   def __init__(self, config, keys, r):
     self.max_days = config.data_retention
     self.keys = keys

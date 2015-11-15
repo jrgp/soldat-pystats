@@ -2,7 +2,7 @@ from datetime import datetime
 from collections import defaultdict
 
 
-class PystatsPlayer:
+class Player:
   def __init__(self, *args, **kwargs):
     self.info = kwargs
     self.wepstats = defaultdict(lambda: defaultdict(int))

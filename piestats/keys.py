@@ -1,4 +1,4 @@
-class PystatsKeys:
+class Keys:
   ''' Convenient access to keys we use with redis. Abstracts away different servers. '''
 
   def __init__(self, config, server):
@@ -12,7 +12,7 @@ class PystatsKeys:
 
   @property
   def kill_log(self):
-    ''' list containing pickled KillObj instances '''
+    ''' list containing pickled Kill instances '''
     return ':'.join((self.redis_prefix, self.server_prefix, 'kill_log'))
 
   @property

@@ -5,8 +5,8 @@ setup(name='piestats',
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'runupdate = piestats.update:main',
-              'runsite = piestats.web.site:main',
+              'runupdate = piestats.cli:run_update',
+              'runsite = piestats.cli:run_site',
           ]
       },
       install_requires=[

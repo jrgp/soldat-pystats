@@ -1,8 +1,8 @@
 import redis
 from datetime import datetime, timedelta
 from collections import OrderedDict
-from piestats.keys import PystatsKeys
-from piestats.models.player import PystatsPlayer
+from piestats.keys import Keys
+from piestats.models.player import Player
 
 try:
   import cPickle as pickle
@@ -13,7 +13,7 @@ except ImportError:
 class PystatsResults():
   def __init__(self, config, server):
     self.r = redis.Redis(**config.redis_connect)
-    self.keys = PystatsKeys(config, server)
+    self.keys = Keys(config, server)
     self.server = server
 
   def get_num_kills(self):
@@ -34,22 +34,22 @@ class PystatsResults():
       more = {}
       for key in ['deaths', 'lastseen', 'firstseen', 'lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
-      yield PystatsPlayer(name=name,
-                          kills=kills,
-                          **more
-                          )
+      yield Player(name=name,
+                   kills=kills,
+                   **more
+                   )
 
   def get_player(self, _player):
     info = self.r.hgetall(self.keys.player_hash(_player))
     if not info:
       return None
-    return PystatsPlayer(name=_player, **info)
+    return Player(name=_player, **info)
 
   def get_player_fields(self, _player, fields=[]):
     info = {}
     for key in fields:
       info[key] = self.r.hget(self.keys.player_hash(_player), key)
-    return PystatsPlayer(name=_player, **info)
+    return Player(name=_player, **info)
 
   def get_player_top_enemies(self, _player, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.player_top_enemies(_player), 0, startat + incr, withscores=True)
@@ -57,10 +57,10 @@ class PystatsResults():
       more = {}
       for key in ['lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
-      yield PystatsPlayer(name=name,
-                          kills=kills,
-                          **more
-                          )
+      yield Player(name=name,
+                   kills=kills,
+                   **more
+                   )
 
   def get_player_top_victims(self, _player, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.player_top_victims(_player), 0, startat + incr, withscores=True)
@@ -68,10 +68,10 @@ class PystatsResults():
       more = {}
       for key in ['lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
-      yield PystatsPlayer(name=name,
-                          kills=kills,
-                          **more
-                          )
+      yield Player(name=name,
+                   kills=kills,
+                   **more
+                   )
 
   def get_last_kills(self, startat=0, incr=20):
     for kill in self.r.lrange(self.keys.kill_log, startat, startat + incr):

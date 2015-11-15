@@ -1,4 +1,4 @@
-class PystatsServer:
+class Server:
   def __init__(self, **info):
     self.info = info
 
