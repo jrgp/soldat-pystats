@@ -33,9 +33,6 @@ function load_server_status(url, elem) {
 
     var info = data.info;
 
-    console.log('Got useful info')
-    console.log(info)
-
     var template = Handlebars.compile([
       '<table class="table">',
         '<tbody>',
