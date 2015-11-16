@@ -68,7 +68,7 @@ function load_server_status(url, elem) {
           '<tbody>',
             '{{#each players}}',
               '<tr>',
-              '<td>{{# if country}}<img src="/static/flags/{{country}}.png"> {{/if}}{{name}}</td>',
+              '<td>{{# if country}}<img src="/static/flags/{{country}}.png"> {{/if}}<a href="{{{url}}}">{{name}}</a></td>',
               '<td>{{team}}</td>',
               '<td>{{kills}}</td>',
               '<td>{{deaths}}</td>',
@@ -82,6 +82,7 @@ function load_server_status(url, elem) {
 
     for (var key in info.players) {
       info.players[key].team = team_names[info.players[key].team];
+      info.players[key].url = '/'+info['server_slug']+'/search?player='+encodeURIComponent(info.players[key].name);
     }
 
     var context = {

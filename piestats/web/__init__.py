@@ -180,6 +180,9 @@ def player_search(server_slug):
   for player, kills in results:
     players.append(stats.get_player_fields(player, ['lastcountry', 'lastseen', 'kills']))
 
+  if len(players) == 1:
+    return redirect(url_for('player', server_slug=server_slug, name=players[0].name))
+
   data = {
       'page_title': 'Search results',
       'results': players,
@@ -207,6 +210,8 @@ def status(server_slug):
 
   if not info:
     return jsonify(dict(success=False, info='Failed getting server status'))
+
+  info['server_slug'] = server_slug
 
   return jsonify(dict(success=True, info=info))
 
