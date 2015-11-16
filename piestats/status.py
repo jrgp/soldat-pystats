@@ -83,6 +83,7 @@ class Status:
         kills=player['kills'],
         deaths=player['deaths'],
         team=player['team'],
+        ping=player['ping'],
         country=country
       ))
 

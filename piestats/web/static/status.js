@@ -25,6 +25,8 @@ function load_server_status(url, elem) {
     'gray'
   ];
 
+  elem.html('<p style="text-align: center; margin: 10px;">Loading..</p>');
+
   $.get(url, function(data) {
     if (!data.success) {
       console.log('Failed: '+data.info);
@@ -34,7 +36,7 @@ function load_server_status(url, elem) {
     var info = data.info;
 
     var template = Handlebars.compile([
-      '<table class="table">',
+      '<table class="table" style="margin-bottom: 0;">',
         '<tbody>',
           '{{#each panel}}',
             '<tr>',
@@ -50,6 +52,9 @@ function load_server_status(url, elem) {
       '</table>',
 
       '{{# if players_count}}',
+        '<div class="panel-heading" style="background-color: #f8f5f0; border-color: #dfd7ca; border-top: 1px solid #dfd7ca;">',
+          '<h3 class="panel-title">Players</h3>',
+        '</div>',
         '<table class="table table-striped">',
           '<thead>',
             '<tr>',
@@ -57,6 +62,7 @@ function load_server_status(url, elem) {
             '<th>Team</th>',
             '<th>Kills</th>',
             '<th>Deaths</th>',
+            '<th>Ping</th>',
             '</tr>',
           '</thead>',
           '<tbody>',
@@ -66,6 +72,7 @@ function load_server_status(url, elem) {
               '<td>{{team}}</td>',
               '<td>{{kills}}</td>',
               '<td>{{deaths}}</td>',
+              '<td>{{ping}}</td>',
               '</tr>',
             '{{/each}}',
           '</tbody>',

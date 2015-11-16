@@ -76,7 +76,12 @@ Stats Overview
   </div>
 </div>
 <script>
-  load_server_status('{{url_for('status', server_slug=server_slug)}}', $('#current_server_status'));
+  var update = function() {
+    load_server_status('{{url_for('status', server_slug=server_slug)}}', $('#current_server_status'));
+  };
+  update();
+  // Do this every minute
+  setInterval(update, 60000);
 </script>
 {% endif %}
 
