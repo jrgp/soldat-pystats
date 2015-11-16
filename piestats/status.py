@@ -87,7 +87,13 @@ class Status:
         country=country
       ))
 
-    info['country'] = 'us'
+    country = False
+    if IP(self.ip).iptype() == 'PUBLIC':
+      match = geolite2.lookup(self.ip)
+      if match:
+        country = match.country.lower()
+
+    info['country'] = country
     info['ip'] = self.ip
     info['port'] = self.port
 
