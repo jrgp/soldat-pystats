@@ -30,6 +30,11 @@ class Keys:
     ''' Sorted set for number of times each map played '''
     return ':'.join((self.redis_prefix, self.server_prefix, 'top_maps'))
 
+  @property
+  def top_map_kills(self):
+    ''' Sorted set for number of times people have killed in each map '''
+    return ':'.join((self.redis_prefix, self.server_prefix, 'top_map_kills'))
+
   def kills_per_day(self, day):
     ''' Plain keys for number of kills that happened on ``day`` '''
     return ':'.join((self.redis_prefix, self.server_prefix, 'kills_per_day', day))

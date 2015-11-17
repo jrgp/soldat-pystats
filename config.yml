@@ -1,15 +1,28 @@
-# All soldat DIRs here are aggregated into stats
-soldat_dir:
-  - /root/pyredis_stats/soldat
+
+# One block per server entry. If more than one is present,
+# the site will let you choose which as well as incorporate
+# the slug into the URL. Note: changing slug will change the
+# redis key prefix which will invalidate all stats for that
+# server
+soldat_servers:
+
+  - slug: dm
+    title: "JRGP's EU DM"
+    dirs: 
+      - /usr/local/joe/pyredis_stats/soldat
+
+    # Used for connecting to admin
+    ip: 88.198.8.206
+    port: 23020
+    password: notreal
+
+# Days to keep track of stats
+data_retention: 30
 
 # These key-pairs are fed into redis.Redis() as **kwargs. See 
 # https://redis-py.readthedocs.org/en/latest/ for available keys.
 redis_connect:
   host: localhost
 
-# Prefix for all keys. You can use this to keep track of different
-# types of servers if you wish.
-redis_prefix: 'piestats'
-
-# Days to keep track of stats
-data_retention: 30
+# Used for soldat to reach us to upload kills and stuff
+api_secret: sdf123asd

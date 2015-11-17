@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 from piestats.keys import Keys
 from piestats.models.player import Player
+from piestats.update.kills import apply_kill
 
 try:
   import cPickle as pickle
@@ -39,11 +40,20 @@ class Results():
                    **more
                    )
 
+  def get_top_map_kills(self, startat=0, incr=20):
+    return self.r.zrevrange(self.keys.top_map_kills, startat, startat + incr, withscores=True)
+
   def get_player(self, _player):
     info = self.r.hgetall(self.keys.player_hash(_player))
     if not info:
       return None
     return Player(name=_player, **info)
+
+  def get_player_rank(self, _player):
+    rank = self.r.zrevrank(self.keys.top_players, _player)
+    if rank is not None:
+      return int(rank) + 1
+    return None
 
   def get_player_fields(self, _player, fields=[]):
     info = {}
@@ -113,3 +123,9 @@ class Results():
         '*{name}*'.format(name=name),
         self.get_num_players())
     return resultset[1][:20]
+
+  def add_map_kill(self, name):
+    self.r.zincrby(self.keys.top_map_kills, name, 1)
+
+  def apply_kill(self, kill):
+    apply_kill(self.r, self.keys, kill, 1)

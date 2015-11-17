@@ -47,6 +47,13 @@ class Config():
     except (ValueError, KeyError):
       return 365
 
+  @property
+  def api_secret(self):
+    try:
+      return self.config['api_secret']
+    except KeyError:
+      return False
+
   def get_server(self, slug):
     for server in self.servers:
       if server.url_slug == slug:

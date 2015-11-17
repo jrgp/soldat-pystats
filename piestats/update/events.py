@@ -78,4 +78,5 @@ def update_country(r, keys, ip, player):
 
 
 def update_map(r, keys, map):
-  r.zincrby(keys.top_maps, map)
+  # r.zincrby(keys.top_maps, map)
+  pass

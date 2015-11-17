@@ -22,7 +22,11 @@
           <tr>
           <tr>
             <th>Kills</th>
-            <td>{{ player.kills }}</td>
+            <td>{{ player.kills }}
+              {% if rank < 200 %}
+              <span style="font-size: 80%" class="badge ">#{{ rank  }}</span>
+              {% endif %}
+            </td>
           </tr>
           <tr>
             <th>Deaths</th>

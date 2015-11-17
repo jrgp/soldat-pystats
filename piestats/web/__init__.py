@@ -3,6 +3,7 @@ from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from datetime import datetime, timedelta
 from piestats.status import Status
+from piestats.models.kill import Kill
 
 app = Flask(__name__)
 
@@ -31,7 +32,8 @@ def player(server_slug, name):
   data = dict(
       player=stats.get_player(name),
       top_enemies=stats.get_player_top_enemies(name, 0, 10),
-      top_victims=stats.get_player_top_victims(name, 0, 10)
+      top_victims=stats.get_player_top_victims(name, 0, 10),
+      rank=stats.get_player_rank(name)
   )
 
   data.update(more_params(stats, server))
@@ -43,6 +45,61 @@ def player(server_slug, name):
                          page_title=data['player'].name,
                          **data
                          )
+
+
+@app.route('/<string:server_slug>/script/submit_kill')
+def api_add_map_kill(server_slug):
+  try:
+    server = app.config['config'].get_server(server_slug)
+  except InvalidServer:
+    return redirect(url_for('landing'))
+  stats = Results(app.config['config'], server)
+
+  kill_info = {}
+
+  try:
+    api_secret = request.args['secret']
+    map_name = request.args['secret']
+    for key in ['killer', 'victim', 'weapon', 'timestamp']:
+      kill_info[key] = request.args[key]
+  except KeyError:
+    return 'missing args'
+
+  if api_secret != app.config['config'].api_secret:
+    return 'invalid api secret'
+
+  kill_info['timestamp'] = int(kill_info['timestamp'])
+
+  kill_info['suicide'] = kill_info['victim'] == kill_info['killer']
+
+  kill_obj = Kill(**kill_info)
+
+  stats.add_map_kill(map_name)
+  stats.apply_kill(kill_obj)
+
+  return 'ok'
+
+
+@app.route('/<string:server_slug>/script/player_info')
+def api_script_player(server_slug):
+  try:
+    server = app.config['config'].get_server(server_slug)
+  except InvalidServer:
+    return redirect(url_for('landing'))
+  stats = Results(app.config['config'], server)
+
+  try:
+    name = request.args['player']
+  except KeyError:
+    return 'missing player name'
+
+  player = stats.get_player(name)
+  rank = stats.get_player_rank(name)
+
+  if not player:
+    return 'not found'
+
+  return '|'.join(map(str, [rank, player.kills, player.firstseen.date()]))
 
 
 @app.route('/<string:server_slug>/kills', defaults=dict(startat=0))
