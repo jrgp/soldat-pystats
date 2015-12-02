@@ -18,5 +18,6 @@
 {% endmacro %}
 
 {% macro weaponlink(urlargs, weapon) %}
-    <a href="{{ url_for('weapon', weapon=weapon, **urlargs) }}">{{ weapon }}</a>
+    {# <a href="{{ url_for('weapon', weapon=weapon, **urlargs) }}">{{ weapon }}</a> #}
+    {{ weapon }}
 {% endmacro %}

@@ -1,21 +1,4 @@
-Dev instructions:
----
-
-To install to your venv but point to your code so you can edit and dev:
-    python setup.py develop
-
-To actually install:
-    python setup.py install
-
-Run update script:
-    runupdate -c config.yml
-
-Start website:
-    runsite -c config.yml
-
-
-TODO:
----
+# TODO:
 
  - Bootstrap UI **done**
  - Gun pics for kill logs as well as weapon stats **done**
@@ -38,11 +21,19 @@ TODO:
 
  - Add ajax refresh parser to front page to get current server stats. **done**
 
+ - add functionality to hit the server admin port and provide current
+   stats from refreshx. **done**
+
  - Fix timezones. Store dates exclusively as pickled datetime objects, not stupid
    unix timestamp interpretations. Soldat appears to log kills in UTC.
 
- - Add realtime kill ingestion using beanstalkd or a similar job queue. This
-   will require a refactor to avoid a ton of code duplication. **fuck this**
+ - Do away with logfile parsing and get kills by http requests coming from the
+   Soldat servers scripts. This is blocked on a bug in scriptcore getting
+   fixed.
 
- - *Maybe* add functionality to hit the server admin port and provide current
-   stats from refreshx. **out of scope for now**
+ - Add realtime kill ingestion using beanstalkd or kafka. This will require a
+   refactor to avoid a ton of code duplication. **fuck this**
+
+ - Make this use Pinot/InfluxDB/Druid for its data source instead of redis, as
+   it technically qualifies as an OLAP data tool. **kinda fuck this, as it's too
+   much work for most people to install**
