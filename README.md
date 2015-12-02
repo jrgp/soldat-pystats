@@ -30,24 +30,30 @@ Statistics script which displays kill and player/country stats for multiple
 # Instructions
 
 First, have an install of Redis database runnning. The following will do.
+
     sudo apt-get install redis-server
 
 Install python virtualenv tool
+
     sudo apt-get install python-virtualenv
 
 Create & activate venv (run this before next commands):
+
     virtualenv env
     source env/bin/activate
 
 To install to your venv but point to your code so you can edit and dev and run:
+
     python setup.py develop
 
 Copy config.yml.samp to config.yml after editing it to fit your setup
 
 Run update script. Probably add this to cron.
+
     runupdate -c config.yml
 
-Start website:
+Start website. (Bind to all NICs on port 5000)
+
     runsite -c config.yml
 
 It is also possible to run this under apache/nginx with uwsgi. I'll include a
