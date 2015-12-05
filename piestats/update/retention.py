@@ -18,7 +18,7 @@ class Retention:
 
   def run_retention(self):
     limit = str(datetime.datetime.now() - datetime.timedelta(days=self.max_days)).split('.')[0]
-    print 'Processing retention.. trimming events up until {limit}'.format(limit=limit)
+    print('Processing retention.. trimming events up until {limit}'.format(limit=limit))
     for index, kill in self.iterate_backwards():
       timestamp = datetime.datetime.utcfromtimestamp(int(kill.timestamp))
       if not self.too_old(timestamp):
@@ -37,7 +37,7 @@ class Retention:
 
     self.r.rpop(self.keys.kill_log)
 
-    print 'killed {0}'.format(kill)
+    print('killed {0}'.format(kill))
 
   def iterate_backwards(self):
     '''
@@ -46,7 +46,7 @@ class Retention:
     try:
       num_kills = int(self.r.llen(self.keys.kill_log))
     except ValueError:
-      print 'no kills?'
+      print('no kills?')
       return
 
     i = num_kills
@@ -56,7 +56,7 @@ class Retention:
       i -= 1
       this_kill = self.r.lindex(self.keys.kill_log, index)
       if this_kill is None:
-        print 'none kill?'
+        print('none kill?')
         break
       data = pickle.loads(this_kill)
       yield index, data

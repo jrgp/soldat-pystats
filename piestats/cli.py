@@ -28,7 +28,7 @@ def run_update(config_path):
   r = redis.Redis(**config.redis_connect)
 
   for server in config.servers:
-    print 'Updating stats for {server}'.format(server=server.url_slug)
+    print('Updating stats for {server}'.format(server=server.url_slug))
     keys = Keys(config, server)
     retention = Retention(config, keys, r)
     for soldat_dir in server.dirs:

@@ -1,0 +1,14 @@
+language: python
+sudo: False
+
+python:
+  - 2.7
+  - 3.3
+  - 3.4
+  - 3.5
+
+script:
+  - pip install -U pip tox
+  - tox
+
+cache: pip

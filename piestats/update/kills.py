@@ -33,7 +33,7 @@ def get_kills(r, keys, retention, soldat_dir):
     else:
       pos = int(prev)
     if size > pos:
-      print 'reading {filename} from offset {pos}'.format(filename=filename, pos=pos)
+      print('reading {filename} from offset {pos}'.format(filename=filename, pos=pos))
       with open(path, 'r') as h:
         h.seek(pos)
         for kill in parse_kills(h.read(), retention):
@@ -42,7 +42,7 @@ def get_kills(r, keys, retention, soldat_dir):
     else:
       skipped_files += 1
 
-  print 'skipped {count} unchanged kill logs'.format(count=skipped_files)
+  print('skipped {count} unchanged kill logs'.format(count=skipped_files))
 
 
 def parse_kills(contents, retention):
