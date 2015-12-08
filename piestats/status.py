@@ -1,16 +1,45 @@
 import socket
+import ctypes
 import re
 import logging
-from struct import unpack
-from collections import namedtuple, defaultdict
 from IPy import IP
 from geoip import geolite2
 
-Player = namedtuple('Player', ['name', 'team', 'kills', 'deaths', 'ping', 'id', 'ip'])
+
+class _refresh_player_name(ctypes.Structure):
+  _fields_ = [('length', ctypes.c_ubyte), ('text', ctypes.c_char * 24)]
+
+
+class _refresh_player_ip(ctypes.Structure):
+  _fields_ = [('ip', ctypes.c_ubyte * 4)]
+
+
+class _refresh_map_name(ctypes.Structure):
+  _fields_ = [('length', ctypes.c_ubyte), ('text', ctypes.c_char * 16)]
+
+
+class RefreshStruct(ctypes.Structure):
+  _fields_ = [
+      ('player_names', _refresh_player_name * 32),
+      ('player_teams', ctypes.c_ubyte * 32),
+      ('player_kills', ctypes.c_ushort * 32),
+      ('player_deaths', ctypes.c_ushort * 32),
+      ('player_ping', ctypes.c_ubyte * 32),
+      ('player_id', ctypes.c_ubyte * 32),
+      ('player_ip', _refresh_player_ip * 32),
+      ('score_alpha', ctypes.c_ushort),
+      ('score_bravo', ctypes.c_ushort),
+      ('score_charlie', ctypes.c_ushort),
+      ('score_delta', ctypes.c_ushort),
+      ('map_name', _refresh_map_name),
+      ('time_limit', ctypes.c_int),
+      ('current_time', ctypes.c_int),
+      ('kill_limit', ctypes.c_ushort),
+      ('mode', ctypes.c_ubyte),
+  ]
 
 
 class Status:
-  ''' This refresh-parsing implementation based on my 2013 code here: http://wiki.soldat.pl/index.php/Refresh#Python '''
 
   def __init__(self, ip, port, password):
     self.ip = ip
@@ -18,84 +47,55 @@ class Status:
     self.password = password
 
   def parse_refresh(self, sock):
-    ''' Use unpack and friends to parse the binary refresh blob '''
+    ''' Use ctypes to parse the delphi struct '''
 
-    logging.info('parsing data')
+    response = RefreshStruct()
+    sock.recv_into(response)
 
-    players = defaultdict(dict)
-    info = {}
-
-    for i in range(0, 32):
-        nameLength = unpack('B', sock.recv(1))[0]
-        players[i]['name'] = sock.recv(nameLength)
-        sock.recv(24 - nameLength)
-
-    for i in range(0, 32):
-        players[i]['team'] = unpack('B', sock.recv(1))[0]
-
-    for i in range(0, 32):
-        players[i]['kills'] = unpack('H', sock.recv(2))[0]
-
-    for i in range(0, 32):
-        players[i]['deaths'] = unpack('H', sock.recv(2))[0]
-
-    for i in range(0, 32):
-        players[i]['ping'] = unpack('B', sock.recv(1))[0]
-
-    for i in range(0, 32):
-        players[i]['id'] = unpack('B', sock.recv(1))[0]
-
-    for i in range(0, 32):
-        players[i]['ip'] = '.'.join([str(v) for v in unpack('BBBB', sock.recv(4))])
-
-    info['score'] = {
-        'alpha': unpack('H', sock.recv(2))[0],
-        'bravo': unpack('H', sock.recv(2))[0],
-        'charlie': unpack('H', sock.recv(2))[0],
-        'delta': unpack('H', sock.recv(2))[0],
+    info = {
+        'score': {
+            'alpha': response.score_alpha,
+            'bravo': response.score_bravo,
+            'charlie': response.score_charlie,
+            'delta': response.score_delta,
+        },
+        'map': response.map_name.text[:response.map_name.length],
+        'timeLimit': response.time_limit / 60,
+        'currentTime': response.current_time / 60,
+        'killLimit': response.kill_limit,
+        'mode': response.mode,
+        'players': [],
+        'ip': self.ip,
+        'port': self.port,
+        'country': False
     }
 
-    mapLength = unpack('B', sock.recv(1))[0]
-    info['map'] = sock.recv(mapLength)
-    sock.recv(16 - mapLength)
+    if IP(self.ip).iptype() == 'PUBLIC':
+      match = geolite2.lookup(self.ip)
+      if match:
+        info['country'] = match.country.lower()
 
-    info['timeLimit'] = unpack('i', sock.recv(4))[0] / 60
-    info['currentTime'] = unpack('i', sock.recv(4))[0] / 60
-    info['killLimit'] = unpack('H', sock.recv(2))[0]
-    info['mode'] = unpack('B', sock.recv(1))[0]
-
-    logging.info('info: {0}'.format(info))
-
-    info['players'] = []
-
-    for player in players.itervalues():
-      if player['name'] == '':
+    for i, name in enumerate(response.player_names):
+      player_name = name.text[:name.length]
+      if player_name == '':
         continue
 
+      ip = '.'.join(map(str, response.player_ip[i].ip))
+
       country = False
-      if IP(player['ip']).iptype() == 'PUBLIC':
-        match = geolite2.lookup(player['ip'])
+      if IP(ip).iptype() == 'PUBLIC':
+        match = geolite2.lookup(ip)
         if match:
           country = match.country.lower()
 
       info['players'].append(dict(  # noqa
-        name=player['name'],
-        kills=player['kills'],
-        deaths=player['deaths'],
-        team=player['team'],
-        ping=player['ping'],
+        name=player_name,
+        kills=response.player_kills[i],
+        deaths=response.player_deaths[i],
+        team=response.player_teams[i],
+        ping=response.player_ping[i],
         country=country
       ))
-
-    country = False
-    if IP(self.ip).iptype() == 'PUBLIC':
-      match = geolite2.lookup(self.ip)
-      if match:
-        country = match.country.lower()
-
-    info['country'] = country
-    info['ip'] = self.ip
-    info['port'] = self.port
 
     return info
 
@@ -128,7 +128,7 @@ class Status:
                 logging.info('authed')
                 s.send('REFRESH\n')
             elif buf == 'REFRESH\r\n':
-                logging.info('refresh packet inbound')
+                logging.info('refresh response inbound')
                 info = self.parse_refresh(s)
                 break
             # else:
