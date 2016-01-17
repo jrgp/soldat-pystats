@@ -1,0 +1,13 @@
+Source: soldat-pystats
+Section: python
+Priority: extra
+Maintainer: Joe Gillotti <joe@u13.net>
+Build-Depends: debhelper (>= 9), python, dh-virtualenv
+Standards-Version: 3.9.5
+
+Package: soldat-pystats
+Architecture: any
+Pre-Depends: dpkg (>= 1.16.1), python2.7 | python2.6, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}
+Description: Soldat statistics app
+ second line can contain extra information about it.

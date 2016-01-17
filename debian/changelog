@@ -1,0 +1,5 @@
+soldat-pystats (0.1) UNRELEASED; urgency=low
+
+  * Initial debian package release
+
+ -- MAINTAINER <joe@u13.net>  Sat, 16 Jan 2016 21:38:34 -0800

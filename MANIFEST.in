@@ -1,0 +1,2 @@
+recursive-include piestats/web/static *
+recursive-include piestats/web/templates *
