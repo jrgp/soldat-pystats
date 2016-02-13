@@ -20,8 +20,8 @@ def get_events(r, keys, soldat_dir):
   skipped_files = 0
 
   for filename in files:
-    key = keys.log_file(filename=filename)
     path = os.path.join(root, filename)
+    key = keys.log_file(filename=path)
     size = os.path.getsize(path)
     prev = r.get(key)
     if prev is None:
