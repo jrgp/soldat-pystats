@@ -1,7 +1,7 @@
 import redis
 import os
 import click
-from piestats.update.kills import update_kills
+from piestats.update import update_kills
 from piestats.update.events import update_events
 from piestats.update.retention import Retention
 from piestats.config import Config
@@ -30,7 +30,7 @@ def run_update(config_path):
   for server in config.servers:
     print('Updating stats for {server}'.format(server=server.url_slug))
     keys = Keys(config, server)
-    retention = Retention(config, keys, r)
+    retention = Retention(r, keys, config)
     for soldat_dir in server.dirs:
       update_kills(r, keys, retention, soldat_dir)
       update_events(r, keys, soldat_dir)

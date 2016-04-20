@@ -58,7 +58,7 @@ def latestkills(server_slug, startat):
     startat = 0
 
   def kill_decorate(kill):
-    info = kill._asdict()
+    info = kill.__dict__
     info['killer_obj'] = stats.get_player_fields(kill.killer, ['lastcountry'])
     info['victim_obj'] = stats.get_player_fields(kill.victim, ['lastcountry'])
     return info
