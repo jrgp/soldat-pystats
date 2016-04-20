@@ -30,6 +30,8 @@ function load_server_status(url, elem) {
   $.get(url, function(data) {
     if (!data.success) {
       console.log('Failed: '+data.info);
+      elem.empty()
+      elem.append($('<p style="text-align: center; margin: 10px;">').text(data.info));
       return;
     }
 
