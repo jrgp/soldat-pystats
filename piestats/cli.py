@@ -51,5 +51,6 @@ def run_site(config_path):
     prefix settings.
   '''
 
-  app.config['config'] = Config(config_path)
-  app.run(host='0.0.0.0', debug=True)
+  config = Config(config_path)
+  app.config['config'] = config
+  app.run(**config.flask_run)

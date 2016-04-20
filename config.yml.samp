@@ -28,3 +28,9 @@ data_retention: 30
 # If you just did apt-get install redis-server, the following is fine.
 redis_connect:
   host: localhost
+
+# Key-pairs passed to flask's app.run() method as **kwargs. See
+# http://flask.pocoo.org/docs/0.10/api/#flask.Flask.run
+flask_run:
+  host: 0.0.0.0
+  debug: true

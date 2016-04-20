@@ -32,6 +32,14 @@ class Config():
       return {}
 
   @property
+  def flask_run(self):
+    ''' Get the kwargs keypairs which will be shoved into redis connect '''
+    if 'flask_run' in self.config and isinstance(self.config['flask_run'], dict):
+      return self.config['flask_run']
+    else:
+      return dict(host='0.0.0.0', debug=True)
+
+  @property
   def servers(self):
     ''' Give Server objects, one per our configured servers '''
     servers = []
