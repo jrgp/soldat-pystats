@@ -24,6 +24,12 @@ class Server:
   @property
   def admin_details(self):
     keys = ['ip', 'port', 'password']
+
+    # Don't output warning message if we have none of the server stats keys,
+    # which pretty much means the user doesn't want them.
+    if all(key not in self.info for key in keys):
+      return None
+
     for key in keys:
       if key not in self.info:
         logging.warning('Missing key {0} needed for admin connection'.format(key))
