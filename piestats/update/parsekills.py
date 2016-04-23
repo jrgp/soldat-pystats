@@ -5,6 +5,7 @@ import os
 import glob
 import string
 import time
+import click
 
 
 class ParseKills():
@@ -25,25 +26,28 @@ class ParseKills():
     # our global kill log after items are inserted.
     files = sorted(map(os.path.basename, glob.glob(os.path.join(root, '*.txt'))))
 
-    skipped_files = 0
+    def progress_function(item):
+      if item:
+        return 'Parsing {0}'.format(item)
 
-    for filename in files:
-      path = os.path.join(root, filename)
-      key = self.keys.log_file(filename=path)
-      size = os.path.getsize(path)
-      prev = self.r.get(key)
-      if prev is None:
-        pos = 0
-      else:
-        pos = int(prev)
-      if size > pos:
-        print('reading {filename} from offset {pos}'.format(filename=filename, pos=pos))
-        yield path, pos
-        self.r.set(key, size)
-      else:
-        skipped_files += 1
-
-    print('skipped {count} unchanged kill logs'.format(count=skipped_files))
+    with click.progressbar(files,
+                           show_eta=False,
+                           label='Parsing {0} kill logs'.format(len(files)),
+                           item_show_func=progress_function) as progressbar:
+      for filename in progressbar:
+        path = os.path.join(root, filename)
+        key = self.keys.log_file(filename=path)
+        size = os.path.getsize(path)
+        prev = self.r.get(key)
+        if prev is None:
+          pos = 0
+        else:
+          pos = int(prev)
+        if size > pos:
+          if progressbar.is_hidden:
+            print('Reading {filename} from offset {pos}'.format(filename=filename, pos=pos))
+          yield path, pos
+          self.r.set(key, size)
 
   def parse_kills(self, contents):
     '''

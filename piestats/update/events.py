@@ -4,41 +4,45 @@ from IPy import IP
 import re
 import os
 import glob
+import click
 
 EventPlayerJoin = namedtuple('EventPlayerJoin', ['player', 'ip'])
 EventNextMap = namedtuple('EventNextMap', ['map'])
 
 
+def progress_function(item):
+  if item:
+    return 'Parsing {0}'.format(item)
+
+
 def get_events(r, keys, soldat_dir):
-  skipped_files = 0
   root = os.path.join(soldat_dir, 'logs')
 
   # Make sure we go by filename sorted in ascending order, as we can't sort
   # our global kill log after items are inserted.
   files = sorted(map(os.path.basename, glob.glob(os.path.join(root, 'consolelog*.txt'))))
 
-  skipped_files = 0
-
-  for filename in files:
-    path = os.path.join(root, filename)
-    key = keys.log_file(filename=path)
-    size = os.path.getsize(path)
-    prev = r.get(key)
-    if prev is None:
-      pos = 0
-    else:
-      pos = int(prev)
-    if size > prev:
-      print('reading {filename} from offset {pos}'.format(filename=filename, pos=pos))
-      with open(path, 'r') as h:
-        h.seek(pos)
-        for event in parse_events(h):
-          yield event
-      r.set(key, size)
-    else:
-      skipped_files += 1
-
-  print('skipped {count} unchanged console logs'.format(count=skipped_files))
+  with click.progressbar(files,
+                         label='Parsing {0} console logs'.format(len(files)),
+                         show_eta=False,
+                         item_show_func=progress_function) as progressbar:
+    for filename in progressbar:
+      path = os.path.join(root, filename)
+      key = keys.log_file(filename=path)
+      size = os.path.getsize(path)
+      prev = r.get(key)
+      if prev is None:
+        pos = 0
+      else:
+        pos = int(prev)
+      if size > prev:
+        if progressbar.is_hidden:
+          print('Reading {filename} from offset {pos}'.format(filename=filename, pos=pos))
+        with open(path, 'r') as h:
+          h.seek(pos)
+          for event in parse_events(h):
+            yield event
+        r.set(key, size)
 
 
 def parse_events(contents):
