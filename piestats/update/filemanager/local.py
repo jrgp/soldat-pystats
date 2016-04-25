@@ -6,13 +6,14 @@ import click
 
 class LocalFileManager(FileManager):
 
-  def __init__(self, r, keys, root):
+  def __init__(self, r, keys, root, pattern):
     self.r = r
     self.keys = keys
     self.root = root
+    self.pattern = pattern
 
   def get_files(self):
-    paths = sorted(glob.glob(os.path.join(self.root, '*.txt')))
+    paths = sorted(glob.glob(os.path.join(self.root, self.pattern)))
 
     def progress_function(item):
       if item:
@@ -20,7 +21,7 @@ class LocalFileManager(FileManager):
 
     with click.progressbar(paths,
                            show_eta=False,
-                           label='Parsing {0} local kill logs'.format(len(paths)),
+                           label='Parsing {0} local logs'.format(len(paths)),
                            item_show_func=progress_function) as progressbar:
       for path in progressbar:
         key = self.keys.log_file(filename=path)

@@ -1,8 +1,7 @@
 import redis
 import os
 import click
-from piestats.update import update_kills
-from piestats.update.events import update_events
+from piestats.update import update_kills, update_events
 from piestats.update.retention import Retention
 from piestats.config import Config
 from piestats.keys import Keys
