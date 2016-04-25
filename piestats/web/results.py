@@ -12,7 +12,7 @@ except ImportError:
 
 class Results():
   def __init__(self, config, server):
-    self.r = redis.Redis(**config.redis_connect)
+    self.r = redis.Redis(connection_pool=config.redis_connection_pool)
     self.keys = Keys(config, server)
     self.server = server
 

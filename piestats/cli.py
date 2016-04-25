@@ -72,5 +72,6 @@ def run_site(config_path):
   '''
 
   config = Config(config_path)
+  config.redis_connection_pool = redis.ConnectionPool(**config.redis_connect)
   app.config['config'] = config
   app.run(**config.flask_run)
