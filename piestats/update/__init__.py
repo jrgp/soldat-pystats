@@ -2,14 +2,9 @@ from piestats.update.managekills import ManageKills
 from piestats.update.parsekills import ParseKills
 from piestats.update.manageevents import ManageEvents
 from piestats.update.parseevents import ParseEvents
-from piestats.update.filemanager.local import LocalFileManager
-import os
 
 
-def update_kills(r, keys, retention, soldat_dir):
-
-  # Interface to local kill log files, storing position in redis
-  filemanager = LocalFileManager(r, keys, os.path.join(soldat_dir, 'logs/kills'), '*.txt')
+def update_kills(r, keys, retention, filemanager):
 
   # Get kills out of our logs
   parse = ParseKills(retention, filemanager)
@@ -21,10 +16,7 @@ def update_kills(r, keys, retention, soldat_dir):
     manage.apply_kill(kill)
 
 
-def update_events(r, keys, soldat_dir):
-
-  # Interface to local console log files, storing position in redis
-  filemanager = LocalFileManager(r, keys, os.path.join(soldat_dir, 'logs'), 'consolelog*.txt')
+def update_events(r, keys, filemanager):
 
   # Get kills out of our logs
   parse = ParseEvents(filemanager)

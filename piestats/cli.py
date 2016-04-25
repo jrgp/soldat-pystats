@@ -6,6 +6,8 @@ from piestats.update.retention import Retention
 from piestats.config import Config
 from piestats.keys import Keys
 from piestats.web import app
+from piestats.update.filemanager.local import LocalFileManager
+from piestats.update.filemanager.sftp import SshFileManager
 
 
 @click.command()
@@ -22,17 +24,36 @@ def run_update(config_path):
     as well as which soldat servers to process data for.
   '''
 
+  # Parse our config yaml file
   config = Config(config_path)
 
   r = redis.Redis(**config.redis_connect)
 
   for server in config.servers:
     print('Updating stats for {server}'.format(server=server.url_slug))
+
+    # Redis key name manager
     keys = Keys(config, server)
+
+    # Limit our data to however much retention
     retention = Retention(r, keys, config)
+
+    # Parse each of our soldat DIRs
     for soldat_dir in server.dirs:
-      update_kills(r, keys, retention, soldat_dir)
-      update_events(r, keys, soldat_dir)
+
+      # Support getting logs via local files or ssh
+      if server.log_source == 'local':
+        filemanager = LocalFileManager(r, keys, soldat_dir)
+      elif server.log_source == 'ssh':
+        filemanager = SshFileManager(r, keys, soldat_dir, server.connection_options)
+
+      # Kill logs
+      update_kills(r, keys, retention, filemanager)
+
+      # Console logs
+      update_events(r, keys, filemanager)
+
+    # Trim old events
     retention.run_retention()
 
 

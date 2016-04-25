@@ -31,6 +31,6 @@ class ParseKills():
     '''
       Get all kills from relevant kill log files
     '''
-    for path, position in self.filemanager.get_files():
+    for path, position in self.filemanager.get_files('logs/kills', '*.txt'):
       for kill in self.parse_kills(self.filemanager.get_data(path, position)):
         yield kill

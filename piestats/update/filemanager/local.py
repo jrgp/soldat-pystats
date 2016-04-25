@@ -6,14 +6,13 @@ import click
 
 class LocalFileManager(FileManager):
 
-  def __init__(self, r, keys, root, pattern):
+  def __init__(self, r, keys, root):
     self.r = r
     self.keys = keys
     self.root = root
-    self.pattern = pattern
 
-  def get_files(self):
-    paths = sorted(glob.glob(os.path.join(self.root, self.pattern)))
+  def get_files(self, sub_path, pattern='*'):
+    paths = sorted(glob.glob(os.path.join(self.root, sub_path, pattern)))
 
     def progress_function(item):
       if item:
@@ -38,6 +37,6 @@ class LocalFileManager(FileManager):
           self.r.set(key, size)
 
   def get_data(self, path, position):
-      with open(path, 'r') as h:
-        h.seek(position)
-        return h.read()
+    with open(path, 'r') as h:
+      h.seek(position)
+      return h.read()

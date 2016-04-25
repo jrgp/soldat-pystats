@@ -26,6 +26,6 @@ class ParseEvents():
     '''
       Get all events from relevant console log files
     '''
-    for path, position in self.filemanager.get_files():
+    for path, position in self.filemanager.get_files('logs', 'consolelog*.txt'):
       for event in self.parse_events(self.filemanager.get_data(path, position)):
         yield event
