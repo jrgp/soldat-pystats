@@ -28,5 +28,6 @@ setup(name='piestats',
           'six==1.10.0',
           'Werkzeug==0.10.4',
           'IPy==0.83',
+          'paramiko==1.16.0',
       ]
       )
