@@ -11,7 +11,7 @@ Statistics script which displays kill and player/country stats for multiple
 
 # Features
 
- - Get logs from either local files or via ssh+sftp on a remote system
+ - Get logs from either local files, or ssh+sftp, or FTP on a remote game host
  - ip2country for all players. Country stats + flags next to each player
  - Supports multiple Soldat servers
  - Configurable data retention. Don't show kill stats more than X days old.

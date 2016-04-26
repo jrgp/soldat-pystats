@@ -7,7 +7,8 @@ from piestats.config import Config
 from piestats.keys import Keys
 from piestats.web import app
 from piestats.update.filemanager.local import LocalFileManager
-from piestats.update.filemanager.sftp import SshFileManager
+from piestats.update.filemanager.ssh import SshFileManager
+from piestats.update.filemanager.ftp import FtpFileManager
 
 
 @click.command()
@@ -41,11 +42,13 @@ def run_update(config_path):
     # Parse each of our soldat DIRs
     for soldat_dir in server.dirs:
 
-      # Support getting logs via local files or ssh
+      # Support getting logs via local files or ssh or ftp
       if server.log_source == 'local':
         filemanager = LocalFileManager(r, keys, soldat_dir)
       elif server.log_source == 'ssh':
         filemanager = SshFileManager(r, keys, soldat_dir, server.connection_options)
+      elif server.log_source == 'ftp':
+        filemanager = FtpFileManager(r, keys, soldat_dir, server.connection_options)
 
       # Kill logs
       update_kills(r, keys, retention, filemanager)

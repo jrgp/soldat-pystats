@@ -1,0 +1,53 @@
+#
+# Logs via FTP Example
+#
+
+# One block per server entry. If more than one is present,
+# the site will let you choose which as well as incorporate
+# the slug into the URL. Note: changing slug will change the
+# redis key prefix which will invalidate all stats for that
+# server
+soldat_servers:
+
+  - slug: joe server
+    title: joe
+    dirs:
+      - /23000
+
+    # Choose to get these logs via plain ftp
+    source: ftp
+
+    # Settings passed to paramiko.client.SSHClient.connect() as **kwargs
+    # See http://docs.paramiko.org/en/1.16/api/client.html for more keys.
+    connection:
+
+      # Settings for FTP
+      hostname: sub-fl.gshost.us
+      port: 21
+      username: fillthisin
+      password: fillthisin
+
+
+    # Used for connecting to soldat server to show live stats on
+    # frontpage. Optional.
+    ip: 88.198.8.206
+    port: 23020
+    password: notreal
+
+  # When you have multiple servers, the nav bar at the top with player search
+  # and the server browser dropdown appears.
+
+# Days to keep track of stats
+data_retention: 30
+
+# These key-pairs are fed into redis.Redis() as **kwargs. See
+# https://redis-py.readthedocs.org/en/latest/ for available keys.
+# If you just did apt-get install redis-server, the following is fine.
+redis_connect:
+  host: localhost
+
+# Key-pairs passed to flask's app.run() method as **kwargs. See
+# http://flask.pocoo.org/docs/0.10/api/#flask.Flask.run
+flask_run:
+  host: 0.0.0.0
+  debug: true

@@ -48,7 +48,7 @@ class Server:
 
   @property
   def log_source(self):
-    options = ['local', 'ssh']
+    options = ('local', 'ssh', 'ftp')
     given = self.info.get('source', None)
     if given in options:
       return given
