@@ -1,5 +1,5 @@
 import re
-from piestats.models.events import EventPlayerJoin, EventNextMap
+from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore
 
 
 class ParseEvents():
@@ -13,6 +13,7 @@ class ParseEvents():
     event_regexen = [
         (EventPlayerJoin, re.compile(''.join([header, '(?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:\S+']))),
         (EventNextMap, re.compile(''.join([header, 'Next map: (?P<map>[^$]+)']))),
+        (EventScore, re.compile(''.join([header, '(?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$']))),
     ]
 
     for line in contents.splitlines():
