@@ -26,13 +26,19 @@ Statistics script which displays kill and player/country stats for multiple
 
 - Python 2.7, with virtualenv/pip tools
 - Redis DB installed/running
-- Tested on Ubuntu/Debian. Will work on CentOS if you get at least Python 2.7
+- [Optional] Apache/mod_wsgi ([instructions here](apache_example/README.md))
 
 # Instructions
 
 First, have an install of Redis database runnning. The following will do.
 
     sudo apt-get install redis-server
+
+### Apache
+
+See [the Apache guide](apache_example/README.md) to run under apache/mod_wsgi instead of manually using virtualenv's as below.
+
+### Dev guide/Quickstart
 
 Install python virtualenv tool
 
@@ -56,9 +62,6 @@ Run update script. Probably add this to cron.
 Start website. (Bind to all NICs on port 5000)
 
     runsite -c config.yml
-
-It is also possible to run this under apache/nginx with uwsgi. I'll include a
-guide for that maybe later.
 
 # Contact
  - Joe Gillotti - <joe@u13.net>
