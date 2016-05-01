@@ -1,13 +1,31 @@
-*pyc
-env/
-*swp
-*swo
-kills/
-piestats.egg-info
-soldat/
-activate
+# These are generated upon debian package builds
+debian/soldat-pystats.debhelper.log
+debian/soldat-pystats.substvars
+debian/soldat-pystats/
+debian/files
 build/
+
+# Generated upon python venv/builds
 dist/
-.idea
+activate
+piestats.egg-info
+env/
+
+# Real config files that should not be in git
 config.yml
 ssh.yml
+ftp_config.yml
+
+# stupid IDE rubbish
+.idea
+
+# vim swapfiles
+*swp
+*swo
+
+# compiled python files
+*pyc
+
+# tmp folders I use during dev
+kills/
+soldat/
