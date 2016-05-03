@@ -1,5 +1,5 @@
 import datetime
-from piestats.update.managekills import ManageKills
+from piestats.update.manageevents import ManageEvents
 
 try:
   import cPickle as pickle
@@ -12,7 +12,7 @@ class Retention:
     self.max_days = config.data_retention
     self.keys = keys
     self.r = r
-    self.manage = ManageKills(r, keys)
+    self.manage = ManageEvents(r, keys)
 
   def too_old(self, date):
     return (datetime.datetime.now() - date).days > self.max_days

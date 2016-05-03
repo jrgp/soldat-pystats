@@ -1,7 +1,7 @@
 import redis
 import os
 import click
-from piestats.update import update_kills, update_events
+from piestats.update import update_events
 from piestats.update.retention import Retention
 from piestats.config import Config
 from piestats.keys import Keys
@@ -50,11 +50,8 @@ def run_update(config_path):
       elif server.log_source == 'ftp':
         filemanager = FtpFileManager(r, keys, soldat_dir, server.connection_options)
 
-      # Kill logs
-      update_kills(r, keys, retention, filemanager)
-
       # Console logs
-      update_events(r, keys, filemanager)
+      update_events(r, keys, retention, filemanager)
 
     # Trim old events
     retention.run_retention()
