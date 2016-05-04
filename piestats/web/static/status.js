@@ -38,7 +38,7 @@ function load_server_status(url, elem) {
     var info = data.info;
 
     var template = Handlebars.compile([
-      '<table class="table" style="margin-bottom: 0;">',
+      '<table class="table table-striped" style="margin-bottom: 0;">',
         '<tbody>',
           '{{#each panel}}',
             '<tr>',
@@ -54,7 +54,7 @@ function load_server_status(url, elem) {
       '</table>',
 
       '{{# if players_count}}',
-        '<div class="panel-heading" style="background-color: #f8f5f0; border-color: #dfd7ca; border-top: 1px solid #dfd7ca;">',
+        '<div class="panel-heading">',
           '<h3 class="panel-title">Players</h3>',
         '</div>',
         '<table class="table table-striped">',
