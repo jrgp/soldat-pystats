@@ -11,8 +11,6 @@
 </head>
 <body>
 
-{% if servers|length > 1 %}
-
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container-fluid">
     <div class="navbar-header">
@@ -22,6 +20,7 @@
       <p class="navbar-text pull-right">
         {{ footer.num_kills() }} kills by {{ footer.num_players() }} players since {{ footer.since() }}
       </p>
+{% if servers|length > 1 %}
       <ul class="nav navbar-nav">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">More Servers<span class="caret"></span></a>
@@ -39,6 +38,7 @@
           </ul>
         </li>
       </ul>
+{% endif %}
       <form class="navbar-form navbar-left" role="search" method="get" action="{{url_for('player_search', **urlargs)}}" id="search_form"
         onsubmit="return $($(this).find('input[name=player]')[0]).val().trim() != '';">
         <div class="form-group">
@@ -49,8 +49,6 @@
     </div>
   </div>
 </nav>
-
-{% endif %}
 
 <div class="container" style="margin-top: 100px; margin-bottom: 100px;">
   <div class="page-header" style="border: none;">
