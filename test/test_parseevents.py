@@ -49,6 +49,20 @@ class TestParseEvents(unittest.TestCase):
     self.assertEqual(event.victim, 'r|2 Der Exorzischt')
     self.assertEqual(event.weapon, 'FN Minimi')
 
+  def test_parse_kill_4(self):
+    event = ParseEvents(retention, None).parse_events('16-05-04 09:33:44 (0) jrgp killed (0) Zamyhrushka with Flame Bow').next()
+    self.assertIsInstance(event, Kill)
+    self.assertEqual(event.killer, 'jrgp')
+    self.assertEqual(event.victim, 'Zamyhrushka')
+    self.assertEqual(event.weapon, 'Bow')
+
+  def test_parse_kill_5(self):
+    event = ParseEvents(retention, None).parse_events('16-05-04 09:33:44 (0) jrgp killed (0) Zamyhrushka with Bow').next()
+    self.assertIsInstance(event, Kill)
+    self.assertEqual(event.killer, 'jrgp')
+    self.assertEqual(event.victim, 'Zamyhrushka')
+    self.assertEqual(event.weapon, 'Bow')
+
 
 if __name__ == '__main__':
   unittest.main()

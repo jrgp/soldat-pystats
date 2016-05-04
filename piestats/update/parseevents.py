@@ -16,7 +16,7 @@ class ParseEvents():
     kill_regex = '(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \(\d\) (?P<killer>.+) killed \(\d\) (?P<victim>.+) ' \
                  'with (?P<weapon>Ak-74|Barrett M82A1|Chainsaw|Cluster Grenades|Combat Knife|Desert Eagles|' \
                  'FN Minimi|Grenade|Hands|HK MP5|LAW|M79|Ruger 77|Selfkill|Spas-12|Stationary gun|Steyr AUG' \
-                 '|USSOCOM|XM214 Minigun)'
+                 '|USSOCOM|XM214 Minigun|Bow|Flame Bow)'
 
     header = '\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d '
     event_regexen = [
@@ -47,5 +47,8 @@ class ParseEvents():
 
     if self.retention.too_old(date):
       return None
+
+    if kwargs['weapon'] == 'Flame Bow':
+      kwargs['weapon'] = 'Bow'
 
     return Kill(kwargs['killer'], kwargs['victim'], kwargs['weapon'], unixtime)
