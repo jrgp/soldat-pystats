@@ -10,6 +10,7 @@ class ParseEvents():
   def __init__(self, retention, filemanager):
     self.retention = retention
     self.filemanager = filemanager
+    self.parse_kill_date_parserinfo = parser.parserinfo(yearfirst=True)
 
   def parse_events(self, contents):
 
@@ -42,8 +43,7 @@ class ParseEvents():
         yield event
 
   def generate_kill(self, *args, **kwargs):
-    date = parser.parse(kwargs['date'], parser.parserinfo(yearfirst=True))
-    unixtime = int(time.mktime(date.timetuple()))
+    date = parser.parse(kwargs['date'], self.parse_kill_date_parserinfo)
 
     if self.retention.too_old(date):
       return None
@@ -51,4 +51,4 @@ class ParseEvents():
     if kwargs['weapon'] == 'Flame Bow':
       kwargs['weapon'] = 'Bow'
 
-    return Kill(kwargs['killer'], kwargs['victim'], kwargs['weapon'], unixtime)
+    return Kill(kwargs['killer'], kwargs['victim'], kwargs['weapon'], int(time.mktime(date.timetuple())))
