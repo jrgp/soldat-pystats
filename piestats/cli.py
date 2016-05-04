@@ -1,6 +1,7 @@
 import redis
 import os
 import click
+import time
 from piestats.update import update_events
 from piestats.update.retention import Retention
 from piestats.config import Config
@@ -25,6 +26,7 @@ def run_update(config_path):
     as well as which soldat servers to process data for.
   '''
 
+  start = time.time()
   # Parse our config yaml file
   config = Config(config_path)
 
@@ -55,6 +57,7 @@ def run_update(config_path):
 
     # Trim old events
     retention.run_retention()
+    print('Updating took {0} seconds'.format(round(time.time() - start, 2)))
 
 
 @click.command()
