@@ -70,14 +70,25 @@ Stats Overview
       <div class="panel-heading">
         <h3 class="panel-title">Current Server Status</h3>
       </div>
-      <div id="current_server_status">
-      </div>
+      <div id="server_status_core"></div>
     </div>
   </div>
 </div>
+
+<div class="row" id="server_status_players_box">
+  <div class="col-xs-12 col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Current Server Players</h3>
+      </div>
+      <div id="server_status_players"></div>
+    </div>
+  </div>
+</div>
+
 <script>
   var update = function() {
-    load_server_status('{{url_for('status', server_slug=server_slug)}}', $('#current_server_status'));
+    load_server_status('{{url_for('status', server_slug=server_slug)}}');
   };
   update();
   // Do this every minute

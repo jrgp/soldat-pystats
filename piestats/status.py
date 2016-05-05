@@ -71,9 +71,13 @@ class Status:
         empty_players.add(key)
         continue
 
-      # Try looking up it's IP to map it to a country if it isn't private
       player['country'] = False
-      if IP(player['ip']).iptype() == 'PUBLIC':
+      player['bot'] = False
+
+      # If player isn't a bot and IP is public try to get it to a country
+      if player['ip'] == '0.0.0.0':
+        player['bot'] = True
+      elif IP(player['ip']).iptype() == 'PUBLIC':
         match = geolite2.lookup(player['ip'])
         if match:
           player['country'] = match.country.lower()
@@ -83,16 +87,22 @@ class Status:
       del(info['players'][key])
 
     # Try doing an IP lookup on the server's IP, if it's public
-    if IP(self.ip).iptype() == 'PUBLIC':
-      match = geolite2.lookup(self.ip)
-      if match:
-        info['country'] = match.country.lower()
+    try:
+      if IP(self.ip).iptype() == 'PUBLIC':
+        match = geolite2.lookup(self.ip)
+        if match:
+          info['country'] = match.country.lower()
+
+    # If we got a hostname instead of an IP we'll likely get this
+    except ValueError:
+      pass
 
     # Make the players object just an array
     info['players'] = info['players'].values()
 
     # Convenience
     info['minutesLeft'] = info['currentTime'] / 60 / 60
+    info['botCount'] = len(filter(lambda x: x['bot'], info['players']))
 
     return info
 

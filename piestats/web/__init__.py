@@ -211,6 +211,10 @@ def status(server_slug):
   if not info:
     return jsonify(dict(success=False, info='Failed getting server status'))
 
+  # Hide player IP from outside world
+  for player in info['players']:
+    del(player['ip'])
+
   info['server_slug'] = server_slug
 
   return jsonify(dict(success=True, info=info))
