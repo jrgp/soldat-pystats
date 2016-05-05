@@ -7,23 +7,25 @@ Search Results
 
 {% block content %}
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th colspan="2">Player</th>
-      <th>Kills</th>
-      <th>Lastseen</th>
-    </tr>
-  </thead>
-  <tbody>
-{% for player in results %}
-    <tr>
-      <td style="width: 0;">{{macro.playerlink(urlargs, player, true)}}</td>
-      <td>{{player.kills}}</td>
-      <td>{{player.lastseen}}</td>
-    </tr>
-{% endfor %}
-  </tbody>
-</table>
+<div class="panel panel-default">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th colspan="2">Player</th>
+        <th>Kills</th>
+        <th>Lastseen</th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for player in results %}
+      <tr>
+        <td style="width: 0;">{{macro.playerlink(urlargs, player, true)}}</td>
+        <td>{{player.kills}}</td>
+        <td>{{player.lastseen}}</td>
+      </tr>
+  {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 {% endblock %}
