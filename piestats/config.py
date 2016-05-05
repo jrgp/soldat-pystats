@@ -1,6 +1,7 @@
 import yaml
 from piestats.models.server import Server
 from piestats.exceptions import InvalidServer
+from babel.dates import get_timezone
 
 
 class Config():
@@ -60,3 +61,12 @@ class Config():
       if server.url_slug == slug:
         return server
     raise InvalidServer()
+
+  @property
+  def timezone(self):
+    tz = self.config.get('timezone', 'UTC')
+
+    try:
+      return get_timezone(tz)
+    except LookupError:
+      return get_timezone('UTC')

@@ -31,11 +31,11 @@
           </tr>
           <tr>
             <th>Last Seen</th>
-            <td>{{ player.lastseen }}</td>
+            <td>{{ pretty_datetime(player.lastseen) }}</td>
           </tr>
           <tr>
             <th>First Seen</th>
-            <td>{{ player.firstseen }}</td>
+            <td>{{ pretty_datetime(player.firstseen) }}</td>
           </tr>
           {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
           <tr>

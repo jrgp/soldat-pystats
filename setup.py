@@ -30,5 +30,6 @@ setup(name='piestats',
           'IPy==0.83',
           'paramiko==1.16.0',
           'mock==2.0.0',
+          'Babel==2.3.4',
       ]
       )

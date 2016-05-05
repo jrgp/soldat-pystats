@@ -40,8 +40,8 @@ Top Players
         <td style="width: 0;">{{macro.playerlink(urlargs, player, true)}}</td>
         <td>{{player.kills}}</td>
         <td>{{player.deaths}}</td>
-        <td>{{player.firstseen}}</td>
-        <td>{{player.lastseen}}</td>
+        <td>{{pretty_datetime(player.firstseen)}}</td>
+        <td>{{pretty_datetime(player.lastseen)}}</td>
       </tr>
       {% endfor %}
     </tbody>

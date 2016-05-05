@@ -40,7 +40,7 @@ Latest Kills
         <td style="width: 0;">{{ macro.playerlink(urlargs, k.victim_obj, true) }}</td>
         <td style="width: 0; text-align: right;">{{ macro.weaponpic(k.weapon) }}</td>
         <td>{{ macro.weaponlink(urlargs, k.weapon) }}</td>
-        <td>{{ fixdate(k.timestamp) }}</td>
+        <td>{{ k.datetime }}</td>
       </tr>
     {% endfor %}
     </tbody>

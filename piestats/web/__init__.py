@@ -3,8 +3,13 @@ from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from datetime import datetime, timedelta
 from piestats.status import Status
+from babel.dates import format_datetime
 
 app = Flask(__name__)
+
+
+def pretty_datetime(date):
+  return format_datetime(date, tzinfo=app.config['config'].timezone)
 
 
 def more_params(stats, server):
@@ -12,11 +17,13 @@ def more_params(stats, server):
       footer=dict(
           num_kills=stats.get_num_kills,
           num_players=stats.get_num_players,
-          since=lambda: (datetime.now() - timedelta(days=app.config['config'].data_retention)).date()
+          since=lambda: (datetime.now() - timedelta(days=app.config['config'].data_retention)).date(),
+          timezone=str(app.config['config'].timezone)
       ),
       servers=app.config['config'].servers,
       current_server=server,
-      urlargs=dict(server_slug=server.url_slug)
+      urlargs=dict(server_slug=server.url_slug),
+      pretty_datetime=pretty_datetime
   )
 
 
@@ -61,13 +68,13 @@ def latestkills(server_slug, startat):
     info = kill.__dict__
     info['killer_obj'] = stats.get_player_fields(kill.killer, ['lastcountry'])
     info['victim_obj'] = stats.get_player_fields(kill.victim, ['lastcountry'])
+    info['datetime'] = pretty_datetime(datetime.utcfromtimestamp(int(info['timestamp'])))
     return info
 
   data = {
       'page_title': 'Latest Kills',
       'next_url': url_for('latestkills', startat=startat + 20, server_slug=server.url_slug),
       'kills': map(kill_decorate, stats.get_last_kills(startat)),
-      'fixdate': lambda x: datetime.utcfromtimestamp(int(x))
   }
 
   data.update(more_params(stats, server))
