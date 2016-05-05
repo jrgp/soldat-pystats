@@ -66,3 +66,4 @@ Start website. (Bind to all NICs on port 5000)
 # Contact
  - Joe Gillotti - <joe@u13.net>
  - [GitHub](https://github.com/jrgp/soldat-pystats)
+ - License: GPL
