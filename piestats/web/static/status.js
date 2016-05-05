@@ -89,7 +89,7 @@ function load_server_status(url, elem) {
         'Map': info.map,
         'Game mode': game_modes[info.mode],
         'Players': info.players.length,
-        'Time left': Math.round((info.timeLimit - info.currentTime) / 60 ) +' minutes'
+        'Time left': info.minutesLeft + ' minutes'
       },
       players: info.players,
       ip: info.ip,

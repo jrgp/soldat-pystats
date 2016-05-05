@@ -91,6 +91,9 @@ class Status:
     # Make the players object just an array
     info['players'] = info['players'].values()
 
+    # Convenience
+    info['minutesLeft'] = info['currentTime'] / 60 / 60
+
     return info
 
   def get_info(self):
