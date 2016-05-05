@@ -54,9 +54,6 @@ function load_server_status(url, elem) {
       '</table>',
 
       '{{# if players_count}}',
-        '<div class="panel-heading">',
-          '<h3 class="panel-title">Players</h3>',
-        '</div>',
         '<table class="table table-striped">',
           '<thead>',
             '<tr>',
@@ -92,7 +89,7 @@ function load_server_status(url, elem) {
         'Map': info.map,
         'Game mode': game_modes[info.mode],
         'Players': info.players.length,
-        'Time left': Math.round(info.currentTime / 60) +' minutes'
+        'Time left': Math.round((info.timeLimit - info.currentTime) / 60 ) +' minutes'
       },
       players: info.players,
       ip: info.ip,

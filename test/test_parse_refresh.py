@@ -1,27 +1,46 @@
 import unittest
+import io
 import base64
-import ctypes
-from piestats.status import RefreshStruct
+from piestats.status import Status
 
+# A response from soldat server. Info on this here: http://wiki.soldat.pl/index.php/Refresh
 response = base64.b64decode('''BkNCZWJlZQAAAAAAAAAAAAAAAAAAAAAAAAtaYW15aHJ1c2hrYQAAAAAAAAAAAAAAAAAKU2xhdlsxMTA5XQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////////////////////////////////////xAACAAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANABAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdDIyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKw4HDKASBe6Tgru6QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHY3RmX0FzaAAAAAAAAAAAAKDxBABKwgQAHgAE''')  # noqa
 
 
-class TestParseEvents(unittest.TestCase):
+# Just need a class that stores a bytestream internally and has a
+# recv method which gets bytes out of that and increases position
+class FakeSocket():
+  def __init__(self, data):
+    self.fake_sock = io.BytesIO(data)
+
+  def recv(self, n):
+    return self.fake_sock.read(n)
+
+
+class TestParseRefresh(unittest.TestCase):
 
   def test_parse(self):
-    r = RefreshStruct()
 
-    # Apparently only way of constructing a ctypes structure from a string
-    buff = ctypes.create_string_buffer(response)
-    ctypes.memmove(ctypes.addressof(r), ctypes.addressof(buff), ctypes.sizeof(r))
+    # It doesn't actually connect unless you run get_info which we're not
+    parser = Status('127.0.0.1', 23073, None)
 
-    self.assertEqual(r.map_name.text, 'ctf_Ash')
-    self.assertEqual(r.mode, 0)
+    # Simple class that has a recv method to satisfy the parser function
+    fake_socket = FakeSocket(response)
 
+    r = parser.parse_refresh(fake_socket)
+
+    # Regurgitate these back
+    self.assertEqual(r['ip'], '127.0.0.1')
+    self.assertEqual(r['port'], 23073)
+
+    # Parsed out of the decode base64 packet
+    self.assertEqual(r['map'], 'ctf_Ash')
+    self.assertEqual(r['mode'], 4)
+
+    # Trivial player name parsing
     names = ['CBebee', 'Zamyhrushka', 'Slav[1109]']
-
     for i, name in enumerate(names):
-      self.assertEqual(r.player_names[i].text, name)
+      self.assertEqual(r['players'][i]['name'], name)
 
 if __name__ == '__main__':
   unittest.main()
