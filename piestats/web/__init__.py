@@ -4,6 +4,7 @@ from piestats.exceptions import InvalidServer
 from datetime import datetime, timedelta
 from piestats.status import Status
 from babel.dates import format_datetime
+from collections import OrderedDict
 
 app = Flask(__name__)
 
@@ -235,6 +236,11 @@ def index(server_slug):
     return redirect(url_for('landing'))
   stats = Results(app.config['config'], server)
 
+  raw_kills_per_date = stats.get_kills_for_date_range()
+  kills_per_date = OrderedDict(zip(
+                               map(
+                                   lambda d: str(format_datetime(d.date(), 'yyyy-MM-dd', tzinfo=app.config['config'].timezone)), raw_kills_per_date.keys()),
+                               raw_kills_per_date.values()))
   colors = [
       'red',
       'blue',
@@ -246,7 +252,7 @@ def index(server_slug):
   ]
   data = dict(
       page_title='Stats overview',
-      killsperdate=stats.get_kills_for_date_range(),
+      killsperdate=kills_per_date,
       topcountries=[
           dict(
               value=players,

@@ -83,13 +83,13 @@ class Results():
 
   def get_kills_for_date_range(self, startdate=None, previous_days=7):
     if not isinstance(startdate, datetime):
-      startdate = datetime.now()
+      startdate = datetime.utcnow()
 
     stats = OrderedDict()
 
     for x in range(previous_days):
-      current_date = str((startdate - timedelta(days=x)).date())
-      key = self.keys.kills_per_day(current_date)
+      current_date = startdate - timedelta(days=x)
+      key = self.keys.kills_per_day(str(current_date.date()))
       try:
         count = int(self.r.get(key))
       except (TypeError, ValueError):
