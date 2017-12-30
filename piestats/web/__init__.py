@@ -42,7 +42,7 @@ def more_params(stats, server):
   )
 
 
-@app.route('/<string:server_slug>/player/<string:name>')
+@app.route('/<string:server_slug>/player/<path:name>')
 def player(server_slug, name):
   try:
     server = app.config['config'].get_server(server_slug)
