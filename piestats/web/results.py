@@ -107,9 +107,27 @@ class Results():
       return False
 
   def player_search(self, name):
-    resultset = self.r.zscan(
-        self.keys.top_players,
-        0,
-        '*{name}*'.format(name=name),
-        self.get_num_players())
-    return resultset[1][:20]
+    # escape glob characters so they act as expected as search terms
+    name = name.replace('*', '\*').replace('?', '\?')
+
+    names = set()
+
+    cursor = 0
+    tries = 0
+
+    # *maybe* these values are too high under some circumstances?
+    max_tries = 100
+    max_names = 100
+
+    while tries < max_tries and len(names) < max_names:
+        res = self.r.hscan(self.keys.player_search, cursor, '*{name}*'.format(name=name.lower()), max_names)
+        cursor = res[0]
+        if cursor == 0:
+            break
+        names.update(res[1].values())
+        tries += 1
+
+    # pair each name with the number of kills this player has, and sort it by player name.
+    players_with_kills = sorted((name, self.r.zscore(self.keys.top_players, name)) for name in names)
+
+    return players_with_kills

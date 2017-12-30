@@ -11,6 +11,11 @@ class Keys:
     return ':'.join((self.redis_prefix, self.server_prefix, 'top_players'))
 
   @property
+  def player_search(self):
+    ''' Sorted set for number of kills per player '''
+    return ':'.join((self.redis_prefix, self.server_prefix, 'player_search'))
+
+  @property
   def kill_log(self):
     ''' list containing pickled Kill instances '''
     return ':'.join((self.redis_prefix, self.server_prefix, 'kill_log'))

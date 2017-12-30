@@ -20,12 +20,20 @@ class ManageEvents():
     '''
     if isinstance(event, EventPlayerJoin):
       self.update_country(event.ip, event.player)
+      self.update_player_search(event.player)
     elif isinstance(event, EventNextMap):
       self.update_map(event.map)
     elif isinstance(event, EventScore):
       self.update_score(event.player, event.team)
     elif isinstance(event, Kill):
       self.apply_kill(event)
+
+  def update_player_search(self, player):
+      '''
+        Update the search hash. keys are player lowercase to player normal case. Search
+        works by wild card matching contents of the hash to get full player names
+      '''
+      self.r.hset(self.keys.player_search, player.lower(), player)
 
   def update_country(self, ip, player):
     '''
