@@ -22,6 +22,7 @@ ftp_config.yml
 # vim swapfiles
 *swp
 *swo
+*swn
 
 # compiled python files
 *pyc
