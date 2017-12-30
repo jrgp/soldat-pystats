@@ -1,4 +1,8 @@
+import os
 from setuptools import setup, find_packages
+
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'requirements.txt')) as h:
+    deps = [line.strip() for line in h if line.strip() != '']
 
 setup(name='piestats',
       version='0.1.0',
@@ -10,26 +14,5 @@ setup(name='piestats',
               'runsite = piestats.cli:run_site',
           ]
       },
-      install_requires=[
-          'click==5.1',
-          'flake8==2.5.0',
-          'Flask==0.10.1',
-          'itsdangerous==0.24',
-          'Jinja2==2.8',
-          'MarkupSafe==0.23',
-          'mccabe==0.3.1',
-          'pep8==1.5.7',
-          'pyflakes==1.0.0',
-          'python-dateutil==2.4.2',
-          'python-geoip==1.2',
-          'python-geoip-geolite2==2015.303',
-          'PyYAML==3.11',
-          'redis==2.10.5',
-          'six==1.10.0',
-          'Werkzeug==0.10.4',
-          'IPy==0.83',
-          'paramiko==1.16.0',
-          'mock==2.0.0',
-          'Babel==2.3.4',
-      ]
+      install_requires=deps
       )
