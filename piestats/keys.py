@@ -10,7 +10,7 @@ class Keys:
     # Map of lowercase player name to normal case player name
     self.player_search = '%s:player_search' % self.key_prefix
 
-    # list containing pickled Kill instances
+    # list containing msgpack'd Kill instances
     self.kill_log = '%s:kill_log' % self.key_prefix
 
     # Sorted set for number of kills per weapon

@@ -1,4 +1,5 @@
 from datetime import datetime
+import msgpack
 
 
 class Kill():
@@ -21,3 +22,17 @@ class Kill():
       Get timestamp in python datetime format instead of int
     '''
     return datetime.utcfromtimestamp(int(self.timestamp))
+
+  @classmethod
+  def from_redis(cls, item):
+    '''
+      Class factory to instantiate a new instance of this class based on a msgpack
+      representation
+    '''
+    return cls(*msgpack.loads(item))
+
+  def to_redis(self):
+    '''
+      Dump the kill to msgpack. Just a tuple with the args used to create this class
+    '''
+    return msgpack.dumps((self.killer, self.victim, self.weapon, self.timestamp))

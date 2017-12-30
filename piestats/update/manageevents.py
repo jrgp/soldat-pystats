@@ -2,10 +2,6 @@ from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore
 from piestats.models.kill import Kill
 from geoip import geolite2
 from IPy import IP
-try:
-  import cPickle as pickle
-except ImportError:
-  import pickle
 from datetime import datetime
 
 
@@ -71,7 +67,7 @@ class ManageEvents():
 
     # Add kill to our internal log
     if incr == 1:
-      self.r.lpush(self.keys.kill_log, pickle.dumps(kill))
+      self.r.lpush(self.keys.kill_log, kill.to_redis())
 
     # Stuff that only makes sense for non suicides
     if not kill.suicide:

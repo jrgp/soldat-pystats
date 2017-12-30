@@ -1,10 +1,6 @@
 import datetime
 from piestats.update.manageevents import ManageEvents
-
-try:
-  import cPickle as pickle
-except ImportError:
-  import pickle
+from piestats.models.kill import Kill
 
 
 class Retention:
@@ -48,5 +44,5 @@ class Retention:
       if this_kill is None:
         print('none kill?')
         break
-      data = pickle.loads(this_kill)
+      data = Kill.from_redis(this_kill)
       yield data

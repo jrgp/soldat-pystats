@@ -3,11 +3,7 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 from piestats.keys import Keys
 from piestats.models.player import Player
-
-try:
-  import cPickle as pickle
-except ImportError:
-  import pickle
+from piestats.models.kill import Kill
 
 
 class Results():
@@ -75,7 +71,7 @@ class Results():
 
   def get_last_kills(self, startat=0, incr=20):
     for kill in self.r.lrange(self.keys.kill_log, startat, startat + incr):
-      yield pickle.loads(kill)
+      yield Kill.from_redis(kill)
 
   def get_top_weapons(self):
     results = self.r.zrevrange(self.keys.top_weapons, 0, 20, withscores=True)
