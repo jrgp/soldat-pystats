@@ -12,23 +12,21 @@ class ParseEvents():
     self.filemanager = filemanager
     self.parse_kill_date_parserinfo = parser.parserinfo(yearfirst=True)
 
+    kill_regex = ('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \(\d\) (?P<killer>.+) killed \(\d\) (?P<victim>.+) '
+                  'with (?P<weapon>Ak-74|Barrett M82A1|Chainsaw|Cluster Grenades|Combat Knife|Desert Eagles|'
+                  'FN Minimi|Grenade|Hands|HK MP5|LAW|M79|Ruger 77|Selfkill|Spas-12|Stationary gun|Steyr AUG'
+                  '|USSOCOM|XM214 Minigun|Bow|Flame Bow)')
+
+    self.event_regex = (
+        (EventPlayerJoin, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d (?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:\S+')),
+        (EventNextMap, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d Next map: (?P<map>[^$]+)')),
+        (EventScore, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d (?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$')),
+        (self.generate_kill, re.compile(kill_regex)),
+    )
+
   def parse_events(self, contents):
-
-    kill_regex = '(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \(\d\) (?P<killer>.+) killed \(\d\) (?P<victim>.+) ' \
-                 'with (?P<weapon>Ak-74|Barrett M82A1|Chainsaw|Cluster Grenades|Combat Knife|Desert Eagles|' \
-                 'FN Minimi|Grenade|Hands|HK MP5|LAW|M79|Ruger 77|Selfkill|Spas-12|Stationary gun|Steyr AUG' \
-                 '|USSOCOM|XM214 Minigun|Bow|Flame Bow)'
-
-    header = '\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d '
-    event_regexen = [
-        (EventPlayerJoin, re.compile(''.join([header, '(?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:\S+']))),
-        (EventNextMap, re.compile(''.join([header, 'Next map: (?P<map>[^$]+)']))),
-        (EventScore, re.compile(''.join([header, '(?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$']))),
-        (self.generate_kill, re.compile(kill_regex))
-    ]
-
     for line in contents.splitlines():
-      for event, regex in event_regexen:
+      for event, regex in self.event_regex:
         m = regex.match(line.strip())
         if not m:
           continue
