@@ -43,12 +43,16 @@ def more_params(stats, server):
 
 
 @app.route('/<string:server_slug>/player/<path:name>')
-def player(server_slug, name):
+@app.route('/<string:server_slug>/player')
+def player(server_slug, name=None):
   try:
     server = app.config['config'].get_server(server_slug)
   except InvalidServer:
     return redirect(url_for('landing'))
   stats = Results(app.config['config'], server)
+
+  if name is None:
+      name = request.args.get('name')
 
   data = dict(
       player=stats.get_player(name),

@@ -8,7 +8,11 @@
     <td>
   {% endif %}
 
-  <a href="{{ url_for('player', name=player.name, **urlargs) }}">{{player.name}}</a>
+  {% if player.name.startswith('/') %}
+    <a href="{{ url_for('player', **urlargs) }}?name={{player.name}}">{{player.name}}</a>
+  {% else %}
+    <a href="{{ url_for('player', name=player.name, **urlargs) }}">{{player.name}}</a>
+  {% endif %}
 {% endmacro %}
 
 {% macro weaponpic(weapon) %}
