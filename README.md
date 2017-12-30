@@ -26,17 +26,12 @@ Statistics script which displays kill and player/country stats for multiple
 
 - Python 2.7, with virtualenv/pip tools
 - Redis DB installed/running
-- [Optional] Apache/mod_wsgi ([instructions here](apache_example/README.md))
 
 # Instructions
 
 First, have an install of Redis database runnning. The following will do.
 
     sudo apt-get install redis-server
-
-### Apache
-
-See [the Apache guide](apache_example/README.md) to run under apache/mod_wsgi instead of manually using virtualenv's as below.
 
 ### Dev guide/Quickstart
 
@@ -59,9 +54,17 @@ Run update script. Probably add this to cron.
 
     runupdate -c config.yml
 
-Start website. (Bind to all NICs on port 5000)
+Quickly start website. (Bind to all NICs on port 5000)
 
     runsite -c config.yml
+
+# Gunicorn Example
+
+Use a command like the following to run pystats under gunicorn, listening on port 5000, for production instead of dev.
+
+    gunicorn 'piestats.web:init_app()' -b 0:5000 --max-requests 1000 -w 4 -k gevent --access-logfile - -e PYSTATS_CONF=config.yml
+
+If huge QPS is needed, using uwsgi instead of gunicorn would be better.
 
 # Contact
  - Joe Gillotti - <joe@u13.net>

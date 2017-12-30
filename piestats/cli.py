@@ -6,7 +6,7 @@ from piestats.update import update_events
 from piestats.update.retention import Retention
 from piestats.config import Config
 from piestats.keys import Keys
-from piestats.web import app
+from piestats.web import init_app
 from piestats.update.filemanager.local import LocalFileManager
 from piestats.update.filemanager.ssh import SshFileManager
 from piestats.update.filemanager.ftp import FtpFileManager
@@ -75,6 +75,5 @@ def run_site(config_path):
   '''
 
   config = Config(config_path)
-  config.redis_connection_pool = redis.ConnectionPool(**config.redis_connect)
-  app.config['config'] = config
+  app = init_app(config_path)
   app.run(**config.flask_run)

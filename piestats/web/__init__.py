@@ -1,4 +1,7 @@
+import redis
+import os
 from flask import Flask, render_template, url_for, redirect, request, jsonify
+from piestats.config import Config
 from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from datetime import datetime, timedelta
@@ -7,6 +10,17 @@ from babel.dates import format_datetime
 from collections import OrderedDict
 
 app = Flask(__name__)
+
+
+def init_app(config_path=None):
+    if config_path is None:
+        config_path = os.getenv('PYSTATS_CONF')
+
+    config = Config(config_path)
+    config.redis_connection_pool = redis.ConnectionPool(**config.redis_connect)
+    app.config['config'] = config
+
+    return app
 
 
 def pretty_datetime(date):
