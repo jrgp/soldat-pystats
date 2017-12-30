@@ -34,10 +34,11 @@ class Results():
       more = {}
       for key in ['deaths', 'lastseen', 'firstseen', 'lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
-      yield Player(name=name,
+      p = Player(name=name,
                    kills=kills,
                    **more
                    )
+      yield p.__dict__
 
   def get_player(self, _player):
     info = self.r.hgetall(self.keys.player_hash(_player))

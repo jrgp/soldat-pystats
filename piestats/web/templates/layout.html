@@ -29,7 +29,7 @@
               <li><a href="{{
 
                 url_for(
-                  request.url_rule.endpoint if request.url_rule.endpoint in ['weapons', 'top_players', 'latestkills'] else 'index',
+                  request.url_rule.endpoint if request.url_rule.endpoint in [] else 'index',
                   server_slug=server.url_slug
                   )
 
@@ -54,10 +54,6 @@
   <div class="page-header" style="border: none;">
     <h1>{% block title %}{%endblock%}</h1>
     <ul class="nav nav-tabs">
-      <li {%if request.url_rule.endpoint == 'index'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('index', **urlargs) }}">Overview</a></li>
-      <li {%if request.url_rule.endpoint == 'top_players'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('top_players', **urlargs) }}">Top Players</a></li>
-      <li {%if request.url_rule.endpoint == 'weapons'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('weapons', **urlargs) }}">Top Weapons</a></li>
-      <li {%if request.url_rule.endpoint == 'latestkills'%}class="active"{% endif %} role="presentation"><a href="{{ url_for('latestkills', **urlargs) }}">Latest Kills</a></li>
     </ul>
   </div>
   {% block content %}{% endblock%}

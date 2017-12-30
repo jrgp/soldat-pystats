@@ -38,7 +38,7 @@ class TestParseRefresh(unittest.TestCase):
     self.assertEqual(r['mode'], 4)
 
     # Trivial player name parsing
-    names = ['CBebee', 'Zamyhrushka', 'Slav[1109]']
+    names = ('CBebee', 'Zamyhrushka', 'Slav[1109]')
     for i, name in enumerate(names):
       self.assertEqual(r['players'][i]['name'], name)
 

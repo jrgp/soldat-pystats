@@ -22,7 +22,7 @@ class FtpFileManager(FileManager):
       self.ftp.connect(self.connect_settings['hostname'], int(self.connect_settings['port']))
       self.ftp.login(self.connect_settings['username'], self.connect_settings['password'])
     except ftplib.error_perm as e:
-      logging.error('Accessing FTP failed: {}'.format(e))
+      logging.exception('Accessing FTP failed: %s', e)
       return
 
     def progress_function(item):
