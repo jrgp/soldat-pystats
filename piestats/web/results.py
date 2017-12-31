@@ -126,4 +126,4 @@ class Results():
     # pair each name with the number of kills this player has, and sort it by player name.
     players_with_kills = sorted((name, self.r.zscore(self.keys.top_players, name)) for name in names)
 
-    return players_with_kills
+    return [player for player in players_with_kills if player[1] > 0]
