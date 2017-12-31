@@ -1,14 +1,28 @@
 from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore
 from piestats.models.kill import Kill
-from geoip import geolite2
 from IPy import IP
 from datetime import datetime
+import pkg_resources
+
+try:
+  import GeoIP
+except ImportError:
+  GeoIP = None
 
 
 class ManageEvents():
   def __init__(self, r, keys):
     self.r = r
     self.keys = keys
+
+    self.geoip = None
+    if GeoIP:
+      try:
+        self.geoip = GeoIP.open(pkg_resources.resource_filename('piestats.update', 'GeoIP.dat'), GeoIP.GEOIP_MMAP_CACHE)
+      except Exception as e:
+        print 'Failed loading geoip file %s' % e
+    else:
+      print 'GeoIP looking up not supported'
 
   def apply_event(self, event):
     '''
@@ -35,12 +49,13 @@ class ManageEvents():
     '''
       Set player\'s country based on IP they joined with
     '''
+    if not self.geoip:
+      return
     if IP(ip).iptype() != 'PUBLIC':
       return
-    match = geolite2.lookup(ip)
-    if not match:
+    country_code = self.geoip.country_code_by_addr(ip)
+    if not country_code:
       return
-    country_code = match.country
     if self.r.hset(self.keys.player_hash(player), 'lastcountry', country_code):
       self.r.zincrby(self.keys.top_countries, country_code)
 

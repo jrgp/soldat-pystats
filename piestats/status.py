@@ -3,8 +3,9 @@ import re
 import logging
 from struct import unpack
 from IPy import IP
-from geoip import geolite2
+import GeoIP
 from collections import defaultdict
+import pkg_resources
 
 
 class Status:
@@ -13,6 +14,12 @@ class Status:
     self.ip = ip
     self.port = port
     self.password = password
+
+    try:
+      self.geoip = GeoIP.open(pkg_resources.resource_filename('piestats.update', 'GeoIP.dat'), GeoIP.GEOIP_MMAP_CACHE)
+    except Exception as e:
+      print 'Failed loading geoip db %s' % e
+      self.geoip = None
 
   def parse_refresh(self, sock):
     ''' Use unpack/etc to parse the delphi struct '''
@@ -77,10 +84,10 @@ class Status:
       # If player isn't a bot and IP is public try to get it to a country
       if player['ip'] == '0.0.0.0':
         player['bot'] = True
-      elif IP(player['ip']).iptype() == 'PUBLIC':
-        match = geolite2.lookup(player['ip'])
+      elif IP(player['ip']).iptype() == 'PUBLIC' and self.geoip:
+        match = self.geoip.country_code_by_addr(player['ip'])
         if match:
-          player['country'] = match.country.lower()
+          player['country'] = match.lower()
 
     # Remove empty players
     for key in empty_players:
@@ -88,10 +95,10 @@ class Status:
 
     # Try doing an IP lookup on the server's IP, if it's public
     try:
-      if IP(self.ip).iptype() == 'PUBLIC':
-        match = geolite2.lookup(self.ip)
+      if IP(self.ip).iptype() == 'PUBLIC' and self.geoip:
+        match = self.geoip.country_code_by_addr(self.ip)
         if match:
-          info['country'] = match.country.lower()
+          info['country'] = match.lower()
 
     # If we got a hostname instead of an IP we'll likely get this
     except ValueError:
