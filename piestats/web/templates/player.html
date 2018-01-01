@@ -30,12 +30,20 @@
             <td>{{ player.deaths }}</td>
           </tr>
           <tr>
-            <th>Last Seen</th>
-            <td>{{ pretty_datetime(player.lastseen) }}</td>
+            <th>Scores Alpha</th>
+            <td>{{ player.scores_alpha }}</td>
+          </tr>
+          <tr>
+            <th>Scores Bravo</th>
+            <td>{{ player.scores_bravo }}</td>
           </tr>
           <tr>
             <th>First Seen</th>
             <td>{{ pretty_datetime(player.firstseen) }}</td>
+          </tr>
+          <tr>
+            <th>Last Seen</th>
+            <td>{{ pretty_datetime(player.lastseen) }}</td>
           </tr>
           {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
           <tr>
@@ -67,6 +75,35 @@
           <td>{{macro.weaponlink(urlargs, wep.name)}}</td>
           <td>{{ wep.kills }}</td>
           <td>{{ wep.deaths }}</td>
+        </tr>
+      {% endfor %}
+         </tbody>
+      </table>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Favorite Maps</h3>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Map</th>
+            <th>Kills</th>
+            <th>Deaths</th>
+            <th>Suicides</th>
+            <th>Scores Alpha</th>
+            <th>Scores Bravo</th>
+          </tr>
+         </thead>
+         <tbody>
+      {% for map in player.maps.values()|sort(attribute='kills', reverse=True) %}
+        <tr>
+          <td>{{map.name}}</td>
+          <td>{{map.kills}}</td>
+          <td>{{map.deaths}}</td>
+          <td>{{map.suicides}}</td>
+          <td>{{map.scores_alpha}}</td>
+          <td>{{map.scores_bravo}}</td>
         </tr>
       {% endfor %}
          </tbody>

@@ -11,8 +11,11 @@ class LocalFileManager(FileManager):
     self.keys = keys
     self.root = root
 
+  def get_file_paths(self, sub_path, pattern='*'):
+    return sorted(glob.glob(os.path.join(self.root, sub_path, pattern)))
+
   def get_files(self, sub_path, pattern='*'):
-    paths = sorted(glob.glob(os.path.join(self.root, sub_path, pattern)))
+    paths = self.get_file_paths(sub_path, pattern)
 
     def progress_function(item):
       if item:
@@ -37,6 +40,6 @@ class LocalFileManager(FileManager):
           self.r.set(key, size)
 
   def get_data(self, path, position):
-    with open(path, 'r') as h:
+    with open(path, 'rb') as h:
       h.seek(position)
       return h.read()

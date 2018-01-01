@@ -30,3 +30,4 @@ ftp_config.yml
 # tmp folders I use during dev
 kills/
 soldat/
+.cache

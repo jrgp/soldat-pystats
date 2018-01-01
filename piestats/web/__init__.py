@@ -63,7 +63,7 @@ def player(server_slug, name=None):
   data.update(more_params(stats, server))
 
   if not data['player']:
-    return render_template('player_not_found.html')
+    return render_template('player_not_found.html', **data)
 
   return render_template('player.html',
                          page_title=data['player'].name,
@@ -142,6 +142,39 @@ def top_players(server_slug, startat):
     data['next_url'] = False
 
   return render_template('players.html', **data)
+
+
+@app.route('/<string:server_slug>/maps', defaults=dict(startat=0))
+@app.route('/<string:server_slug>/maps/pos/<int:startat>')
+def top_maps(server_slug, startat):
+  try:
+    server = app.config['config'].get_server(server_slug)
+  except InvalidServer:
+    return redirect(url_for('landing'))
+  stats = Results(app.config['config'], server)
+
+  if (startat % 20):
+    startat = 0
+
+  data = {
+      'page_title': 'Top maps',
+      'next_url': url_for('top_maps', startat=startat + 20, server_slug=server.url_slug),
+      'maps': stats.get_top_maps(startat),
+  }
+
+  data.update(more_params(stats, server))
+
+  if startat >= 20:
+    data['prev_url'] = url_for('top_maps', startat=startat - 20, server_slug=server.url_slug)
+  else:
+    data['prev_url'] = False
+
+  num_maps = stats.get_num_maps()
+
+  if (startat + 20) > num_maps:
+    data['next_url'] = False
+
+  return render_template('maps.html', **data)
 
 
 @app.route('/<string:server_slug>/weapons')

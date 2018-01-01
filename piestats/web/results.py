@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 from piestats.keys import Keys
 from piestats.models.player import Player
+from piestats.models.map import Map
 from piestats.models.kill import Kill
 
 
@@ -24,16 +25,33 @@ class Results():
     except ValueError:
       return 0
 
+  def get_num_maps(self):
+    try:
+      return int(self.r.zcard(self.keys.top_maps))
+    except ValueError:
+      return 0
+
   def get_top_killers(self, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.top_players, startat, startat + incr, withscores=True)
     for name, kills in results:
       more = {}
-      for key in ['deaths', 'lastseen', 'firstseen', 'lastcountry']:
+      for key in ['deaths', 'lastseen', 'firstseen', 'lastcountry', 'scores:Alpha', 'scores:Bravo']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
       yield Player(name=name,
                    kills=kills,
                    **more
                    )
+
+  def get_top_maps(self, startat=0, incr=20):
+    results = self.r.zrevrange(self.keys.top_maps, startat, startat + incr, withscores=True)
+    for name, plays in results:
+      more = {}
+      for key in ['scores:Alpha', 'scores:Bravo', 'kills']:
+        more[key] = self.r.hget(self.keys.map_hash(name), key)
+      yield Map(name=name,
+                plays=plays,
+                **more
+                )
 
   def get_player(self, _player):
     info = self.r.hgetall(self.keys.player_hash(_player))

@@ -2,7 +2,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Top Players
+Top Maps
 {% endblock %}
 
 {% block content %}
@@ -27,25 +27,21 @@ Top Players
   <table class="table table-striped">
     <thead>
       <tr>
-        <th colspan="2">Player</th>
+        <th>Map</th>
+        <th>Plays</th>
         <th>Kills</th>
-        <th>Deaths</th>
         <th>Scores Alpha</th>
         <th>Scores Bravo</th>
-        <th>Firstseen</th>
-        <th>Lastseen</th>
       </tr>
     </thead>
     <tbody>
-      {% for player in players %}
+      {% for map in maps %}
       <tr>
-        <td style="width: 0;">{{macro.playerlink(urlargs, player, true)}}</td>
-        <td>{{player.kills}}</td>
-        <td>{{player.deaths}}</td>
-        <td>{{ player.scores_alpha }}</td>
-        <td>{{ player.scores_bravo }}</td>
-        <td>{{pretty_datetime(player.firstseen)}}</td>
-        <td>{{pretty_datetime(player.lastseen)}}</td>
+        <td>{{map.name}}</td>
+        <td>{{map.plays}}</td>
+        <td>{{map.kills}}</td>
+        <td>{{map.scores_alpha}}</td>
+        <td>{{map.scores_bravo}}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -53,3 +49,4 @@ Top Players
 </div>
 
 {% endblock %}
+

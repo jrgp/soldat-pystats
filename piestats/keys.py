@@ -30,6 +30,10 @@ class Keys:
     ''' Hash of data for player ``player``'''
     return '%s:player:%s' % (self.key_prefix, player)
 
+  def map_hash(self, _map):
+    ''' Hash of data for map ``_map``'''
+    return '%s:map:%s' % (self.key_prefix, _map)
+
   def log_file(self, filename):
     ''' Plain keys containing file size of ``filename`` '''
     return '%s:logs:%s' % (self.key_prefix, filename)

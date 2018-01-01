@@ -6,45 +6,67 @@ class Player:
   def __init__(self, *args, **kwargs):
     self.info = kwargs
     self.wepstats = defaultdict(lambda: defaultdict(int))
+    self.mapstats = defaultdict(lambda: defaultdict(int))
     for key, value in kwargs.iteritems():
+
+      try:
+        value = int(value)
+      except:
+        value = 0
+
+      key_parts = key.split(':')
+
+      # Parse kills/deaths out of map
       if key.startswith('kills:') or key.startswith('deaths:'):
-        stat, wep = key.split(':')
-        self.wepstats[wep][stat] = int(value)
+        stat, wep = key_parts
+        self.wepstats[wep][stat] = value
         self.wepstats[wep]['name'] = wep
 
-  def get(self, key):
-    if key not in self.info:
-      return None
-    return self.info[key]
+      # Map stats
+      elif key.startswith('scores_map:'):
+        _, map_name, team = key_parts
+        self.mapstats[map_name]['scores_' + team.lower()] = value
+
+      elif key.startswith('kills_map:'):
+        map_name = key_parts[1]
+        self.mapstats[map_name]['kills'] = value
+
+      elif key.startswith('deaths_map:'):
+        map_name = key_parts[1]
+        self.mapstats[map_name]['deaths'] = value
+
+      elif key.startswith('suicides_map:'):
+        map_name = key_parts[1]
+        self.mapstats[map_name]['suicides'] = value
+
+  def get_int(self, key):
+    try:
+      return int(self.info.get(key, 0))
+    except:
+      return 0
 
   @property
   def name(self):
-    return self.get('name')
+    return self.info.get('name')
 
   @property
   def kills(self):
-    try:
-      return int(self.get('kills'))
-    except (KeyError, TypeError):
-      return 0
+    return self.get_int('kills')
 
   @property
   def deaths(self):
-    try:
-      return int(self.get('deaths'))
-    except (KeyError, TypeError):
-      return 0
+    return self.get_int('deaths')
 
   @property
   def firstseen(self):
-    timestamp = self.get('firstseen')
+    timestamp = self.info.get('firstseen')
     if not timestamp:
       return None
     return datetime.utcfromtimestamp(int(timestamp))
 
   @property
   def lastseen(self):
-    timestamp = self.get('lastseen')
+    timestamp = self.info.get('lastseen')
     if not timestamp:
       return None
     return datetime.utcfromtimestamp(int(timestamp))
@@ -55,4 +77,18 @@ class Player:
 
   @property
   def lastcountry(self):
-    return self.get('lastcountry')
+    return self.info.get('lastcountry')
+
+  @property
+  def scores_alpha(self):
+    return self.get_int('scores:Alpha')
+
+  @property
+  def scores_bravo(self):
+    return self.get_int('scores:Bravo')
+
+  @property
+  def maps(self):
+    for key in self.mapstats:
+      self.mapstats[key]['name'] = key
+    return self.mapstats
