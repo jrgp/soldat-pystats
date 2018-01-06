@@ -139,12 +139,22 @@ class ManageEvents():
     # Update first/last time we saw player
     if incr == 1:
       self.r.hsetnx(self.keys.player_hash(kill.killer), 'firstseen', kill.timestamp)
-      self.r.hset(self.keys.player_hash(kill.killer), 'lastseen', kill.timestamp)
+
+      # Don't overwrite a previous bigger value with a smaller value
+      old_last_seen = int(self.r.hget(self.keys.player_hash(kill.killer), 'lastseen') or 0)
+
+      if kill.timestamp > old_last_seen:
+        self.r.hset(self.keys.player_hash(kill.killer), 'lastseen', kill.timestamp)
 
     # Update first/last time we saw victim, if they're not the same..
     if incr == 1 and not kill.suicide:
       self.r.hsetnx(self.keys.player_hash(kill.victim), 'firstseen', kill.timestamp)
-      self.r.hset(self.keys.player_hash(kill.victim), 'lastseen', kill.timestamp)
+
+      # Don't overwrite a previous bigger value with a smaller value
+      old_last_seen = int(self.r.hget(self.keys.player_hash(kill.victim), 'lastseen') or 0)
+
+      if kill.timestamp > old_last_seen:
+        self.r.hset(self.keys.player_hash(kill.victim), 'lastseen', kill.timestamp)
 
     # Update weapon stats..
     if not kill.suicide:
