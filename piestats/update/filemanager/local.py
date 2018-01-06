@@ -1,4 +1,5 @@
 from piestats.update.filemanager import FileManager
+from time import time
 import os
 import glob
 import click
@@ -11,6 +12,9 @@ class LocalFileManager(FileManager):
     self.keys = keys
     self.root = root
 
+    self.last_log_times = []
+    self.time_since_last = 0
+
   def get_file_paths(self, sub_path, pattern='*'):
     return sorted(glob.glob(os.path.join(self.root, sub_path, pattern)))
 
@@ -18,8 +22,14 @@ class LocalFileManager(FileManager):
     paths = self.get_file_paths(sub_path, pattern)
 
     def progress_function(item):
+      time_stat = ''
+      now = time()
+      if self.time_since_last:
+        time_stat = ' (%.2fs per log)' % self.avg_per_log(now - self.time_since_last)
+      self.time_since_last = now
+
       if item:
-        return 'Parsing {0}'.format(item)
+        return 'Parsing %s%s' % (item, time_stat)
 
     with click.progressbar(paths,
                            show_eta=False,
@@ -43,3 +53,10 @@ class LocalFileManager(FileManager):
     with open(path, 'rb') as h:
       h.seek(position)
       return h.read()
+
+  def avg_per_log(self, this_time):
+    self.last_log_times.append(this_time)
+    count = len(self.last_log_times)
+    if count > 10:
+      self.last_log_times.pop(0)
+    return sum(self.last_log_times) / count
