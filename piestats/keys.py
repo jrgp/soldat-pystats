@@ -10,8 +10,14 @@ class Keys:
     # Map of lowercase player name to normal case player name
     self.player_search = '%s:player_search' % self.key_prefix
 
-    # list containing msgpack'd Kill instances
+    # Last numeric kill id, which we increment
+    self.last_kill_id = '%s:last_kill_id' % self.key_prefix
+
+    # Sorted set mapping timestamp to kill ID
     self.kill_log = '%s:kill_log' % self.key_prefix
+
+    # Hash mapping kill ID to msgpack kill data
+    self.kill_data = '%s:kill_data' % self.key_prefix
 
     # Sorted set for number of kills per weapon
     self.top_weapons = '%s:top_weapons' % self.key_prefix

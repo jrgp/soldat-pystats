@@ -1,4 +1,6 @@
-import datetime
+import click
+from time import time
+from datetime import datetime
 from piestats.update.manageevents import ManageEvents
 from piestats.models.kill import Kill
 
@@ -11,38 +13,30 @@ class Retention:
     self.manage = ManageEvents(r, keys)
 
   def too_old(self, date):
-    return (datetime.datetime.now() - date).days > self.max_days
+    return (datetime.now() - date).days > self.max_days
 
   def run_retention(self):
     '''
       Periodically remove old kills, to save space and ignore old relevant stats.
     '''
-    limit = str(datetime.datetime.now() - datetime.timedelta(days=self.max_days)).split('.')[0]
-    print('Processing retention.. trimming events up until {limit}'.format(limit=limit))
-    for kill in self.iterate_backwards():
+    oldest_allowed = time() - (self.max_days * 86400)
 
-      if not self.too_old(kill.datetime):
-        break
-      self.manage.rollback_kill(kill)
+    kill_ids = self.r.zrangebyscore(self.keys.kill_log, -1, oldest_allowed)
 
-  def iterate_backwards(self):
-    '''
-      Work through kill log backwards, yielding each kill object
-    '''
-    try:
-      num_kills = int(self.r.llen(self.keys.kill_log))
-    except ValueError:
-      print('no kills?')
+    print 'Processing retention.. trimming events up until %s' % datetime.utcfromtimestamp(oldest_allowed)
+
+    if not kill_ids:
       return
 
-    i = num_kills
+    with click.progressbar(kill_ids,
+                           show_eta=False,
+                           label='Killing %d kills' % len(kill_ids),
+                           item_show_func=lambda item: 'Kill ID %s' % item if item else '') as progressbar:
 
-    while i > 0:
-      index = i - 1
-      i -= 1
-      this_kill = self.r.lindex(self.keys.kill_log, index)
-      if this_kill is None:
-        print('none kill?')
-        break
-      data = Kill.from_redis(this_kill)
-      yield data
+      for kill_id in progressbar:
+        kill_data = self.r.hget(self.keys.kill_data, kill_id)
+        if kill_data:
+          kill = Kill.from_redis(kill_data)
+        else:
+          kill = None
+        self.manage.rollback_kill(kill, kill_id)

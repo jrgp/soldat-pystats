@@ -112,7 +112,9 @@ class ManageEvents():
 
     # Add kill to our internal log
     if incr == 1:
-      self.r.lpush(self.keys.kill_log, kill.to_redis())
+      kill_id = self.r.incr(self.keys.last_kill_id)
+      self.r.hset(self.keys.kill_data, kill_id, kill.to_redis())
+      self.r.zadd(self.keys.kill_log, kill_id, kill.timestamp)
 
     # Map logic
     if self.current_map:
@@ -172,18 +174,23 @@ class ManageEvents():
 
     # If we're not a sucide, add this legit kill to the number of kills for this
     # day
-    if not kill.suicide:
+    if incr == 1 and not kill.suicide:
       text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
       self.r.incr(self.keys.kills_per_day(text_today), incr)
 
-  def rollback_kill(self, kill):
+  def rollback_kill(self, kill, kill_id):
     '''
       Undo a kill, reversing all metrics it increased
     '''
 
-    # Decrement all counters this kill increased
-    self.apply_kill(kill, -1)
+    if kill:
+        # Decrement all counters this kill increased
+        self.apply_kill(kill, -1)
 
-    text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
-    self.r.delete(self.keys.kills_per_day(text_today))
-    self.r.rpop(self.keys.kill_log)
+        # Kill kills per day from this date
+        text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
+        self.r.delete(self.keys.kills_per_day(text_today))
+
+    # Kill the kill
+    self.r.hdel(self.keys.kill_data, kill_id)
+    self.r.zrem(self.keys.kill_log, kill_id)

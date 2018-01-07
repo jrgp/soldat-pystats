@@ -15,7 +15,7 @@ class Results():
 
   def get_num_kills(self):
     try:
-      return int(self.r.llen(self.keys.kill_log))
+      return self.r.zcard(self.keys.kill_log)
     except ValueError:
       return 0
 
@@ -88,8 +88,11 @@ class Results():
                    )
 
   def get_last_kills(self, startat=0, incr=20):
-    for kill in self.r.lrange(self.keys.kill_log, startat, startat + incr):
-      yield Kill.from_redis(kill)
+    kill_ids = self.r.zrevrange(self.keys.kill_log, startat, startat + incr)
+    for kill_id in kill_ids:
+      kill_data = self.r.hget(self.keys.kill_data, kill_id)
+      if kill_data:
+        yield Kill.from_redis(kill_data)
 
   def get_top_weapons(self):
     results = self.r.zrevrange(self.keys.top_weapons, 0, 20, withscores=True)
