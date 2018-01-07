@@ -11,42 +11,31 @@ class Map:
         self.wepstats[wep][stat] = int(value)
         self.wepstats[wep]['name'] = wep
 
-  def get(self, key):
-    if key not in self.info:
-      return None
-    return self.info[key]
+  def get_int(self, key):
+    try:
+      return int(self.info.get(key, 0))
+    except:
+      return 0
 
   @property
   def name(self):
-    return self.get('name')
+    return self.info.get('name')
 
   @property
   def plays(self):
-    try:
-      return int(self.get('plays'))
-    except TypeError:
-      return 0
+    return self.get_int('plays')
 
   @property
   def kills(self):
-    try:
-      return int(self.get('kills'))
-    except TypeError:
-      return 0
+    return self.get_int('kills')
 
   @property
   def scores_alpha(self):
-    try:
-      return int(self.get('scores:Alpha'))
-    except TypeError:
-      return 0
+    return self.get_int('scores:Alpha')
 
   @property
   def scores_bravo(self):
-    try:
-      return int(self.get('scores:Bravo'))
-    except TypeError:
-      return 0
+    return self.get_int('scores:Bravo')
 
   @property
   def weapons(self):

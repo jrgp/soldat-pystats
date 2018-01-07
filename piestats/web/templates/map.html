@@ -1,0 +1,70 @@
+{% import 'macro.html' as macro %}
+{% extends "layout.html" %}
+
+{% block title %}
+{{ map.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-xs-12  col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Overview</h3>
+      </div>
+      <table class="table table-striped">
+        <tbody>
+          <!-- Offset stripe highlight by one -->
+          <tr></tr>
+          <tr>
+            <th>Name</th>
+            <td>{{ map.name }}</td>
+          </tr>
+          <tr>
+            <th>Plays</th>
+            <td>{{ map.plays }}</td>
+          </tr>
+          <tr>
+            <th>Kills</th>
+            <td>{{ map.kills }}</td>
+          </tr>
+          <tr>
+            <th>Scores Alpha</th>
+            <td>{{ map.scores_alpha }}</td>
+          </tr>
+          <tr>
+            <th>Scores Bravo</th>
+            <td>{{ map.scores_bravo }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-xs-12  col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Weapons</h3>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th colspan="2" style="text-align: left;">Wep</th>
+            <th>Kills</th>
+          </tr>
+         </thead>
+         <tbody>
+      {% for wep in map.weapons.values()|sort(attribute='kills', reverse=True) %}
+        <tr>
+          <td width="10" style="text-align: right;">{{macro.weaponpic(wep.name)}}</td>
+          <td>{{macro.weaponlink(urlargs, wep.name)}}</td>
+          <td>{{ wep.kills }}</td>
+        </tr>
+      {% endfor %}
+         </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

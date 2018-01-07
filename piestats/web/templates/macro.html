@@ -25,3 +25,7 @@
     {# <a href="{{ url_for('weapon', weapon=weapon, **urlargs) }}">{{ weapon }}</a> #}
     {{ weapon }}
 {% endmacro %}
+
+{% macro maplink(urlargs, name) %}
+    <a href="{{ url_for('_map', name=name, **urlargs) }}">{{ name }}</a>
+{% endmacro %}

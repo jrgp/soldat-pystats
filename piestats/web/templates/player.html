@@ -98,7 +98,7 @@
          <tbody>
       {% for map in player.maps.values()|sort(attribute='kills', reverse=True) %}
         <tr>
-          <td>{{map.name}}</td>
+          <td>{{macro.maplink(urlargs, map.name)}}</td>
           <td>{{map.kills}}</td>
           <td>{{map.deaths}}</td>
           <td>{{map.suicides}}</td>

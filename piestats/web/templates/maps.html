@@ -37,7 +37,7 @@ Top Maps
     <tbody>
       {% for map in maps %}
       <tr>
-        <td>{{map.name}}</td>
+        <td>{{macro.maplink(urlargs, map.name)}}</td>
         <td>{{map.plays}}</td>
         <td>{{map.kills}}</td>
         <td>{{map.scores_alpha}}</td>

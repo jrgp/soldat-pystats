@@ -59,6 +59,13 @@ class Results():
       return None
     return Player(name=_player, **info)
 
+  def get_map(self, _map):
+    info = self.r.hgetall(self.keys.map_hash(_map))
+    if not info:
+      return None
+    info['plays'] = self.r.zscore(self.keys.top_maps, _map) or 0
+    return Map(name=_map, **info)
+
   def get_player_fields(self, _player, fields=[]):
     info = {}
     for key in fields:

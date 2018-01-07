@@ -71,6 +71,32 @@ def player(server_slug, name=None):
                          )
 
 
+@app.route('/<string:server_slug>/map/<string:name>')
+def _map(server_slug, name):
+  try:
+    server = app.config['config'].get_server(server_slug)
+  except InvalidServer:
+    return redirect(url_for('landing'))
+  stats = Results(app.config['config'], server)
+
+  if name is None:
+      name = request.args.get('name')
+
+  data = dict(
+      map=stats.get_map(name),
+  )
+
+  data.update(more_params(stats, server))
+
+  if not data['map']:
+    return render_template('map_not_found.html', **data)
+
+  return render_template('map.html',
+                         page_title=data['map'].name,
+                         **data
+                         )
+
+
 @app.route('/<string:server_slug>/kills', defaults=dict(startat=0))
 @app.route('/<string:server_slug>/kills/pos/<int:startat>')
 def latestkills(server_slug, startat):
