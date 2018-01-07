@@ -121,6 +121,7 @@
           <tr>
             <th colspan="2">Player</th>
             <th>Kills</th>
+            <th>K:D</th>
           </tr>
          </thead>
          <tbody>
@@ -128,6 +129,7 @@
             <tr>
               <td style="text-align: right; width: 0;">{{ macro.playerlink(urlargs, player, true) }}</td>
               <td style="width: 50%;">{{ player.kills }}</td>
+              <td>{{ player.info.kd }}</td>
             </tr>
           {% endfor %}
          </tbody>
@@ -142,6 +144,7 @@
           <tr>
             <th colspan="2">Player</th>
             <th>Deaths</th>
+            <th>K:D</th>
           </tr>
          </thead>
          <tbody>
@@ -149,6 +152,7 @@
             <tr>
               <td style="text-align: right; width: 0;">{{ macro.playerlink(urlargs, player, true) }}</td>
               <td style="width: 50%;">{{ player.kills }}</td>
+              <td>{{ player.info.kd }}</td>
             </tr>
           {% endfor %}
          </tbody>

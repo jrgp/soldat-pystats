@@ -67,23 +67,27 @@ class Results():
 
   def get_player_top_enemies(self, _player, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.player_top_enemies(_player), 0, startat + incr, withscores=True)
-    for name, kills in results:
+    for name, their_kills in results:
       more = {}
       for key in ['lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
+      my_deaths = float(self.r.zscore(self.keys.player_top_enemies(name), _player) or 0)
+      more['kd'] = '%.2f' % (their_kills / my_deaths if my_deaths > 0 else 0)
       yield Player(name=name,
-                   kills=kills,
+                   kills=their_kills,
                    **more
                    )
 
   def get_player_top_victims(self, _player, startat=0, incr=20):
     results = self.r.zrevrange(self.keys.player_top_victims(_player), 0, startat + incr, withscores=True)
-    for name, kills in results:
+    for name, my_kills in results:
       more = {}
       for key in ['lastcountry']:
         more[key] = self.r.hget(self.keys.player_hash(name), key)
+      their_deaths = float(self.r.zscore(self.keys.player_top_victims(name), _player) or 0)
+      more['kd'] = '%.2f' % (my_kills / their_deaths if their_deaths > 0 else 0)
       yield Player(name=name,
-                   kills=kills,
+                   kills=my_kills,
                    **more
                    )
 
