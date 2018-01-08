@@ -1,11 +1,12 @@
 import socket
-import re
 import logging
 from struct import unpack
 from IPy import IP
 import GeoIP
 from collections import defaultdict
 import pkg_resources
+
+logger = logging.getLogger(__name__)
 
 
 class Status:
@@ -18,7 +19,7 @@ class Status:
     try:
       self.geoip = GeoIP.open(pkg_resources.resource_filename('piestats.update', 'GeoIP.dat'), GeoIP.GEOIP_MMAP_CACHE)
     except Exception as e:
-      print 'Failed loading geoip db %s' % e
+      logger.exception('Failed loading geoip db %s', e)
       self.geoip = None
 
   def parse_refresh(self, sock):
@@ -117,37 +118,41 @@ class Status:
     ''' Connect to server, send request for data and wait for it, then parse and return it '''
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((self.ip, self.port))
+    s.settimeout(4.0)
 
     buf = ''
-
     info = None
 
-    while True:
-        try:
-            data = s.recv(1)
-        except Exception:
-            break
+    try:
+      s.connect((self.ip, self.port))
 
-        if not data:
-            break
+      while True:
+          data = s.recv(1)
 
-        buf = buf + data
+          if not data:
+              break
 
-        if re.search('\r?\n$', buf):
-            if buf == 'Soldat Admin Connection Established.\r\n':
-                logging.info('connected')
-                s.send('%s\n' % self.password)
-            elif buf == 'Welcome, you are in command of the server now.\r\n':
-                logging.info('authed')
-                s.send('REFRESH\n')
-            elif buf == 'REFRESH\r\n':
-                logging.info('refresh response inbound')
-                info = self.parse_refresh(s)
-                break
+          buf = buf + data
 
-            buf = ''
+          if buf.endswith('\n'):
+              if buf == 'Soldat Admin Connection Established.\r\n':
+                  logger.info('Connected to soldat server %s:%s', self.ip, self.port)
+                  s.send('%s\n' % self.password)
+              elif buf == 'Welcome, you are in command of the server now.\r\n':
+                  logger.info('Authed')
+                  s.send('REFRESH\n')
+              elif buf == 'REFRESH\r\n':
+                  logger.info('Refresh response inbound')
+                  info = self.parse_refresh(s)
+                  break
 
-    s.close()
+              buf = ''
+
+    except socket.error as e:
+      logger.exception('Socket problem with soldat server %s:%s: %s', self.ip, self.port, e)
+      return None
+
+    finally:
+      s.close()
 
     return info
