@@ -29,10 +29,10 @@ class Kill():
       Class factory to instantiate a new instance of this class based on a msgpack
       representation
     '''
-    return cls(*msgpack.loads(item))
+    return cls(*msgpack.loads(item, use_list=False))
 
   def to_redis(self):
     '''
       Dump the kill to msgpack. Just a tuple with the args used to create this class
     '''
-    return msgpack.dumps((self.killer, self.victim, self.weapon, self.timestamp))
+    return msgpack.dumps((self.killer, self.victim, self.weapon, self.timestamp), use_bin_type=False)
