@@ -1,3 +1,6 @@
+from gevent import monkey
+monkey.patch_all()
+
 import redis
 import os
 import click
@@ -70,10 +73,41 @@ def run_update(config_path):
     required=True)
 def run_site(config_path):
   '''
-    Spawn flask app. Pass me path to config file with redis connection + key
+    Spawn falcon app using embedded gunicorn. Pass me path to config file with redis connection + key
     prefix settings.
   '''
 
   config = Config(config_path)
-  app = init_app(config_path)
-  app.run(**config.flask_run)
+
+  from gunicorn.app.base import BaseApplication
+
+  # Boilerplate for running gunicorn from within python instead of via
+  # an external command
+  class App(BaseApplication):
+    def __init__(self, config={}):
+      self.options = config
+      super(App, self).__init__()
+
+    def load_config(self):
+      for key, value in self.options.iteritems():
+        if key in self.cfg.settings and value is not None:
+          self.cfg.set(key.lower(), value)
+
+    def load(self):
+      app = init_app(config_path)
+      return app
+
+  # Default run options
+  run_options = {
+      'bind': '0:5000',
+      'workers': 4,
+      'worker_class': 'gevent',
+      'accesslog': '-',
+  }
+
+  # Override with ones that might exist in config
+  run_options.update(config.gunicorn_settings)
+
+  # Start the embedded gunicorn
+  g_server = App(run_options)
+  g_server.run()

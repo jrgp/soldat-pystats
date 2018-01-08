@@ -49,7 +49,7 @@
           <tr>
             <th>Country</th>
             <td>
-              <img width="16" height="11" src="{{ url_for('static', filename='flags/'+player.lastcountry.lower()+'.png') }}" title="{{ player.lastcountry }}">
+              <img width="16" height="11" src="/static/flags/{{player.lastcountry.lower()}}.png" title="{{ player.lastcountry }}">
             </td>
           </tr>
           {% endif %}

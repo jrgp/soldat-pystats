@@ -4,7 +4,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
 {% if show_server_status %}
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.4/handlebars.min.js"></script>
-<script src="{{url_for('static', filename='status.js')}}"></script>
+<script src="/static/status.js"></script>
 {% endif %}
 {% endblock %}
 
@@ -88,7 +88,7 @@ Stats Overview
 
 <script>
   var update = function() {
-    load_server_status('{{url_for('status', server_slug=server_slug)}}');
+    load_server_status('/{{server_slug}}/status');
   };
   update();
   // Do this every minute

@@ -1,7 +1,7 @@
 # soldat-pystats
 
 Statistics script which displays kill and player/country stats for multiple
-[Soldat](http://soldat.pl/) game servers. Powered by Python + [Redis](http://redis.io/) + [Flask](http://flask.pocoo.org/) and styled with [Bootswatch](http://bootswatch.com/).
+[Soldat](http://soldat.pl/) game servers. Powered by Python + [Redis](http://redis.io/) + [Falcon](https://falconframework.org/) and styled with [Bootswatch](http://bootswatch.com/).
 
 # Screenshots
 

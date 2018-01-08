@@ -8,7 +8,7 @@ soldat_servers:
 
   - slug: dm
     title: "JRGP's EU DM"
-    dirs: 
+    dirs:
       - /usr/local/joe/pyredis_stats/soldat
 
     # Used for connecting to admin to show live stats on
@@ -23,14 +23,14 @@ soldat_servers:
 # Days to keep track of stats
 data_retention: 30
 
-# These key-pairs are fed into redis.Redis() as **kwargs. See 
+# These key-pairs are fed into redis.Redis() as **kwargs. See
 # https://redis-py.readthedocs.org/en/latest/ for available keys.
 # If you just did apt-get install redis-server, the following is fine.
 redis_connect:
   host: localhost
 
-# Key-pairs passed to flask's app.run() method as **kwargs. See
-# http://flask.pocoo.org/docs/0.10/api/#flask.Flask.run
-flask_run:
-  host: 0.0.0.0
-  debug: true
+# Used when you run the site with `runsite` instead of using an external command
+# like gunicorn or uwsgi
+gunicorn_settings:
+  bind: 0.0.0.0:5000
+  workers: 4

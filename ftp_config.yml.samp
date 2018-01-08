@@ -46,8 +46,8 @@ data_retention: 30
 redis_connect:
   host: localhost
 
-# Key-pairs passed to flask's app.run() method as **kwargs. See
-# http://flask.pocoo.org/docs/0.10/api/#flask.Flask.run
-flask_run:
-  host: 0.0.0.0
-  debug: true
+# Used when you run the site with `runsite` instead of using an external command
+# like gunicorn or uwsgi
+gunicorn_settings:
+  bind: 0.0.0.0:5000
+  workers: 4

@@ -1,6 +1,6 @@
 {% macro playerlink(urlargs, player, tdsplit=False) %}
   {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
-    <img width="16" height="11" src="{{ url_for('static', filename='flags/'+player.lastcountry.lower()+'.png') }}" title="{{ player.lastcountry }}">
+    <img width="16" height="11" src="/static/flags/{{player.lastcountry.lower()}}.png' }}" title="{{ player.lastcountry }}">
   {% endif %}
 
   {% if tdsplit %}
@@ -8,24 +8,19 @@
     <td>
   {% endif %}
 
-  {% if player.name.startswith('/') %}
-    <a href="{{ url_for('player', **urlargs) }}?name={{player.name}}">{{player.name}}</a>
-  {% else %}
-    <a href="{{ url_for('player', name=player.name, **urlargs) }}">{{player.name}}</a>
-  {% endif %}
+  <a href="{{urlargs.player_url(urlargs.server_slug, player.name)}}">{{player.name}}</a>
 {% endmacro %}
 
 {% macro weaponpic(weapon) %}
   {% if weapon != 'Selfkill' %}
-    <img src="{{ url_for('static', filename='soldatguns/'+weapon.replace(' ', '_')+'.png') }}" title="{{ weapon }}">
+    <img src="/static/soldatguns/{{weapon.replace(' ', '_')}}.png" title="{{ weapon }}">
   {% endif %}
 {% endmacro %}
 
 {% macro weaponlink(urlargs, weapon) %}
-    {# <a href="{{ url_for('weapon', weapon=weapon, **urlargs) }}">{{ weapon }}</a> #}
     {{ weapon }}
 {% endmacro %}
 
 {% macro maplink(urlargs, name) %}
-    <a href="{{ url_for('_map', name=name, **urlargs) }}">{{ name }}</a>
+    <a href="/{{urlargs.server_slug}}/map/{{name}}">{{ name }}</a>
 {% endmacro %}
