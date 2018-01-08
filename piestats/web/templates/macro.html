@@ -1,6 +1,6 @@
 {% macro playerlink(urlargs, player, tdsplit=False) %}
   {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
-    <img width="16" height="11" src="/static/flags/{{player.lastcountry.lower()}}.png' }}" title="{{ player.lastcountry }}">
+    <img width="16" height="11" src="/static/flags/{{player.lastcountry.lower()}}.png" title="{{ player.lastcountry }}">
   {% endif %}
 
   {% if tdsplit %}
