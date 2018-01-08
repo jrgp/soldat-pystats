@@ -4,6 +4,7 @@ import os
 import logging
 import click
 from fnmatch import fnmatch
+from io import BytesIO
 import ftplib
 
 
@@ -20,7 +21,7 @@ class FtpFileManager(FileManager):
     if not self.ftp:
       return []
 
-    return sorted(filter(lambda x: fnmatch(x, pattern), self.ftp.nlst(os.path.join(self.root, sub_path))))
+    return sorted(os.path.join(self.root, sub_path, filename) for filename in self.ftp.nlst(os.path.join(self.root, sub_path)) if fnmatch(filename, pattern))
 
   def get_files(self, sub_path, pattern='*'):
     if not self.ftp:
@@ -36,9 +37,7 @@ class FtpFileManager(FileManager):
                            show_eta=False,
                            label='Parsing {0} logs from ftp'.format(len(files)),
                            item_show_func=progress_function) as progressbar:
-      for filename in progressbar:
-        path = os.path.join(self.root, sub_path, filename)
-
+      for path in progressbar:
         try:
           size = self.ftp.size(path)
         except ftplib.error_perm:
@@ -58,9 +57,10 @@ class FtpFileManager(FileManager):
           self.r.set(key, size)
 
   def get_data(self, path, position):
-    lines = []
-    self.ftp.retrlines('RETR ' + path, lambda line: lines.append(line))
-    return '\n'.join(lines)[position:]
+    data = BytesIO()
+    self.ftp.retrbinary('RETR %s' % path, data.write)
+    data.seek(position, 0)
+    return data.getvalue()
 
   @contextmanager
   def initialize(self):
