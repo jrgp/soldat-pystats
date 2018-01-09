@@ -11,7 +11,9 @@ from piestats.models.kill import Kill
 
 class ParseEvents():
 
-  def __init__(self, retention, filemanager):
+  def __init__(self, retention, filemanager, r, keys):
+    self.r = r
+    self.keys = keys
     self.retention = retention
     self.filemanager = filemanager
     self.parse_kill_date_parserinfo = parser.parserinfo(yearfirst=True)
@@ -39,7 +41,7 @@ class ParseEvents():
     self.map_titles = {}
 
   def build_map_names(self):
-    maps = {}
+    map_titles = {}
     flag_score_maps = set()
     score_spawnpoint_types = ('alpha_flag', 'bravo_flag')
 
@@ -48,6 +50,18 @@ class ParseEvents():
     print 'Parsing %d maps' % len(map_paths)
 
     for map_path in map_paths:
+
+      map_filename = os.path.basename(map_path)[:-4]
+
+      # If we already have the data for this map in redis, don't bother parsing it again
+      map_title = self.r.hget(self.keys.map_hash(map_filename), 'title')
+      map_flags = self.r.hget(self.keys.map_hash(map_filename), 'flags')
+      if map_title:
+        map_titles[map_filename] = map_title
+        if map_flags == 'yes':
+          flag_score_maps.add(map_filename)
+        continue
+
       content = self.filemanager.get_data(map_path, 0)
 
       reader = PmsReader()
@@ -58,18 +72,19 @@ class ParseEvents():
         print 'Failed reading map %s: %s' % (map_path, e)
         continue
 
-      map_filename = os.path.basename(map_path)[:-4]
-
       title = reader.header.Name.text[:reader.header.Name.length].strip()
-      maps[map_filename] = title
+      map_titles[map_filename] = title
+
+      self.r.hset(self.keys.map_hash(map_filename), 'title', title)
 
       if map_filename.lower()[:4] in ('ctf_', 'inf_'):
         for spawnpoint in reader.spawnpoints:
           if spawnpoint.TypeText in score_spawnpoint_types:
             flag_score_maps.add(map_filename)
+            self.r.hset(self.keys.map_hash(map_filename), 'flags', 'yes')
             break
 
-    return maps, flag_score_maps
+    return map_titles, flag_score_maps
 
   def parse_line(self, line):
     for event, regex in self.event_regex:

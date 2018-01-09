@@ -5,7 +5,7 @@ from piestats.update.parseevents import ParseEvents
 def update_events(r, keys, retention, filemanager):
 
   # Get kills and events out of our logs
-  parse = ParseEvents(retention, filemanager)
+  parse = ParseEvents(retention, filemanager, r, keys)
 
   # Interact with redis to store and delete kills and events
   manage = ManageEvents(r, keys)
