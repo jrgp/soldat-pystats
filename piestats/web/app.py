@@ -189,6 +189,8 @@ class Kills(ServerBase):
       info['killer_obj'] = req.context['stats'].get_player_fields(kill.killer, ['lastcountry'])
       info['victim_obj'] = req.context['stats'].get_player_fields(kill.victim, ['lastcountry'])
       info['datetime'] = data['pretty_datetime'](datetime.utcfromtimestamp(int(info['timestamp'])))
+      info['killer_team'] = kill.killer_team
+      info['victim_team'] = kill.victim_team
       return info
 
     data['kills'] = (kill_decorate(kill) for kill in req.context['stats'].get_last_kills(startat))

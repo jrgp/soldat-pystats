@@ -1,0 +1,23 @@
+.team-alpha, .team-alpha:hover {
+  color: #ff4242;
+}
+
+.team-bravo, .team-bravo:hover {
+  color: #80aef7;
+}
+
+.team-charlie, .team-charlie:hover {
+  color: green;
+}
+
+.team-delta, .team-delta:hover {
+  color: yellow;
+}
+
+.team-spectator, .team-spectator:hover {
+  color: purple;
+}
+
+.team-none, .team-none:hover {
+  color: gray;
+}

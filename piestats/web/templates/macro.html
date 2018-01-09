@@ -1,4 +1,4 @@
-{% macro playerlink(urlargs, player, tdsplit=False) %}
+{% macro playerlink(urlargs, player, tdsplit=False, team=None) %}
   {% if player.name not in ['Major', 'Major(1)'] and player.lastcountry != None %}
     <img width="16" height="11" src="/static/flags/{{player.lastcountry.lower()}}.png" title="{{ player.lastcountry }}">
   {% endif %}
@@ -8,7 +8,7 @@
     <td>
   {% endif %}
 
-  <a href="{{urlargs.player_url(urlargs.server_slug, player.name)}}">{{player.name}}</a>
+  <a href="{{urlargs.player_url(urlargs.server_slug, player.name)}}"{% if team %} class="team-{{team}}"{% endif %}>{{player.name}}</a>
 {% endmacro %}
 
 {% macro weaponpic(weapon) %}
