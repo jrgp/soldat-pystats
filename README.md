@@ -26,6 +26,7 @@ Statistics script which displays kill and player/country stats for multiple
 
 - Python 2.7, with virtualenv/pip tools
 - Redis DB installed/running
+- Tested with soldat server version 2.8.1. You must have `EchoKills=1` set in `server.ini`
 
 # Instructions
 
