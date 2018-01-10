@@ -7,6 +7,7 @@ import click
 import time
 from piestats.update import update_events
 from piestats.update.retention import Retention
+from piestats.update.lock import acquire_lock
 from piestats.config import Config
 from piestats.keys import Keys
 from piestats.web import init_app
@@ -29,38 +30,40 @@ def run_update(config_path):
     as well as which soldat servers to process data for.
   '''
 
-  start = time.time()
-  # Parse our config yaml file
-  config = Config(config_path)
+  with acquire_lock():
 
-  r = redis.Redis(**config.redis_connect)
+    start = time.time()
+    # Parse our config yaml file
+    config = Config(config_path)
 
-  for server in config.servers:
-    print('Updating stats for {server}'.format(server=server.url_slug))
+    r = redis.Redis(**config.redis_connect)
 
-    # Redis key name manager
-    keys = Keys(config, server)
+    for server in config.servers:
+      print('Updating stats for {server}'.format(server=server.url_slug))
 
-    # Limit our data to however much retention
-    retention = Retention(r, keys, config)
+      # Redis key name manager
+      keys = Keys(config, server)
 
-    # Parse each of our soldat DIRs
-    for soldat_dir in server.dirs:
+      # Limit our data to however much retention
+      retention = Retention(r, keys, config)
 
-      # Support getting logs via local files or ssh or ftp
-      if server.log_source == 'local':
-        filemanager = LocalFileManager(r, keys, soldat_dir, retention)
-      elif server.log_source == 'ssh':
-        filemanager = SshFileManager(r, keys, soldat_dir, retention, server.connection_options)
-      elif server.log_source == 'ftp':
-        filemanager = FtpFileManager(r, keys, soldat_dir, retention, server.connection_options)
+      # Parse each of our soldat DIRs
+      for soldat_dir in server.dirs:
 
-      # Console logs
-      update_events(r, keys, retention, filemanager)
+        # Support getting logs via local files or ssh or ftp
+        if server.log_source == 'local':
+          filemanager = LocalFileManager(r, keys, soldat_dir, retention)
+        elif server.log_source == 'ssh':
+          filemanager = SshFileManager(r, keys, soldat_dir, retention, server.connection_options)
+        elif server.log_source == 'ftp':
+          filemanager = FtpFileManager(r, keys, soldat_dir, retention, server.connection_options)
 
-    # Trim old events
-    retention.run_retention()
-    print('Updating took {0} seconds'.format(round(time.time() - start, 2)))
+        # Console logs
+        update_events(r, keys, retention, filemanager)
+
+      # Trim old events
+      retention.run_retention()
+      print('Updating took {0} seconds'.format(round(time.time() - start, 2)))
 
 
 @click.command()
