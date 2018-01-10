@@ -52,6 +52,7 @@
       <li {%if req.uri_template.startswith('/{server}/players')%}class="active"{% endif %} role="presentation"><a href="/{{server_slug}}/players">Top Players</a></li>
       <li {%if req.uri_template.startswith('/{server}/maps')%}class="active"{% endif %} role="presentation"><a href="/{{server_slug}}/maps">Top Maps</a></li>
       <li {%if req.uri_template == '/{server}/weapons'%}class="active"{% endif %} role="presentation"><a href="/{{server_slug}}/weapons">Top Weapons</a></li>
+      <li {%if req.uri_template.startswith('/{server}/rounds')%}class="active"{% endif %} role="presentation"><a href="/{{server_slug}}/rounds">Latest Rounds</a></li>
       <li {%if req.uri_template.startswith('/{server}/kills')%}class="active"{% endif %} role="presentation"><a href="/{{server_slug}}/kills">Latest Kills</a></li>
     </ul>
   </div>

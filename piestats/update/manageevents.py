@@ -1,5 +1,6 @@
 from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, MapList
 from piestats.models.kill import Kill
+from piestats.models.round import Round
 from IPy import IP
 from datetime import datetime
 import pkg_resources
@@ -15,7 +16,9 @@ class ManageEvents():
     self.r = r
     self.keys = keys
     self.current_map = None
+    self.round_id = None
     self.valid_score_maps = set()
+    self.lobby_maps = ('Lothic', 'Lobby')
 
     self.geoip = None
     if GeoIP:
@@ -70,11 +73,49 @@ class ManageEvents():
 
   def update_map(self, map, date):
     '''
-      Increase number of times this map has been played
+      Increase number of times this map has been played, and start keeping track of round
+      events
     '''
+
+    # Kill current round
+    if self.round_id:
+      self.r.hset(self.keys.round_hash(self.round_id), 'finished', date)
+      old_round_id = self.round_id
+      old_map = self.current_map
+
+      # Finish up old round's stats
+      if old_map:
+        old_round_data = self.r.hgetall(self.keys.round_hash(old_round_id))
+        if old_round_data:
+          old_round = Round(**old_round_data)
+
+          # If it has no kills or no scores or anything else just delete it
+          if old_round.empty:
+            self.r.delete(self.keys.round_hash(old_round_id))
+            self.r.zrem(self.keys.round_log, old_round_id)
+          else:
+
+            # Otherwise update wins/ties for map stats
+            if old_round.winning_team:
+              self.r.hincrby(self.keys.map_hash(old_map), 'wins:' + old_round.winning_team)
+            elif old_round.tie:
+              self.r.hincrby(self.keys.map_hash(old_map), 'ties')
+
+    self.round_id = None
     self.current_map = map
+
     if map:
       self.r.zincrby(self.keys.top_maps, map)
+
+      # Start a new round if this round is using a real map and not a placeholder one
+      if map not in self.lobby_maps:
+        self.round_id = self.r.incr(self.keys.last_round_id)
+        self.r.hmset(self.keys.round_hash(self.round_id), {
+            'started': date,
+            'map': map,
+            'flags': 'yes' if self.current_map in self.valid_score_maps else 'no'
+        })
+        self.r.zadd(self.keys.round_log, self.round_id, date)
 
   def kill_map(self, map):
     '''
@@ -102,6 +143,11 @@ class ManageEvents():
     # Player stats
     self.r.hincrby(self.keys.player_hash(player), 'scores_map:' + self.current_map + ':' + team)
 
+    # Round stats
+    if self.round_id:
+      self.r.hincrby(self.keys.round_hash(self.round_id), 'scores:' + team)
+      self.r.hincrby(self.keys.round_hash(self.round_id), 'scores_player:' + team + ':' + player)
+
   def apply_kill(self, kill, incr=1):
     '''
       Apply a kill, incrementing (or decrementing) all relevant metrics
@@ -112,6 +158,11 @@ class ManageEvents():
 
     # Add kill to our internal log
     if incr == 1:
+
+      # Tie it to this round
+      if self.round_id:
+        kill.round_id = self.round_id
+
       kill_id = self.r.incr(self.keys.last_kill_id)
       self.r.hset(self.keys.kill_data, kill_id, kill.to_redis())
       self.r.zadd(self.keys.kill_log, kill_id, kill.timestamp)
@@ -134,6 +185,11 @@ class ManageEvents():
     if not kill.suicide:
       self.r.zincrby(self.keys.top_players, kill.killer, incr)
       self.r.hincrby(self.keys.player_hash(kill.killer), 'kills', incr)
+
+      if incr == 1 and self.round_id:
+        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_player:' + kill.killer)
+        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills')
+        self.r.hincrby(self.keys.round_hash(self.round_id), 'deaths_player:' + kill.victim)
 
     # Increment number of deaths for victim
     self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths', incr)
@@ -163,6 +219,9 @@ class ManageEvents():
       self.r.zincrby(self.keys.top_weapons, kill.weapon)
       self.r.hincrby(self.keys.player_hash(kill.killer), 'kills:' + kill.weapon, incr)
       self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths:' + kill.weapon, incr)
+
+      if incr == 1 and self.round_id:
+        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_weapon:' + kill.weapon)
 
     # If we're not a suicide, update top enemy kills for playeself.r..
     if not kill.suicide:

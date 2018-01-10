@@ -22,6 +22,10 @@ class Map:
     return self.info.get('name')
 
   @property
+  def flags(self):
+    return self.info.get('flags') == 'yes'
+
+  @property
   def plays(self):
     return self.get_int('plays')
 
@@ -36,6 +40,18 @@ class Map:
   @property
   def scores_bravo(self):
     return self.get_int('scores:Bravo')
+
+  @property
+  def wins_alpha(self):
+    return self.get_int('wins:alpha')
+
+  @property
+  def wins_bravo(self):
+    return self.get_int('wins:bravo')
+
+  @property
+  def ties(self):
+    return self.get_int('ties')
 
   @property
   def weapons(self):

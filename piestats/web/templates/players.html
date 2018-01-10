@@ -30,8 +30,7 @@ Top Players
         <th colspan="2">Player</th>
         <th>Kills</th>
         <th>Deaths</th>
-        <th>Scores Alpha</th>
-        <th>Scores Bravo</th>
+        <th>Scores</th>
         <th>Firstseen</th>
         <th>Lastseen</th>
       </tr>
@@ -42,8 +41,10 @@ Top Players
         <td style="width: 0;">{{macro.playerlink(urlargs, player, true)}}</td>
         <td>{{player.kills}}</td>
         <td>{{player.deaths}}</td>
-        <td>{{ player.scores_alpha }}</td>
-        <td>{{ player.scores_bravo }}</td>
+        <td>
+          <span class="team-alpha">{{ player.scores_alpha }}</span>
+          <span class="team-bravo">{{ player.scores_bravo }}</span>
+        </td>
         <td>{{pretty_datetime(player.firstseen)}}</td>
         <td>{{pretty_datetime(player.lastseen)}}</td>
       </tr>

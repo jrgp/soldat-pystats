@@ -1,0 +1,138 @@
+from datetime import datetime
+from collections import defaultdict
+
+
+class Round:
+  def __init__(self, *args, **kwargs):
+    self.info = kwargs
+    self.playerstats = defaultdict(lambda: defaultdict(int))
+    self.weaponstats = defaultdict(lambda: defaultdict(int))
+
+    for key, value in kwargs.iteritems():
+      if key.startswith('scores_player:'):
+        _, team, player = key.split(':', 2)
+        self.playerstats[player]['scores'] = int(value)
+        self.playerstats[player][team + '_scores'] = int(value)
+      elif key.startswith('kills_player:'):
+        _, player = key.split(':', 1)
+        self.playerstats[player]['kills'] = int(value)
+      elif key.startswith('deaths_player:'):
+        _, player = key.split(':', 1)
+        self.playerstats[player]['deaths'] = int(value)
+      elif key.startswith('kills_weapon:'):
+        _, weapon = key.split(':', 1)
+        self.weaponstats[weapon]['kills'] = int(value)
+        self.weaponstats[weapon]['name'] = weapon
+
+    for player in self.playerstats:
+      self.playerstats[player]['name'] = player
+
+  def get_int(self, key):
+    try:
+      return int(self.info.get(key, 0))
+    except:
+      return 0
+
+  @property
+  def id(self):
+    return self.get_int('round_id')
+
+  @property
+  def started(self):
+    ''' Friendly date this round happened '''
+
+    date = self.get_int('started')
+    if date:
+      return datetime.utcfromtimestamp(date)
+    else:
+      return None
+
+  @property
+  def finished(self):
+    ''' Friendly date this round happened '''
+
+    date = self.get_int('finished')
+    if date:
+      return datetime.utcfromtimestamp(date)
+    else:
+      return None
+
+  @property
+  def duration(self):
+    return max(0, self.get_int('finished') - self.get_int('started'))
+
+  @property
+  def kills(self):
+    ''' Total count of kills '''
+    return self.get_int('kills')
+
+  @property
+  def scores(self):
+    ''' Total count of kills '''
+    return self.get_int('scores:Alpha') + self.get_int('scores:Bravo')
+
+  @property
+  def alpha_scores(self):
+    return self.get_int('scores:Alpha')
+
+  @property
+  def bravo_scores(self):
+    return self.get_int('scores:Bravo')
+
+  @property
+  def map(self):
+    ''' Map used during this score '''
+    return self.info.get('map')
+
+  @property
+  def flagmatch(self):
+    return self.info.get('flags') == 'yes'
+
+  @property
+  def tie(self):
+    return self.scores > 0 and self.alpha_scores == self.bravo_scores
+
+  @property
+  def winning_team(self):
+    if self.alpha_scores > self.bravo_scores:
+      return 'alpha'
+    elif self.alpha_scores < self.bravo_scores:
+      return 'bravo'
+
+  @property
+  def winning_player(self):
+    if not self.players:
+      return None
+
+    kills = 0
+    winner = None
+
+    for player in self.players.itervalues():
+      if player['kills'] > kills:
+        kills = player['kills']
+        winner = player['name']
+
+    return winner
+
+  @property
+  def players(self):
+    ''' List of player names with their kills/caps '''
+    return self.playerstats
+
+  @property
+  def num_players(self):
+    ''' List of player names with their kills/caps '''
+    return len(self.playerstats)
+
+  @property
+  def events(self):
+    ''' All events captured during this round. Kills and scores to count '''
+    return []
+
+  @property
+  def weapons(self):
+    return self.weaponstats
+
+  @property
+  def empty(self):
+    return not self.players and not self.kills and not self.scores

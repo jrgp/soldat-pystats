@@ -12,13 +12,14 @@ team_names = (
 
 
 class Kill():
-  def __init__(self, killer, victim, weapon, timestamp, killer_team=-1, victim_team=-1):
+  def __init__(self, killer, victim, weapon, timestamp, killer_team=-1, victim_team=-1, round_id=0):
     self.killer = killer
     self.victim = victim
     self.weapon = weapon
     self.timestamp = timestamp
     self._killer_team = int(killer_team)
     self._victim_team = int(victim_team)
+    self.round_id = round_id
 
   @property
   def suicide(self):
@@ -58,4 +59,4 @@ class Kill():
     '''
       Dump the kill to msgpack. Just a tuple with the args used to create this class
     '''
-    return msgpack.dumps((self.killer, self.victim, self.weapon, self.timestamp, self._killer_team, self._victim_team), use_bin_type=False)
+    return msgpack.dumps((self.killer, self.victim, self.weapon, self.timestamp, self._killer_team, self._victim_team, self.round_id), use_bin_type=False)

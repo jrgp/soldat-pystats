@@ -5,6 +5,7 @@ from piestats.keys import Keys
 from piestats.models.player import Player
 from piestats.models.map import Map
 from piestats.models.kill import Kill
+from piestats.models.round import Round
 
 
 class Results():
@@ -46,7 +47,7 @@ class Results():
     results = self.r.zrevrange(self.keys.top_maps, startat, startat + incr, withscores=True)
     for name, plays in results:
       more = {}
-      for key in ['scores:Alpha', 'scores:Bravo', 'kills']:
+      for key in ['scores:Alpha', 'scores:Bravo', 'wins:bravo', 'wins:alpha', 'kills', 'flags']:
         more[key] = self.r.hget(self.keys.map_hash(name), key)
       yield Map(name=name,
                 plays=plays,
@@ -58,6 +59,12 @@ class Results():
     if not info:
       return None
     return Player(name=_player, **info)
+
+  def get_round(self, _round):
+    info = self.r.hgetall(self.keys.round_hash(_round))
+    if not info:
+      return None
+    return Round(round_id=_round, **info)
 
   def get_map(self, _map):
     info = self.r.hgetall(self.keys.map_hash(_map))
@@ -104,6 +111,21 @@ class Results():
       kill_data = self.r.hget(self.keys.kill_data, kill_id)
       if kill_data:
         yield Kill.from_redis(kill_data)
+
+  def get_last_rounds(self, startat=0, incr=20):
+    startat += 1
+    round_ids = self.r.zrevrange(self.keys.round_log, startat, startat + incr)
+    for round_id in round_ids:
+      round_data = self.r.hgetall(self.keys.round_hash(round_id))
+      if round_data:
+        round_data['round_id'] = round_id
+        yield Round(**round_data)
+
+  def get_num_rounds(self):
+    try:
+      return self.r.zcard(self.keys.round_log)
+    except ValueError:
+      return 0
 
   def get_top_weapons(self):
     results = self.r.zrevrange(self.keys.top_weapons, 0, 20, withscores=True)

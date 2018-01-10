@@ -30,12 +30,11 @@
             <td>{{ player.deaths }}</td>
           </tr>
           <tr>
-            <th>Scores Alpha</th>
-            <td>{{ player.scores_alpha }}</td>
-          </tr>
-          <tr>
-            <th>Scores Bravo</th>
-            <td>{{ player.scores_bravo }}</td>
+            <th>Scores</th>
+            <td>
+              <span class="team-alpha">{{ player.scores_alpha }}</span>
+              <span class="team-bravo">{{ player.scores_bravo }}</span>
+            </td>
           </tr>
           <tr>
             <th>First Seen</th>
@@ -91,8 +90,7 @@
             <th>Kills</th>
             <th>Deaths</th>
             <th>Suicides</th>
-            <th>Scores Alpha</th>
-            <th>Scores Bravo</th>
+            <th>Scores</th>
           </tr>
          </thead>
          <tbody>
@@ -102,8 +100,10 @@
           <td>{{map.kills}}</td>
           <td>{{map.deaths}}</td>
           <td>{{map.suicides}}</td>
-          <td>{{map.scores_alpha}}</td>
-          <td>{{map.scores_bravo}}</td>
+          <td>
+            <span class="team-alpha">{{ map.scores_alpha }}</span>
+            <span class="team-bravo">{{ map.scores_bravo }}</span>
+          </td>
         </tr>
       {% endfor %}
          </tbody>

@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+import urllib
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -43,6 +44,23 @@ def secure_filename(filename):
     return filename
 
 
+def pretty_duration(source_seconds):
+  hours, remainder = divmod(source_seconds, 3600)
+  minutes, seconds = divmod(remainder, 60)
+  resp = []
+
+  if hours:
+    resp.append('%dh' % hours)
+
+  if minutes:
+    resp.append('%dm' % minutes)
+
+  if seconds:
+    resp.append('%ds' % seconds)
+
+  return ''.join(resp)
+
+
 def pretty_datetime(timezone):
   return lambda date: format_datetime(date, tzinfo=timezone)
 
@@ -53,7 +71,7 @@ def bad_username(username):
 
 def player_url(server, username):
   if bad_username(username):
-    return '/{server}/player?name={username}'.format(server=server, username=username)
+    return '/{server}/player?name={username}'.format(server=server, username=urllib.quote_plus(username))
   else:
     return '/{server}/player/{username}'.format(server=server, username=username)
 
@@ -91,6 +109,7 @@ class ServerBase(object):
         server_slug=req.context['server'].url_slug,
         urlargs=dict(server_slug=req.context['server'].url_slug, player_url=player_url),
         pretty_datetime=pretty_datetime(req.context['config'].timezone),
+        pretty_duration=pretty_duration,
         req=req
     )
 
@@ -137,7 +156,7 @@ class Weapons(ServerBase):
 class Map(ServerBase):
   def on_get(self, req, resp, server, map):
     data = {
-        'page_title': 'Weapons',
+        'page_title': 'Map %s' % map,
         'map': req.context['stats'].get_map(map),
     }
 
@@ -233,6 +252,55 @@ class Maps(ServerBase):
       data['next_url'] = False
 
     self.render_template(resp, 'maps.html', **data)
+
+
+class Rounds(ServerBase):
+  def on_get(self, req, resp, server, pos=0):
+    startat = int(pos)
+    if (startat % 20):
+      startat = 0
+
+    data = {
+        'page_title': 'Latest Rounds',
+        'next_url': '/{server_slug}/rounds/pos/{startat}'.format(startat=startat + 20, server_slug=req.context['server'].url_slug),
+        'rounds': req.context['stats'].get_last_rounds(startat),
+    }
+
+    data.update(self.more_data(req))
+
+    if startat >= 20:
+      data['prev_url'] = '/{server_slug}/rounds/pos/{startat}'.format(startat=startat - 20, server_slug=req.context['server'].url_slug)
+    else:
+      data['prev_url'] = False
+
+    num_rounds = req.context['stats'].get_num_rounds()
+
+    if (startat + 20) > num_rounds:
+      data['next_url'] = False
+
+    self.render_template(resp, 'lastrounds.html', **data)
+
+
+class Round(ServerBase):
+  def on_get(self, req, resp, server, round):
+    data = {
+        'page_title': 'Round %s' % round,
+        'round': req.context['stats'].get_round(round),
+    }
+
+    data.update(self.more_data(req))
+
+    if not data['round']:
+      self.render_template(resp, 'not_found.html', item='round', **data)
+      return
+
+    def player_decorate(player):
+      player['obj'] = req.context['stats'].get_player_fields(player['name'], ['lastcountry'])
+      return player
+
+    data['players'] = (player_decorate(player) for player in data['round'].players.itervalues())
+
+    self.render_template(resp, 'round.html', **data)
 
 
 class Players(ServerBase):
@@ -366,6 +434,10 @@ def init_app(config_path=None):
     app.add_route('/{server}/map/{map}', Map())
     app.add_route('/{server}/maps', Maps())
     app.add_route('/{server}/maps/pos/{pos}', Maps())
+
+    app.add_route('/{server}/round/{round}', Round())
+    app.add_route('/{server}/rounds', Rounds())
+    app.add_route('/{server}/rounds/pos/{pos}', Rounds())
 
     app.add_route('/{server}/kills', Kills())
     app.add_route('/{server}/kills/pos/{pos}', Kills())

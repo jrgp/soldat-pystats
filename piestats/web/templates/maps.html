@@ -30,8 +30,8 @@ Top Maps
         <th>Map</th>
         <th>Plays</th>
         <th>Kills</th>
-        <th>Scores Alpha</th>
-        <th>Scores Bravo</th>
+        <th>Scores</th>
+        <th>Wins</th>
       </tr>
     </thead>
     <tbody>
@@ -40,8 +40,22 @@ Top Maps
         <td>{{macro.maplink(urlargs, map.name)}}</td>
         <td>{{map.plays}}</td>
         <td>{{map.kills}}</td>
-        <td>{{map.scores_alpha}}</td>
-        <td>{{map.scores_bravo}}</td>
+        <td>
+          {% if map.flags %}
+          <span class="team-alpha">{{map.scores_alpha}}</span>
+          <span class="team-bravo">{{map.scores_bravo}}</span>
+          {% else %}
+          -
+          {% endif %}
+        </td>
+        <td>
+          {% if map.flags %}
+          <span class="team-alpha">{{map.wins_alpha}}</span>
+          <span class="team-bravo">{{map.wins_bravo}}</span>
+          {% else %}
+          -
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>

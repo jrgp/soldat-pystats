@@ -28,6 +28,12 @@ class Keys:
     # Sorted set for number of times each map played
     self.top_maps = '%s:top_maps' % self.key_prefix
 
+    # Last numeric round id, which we increment
+    self.last_round_id = '%s:last_round_id' % self.key_prefix
+
+    # Sorted set mapping timestamp to round ID ID
+    self.round_log = '%s:round_log' % self.key_prefix
+
   def kills_per_day(self, day):
     ''' Plain keys for number of kills that happened on ``day`` '''
     return '%s:kills_per_day:%s' % (self.key_prefix, day)
@@ -55,3 +61,7 @@ class Keys:
   def weapon_top_killers(self, weapon):
     ''' Sorted set containing the amount of kills a player using a weapon has '''
     return '%s:weapon_top_killers:%s' % (self.key_prefix, weapon)
+
+  def round_hash(self, round_id):
+    ''' Hash of data for round ID ``round_id``'''
+    return '%s:round_data:%s' % (self.key_prefix, round_id)

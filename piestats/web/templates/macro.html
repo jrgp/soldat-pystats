@@ -24,3 +24,7 @@
 {% macro maplink(urlargs, name) %}
     <a href="/{{urlargs.server_slug}}/map/{{name}}">{{ name }}</a>
 {% endmacro %}
+
+{% macro roundlink(urlargs, id, text=None) %}
+    <a href="/{{urlargs.server_slug}}/round/{{id}}">{% if text %}{{text}}{% else %} #{{id}}{% endif %}</a>
+{% endmacro %}

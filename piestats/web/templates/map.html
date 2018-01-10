@@ -29,14 +29,28 @@
             <th>Kills</th>
             <td>{{ map.kills }}</td>
           </tr>
+          {% if map.flags %}
           <tr>
-            <th>Scores Alpha</th>
-            <td>{{ map.scores_alpha }}</td>
+            <th>Scores</th>
+            <td>
+              <span class="team-alpha">{{map.scores_alpha}}</span>
+              <span class="team-bravo">{{map.scores_bravo}}</span>
+            </td>
           </tr>
           <tr>
-            <th>Scores Bravo</th>
-            <td>{{ map.scores_bravo }}</td>
+            <th>Wins</th>
+            <td>
+              <span class="team-alpha">{{map.wins_alpha}}</span>
+              <span class="team-bravo">{{map.wins_bravo}}</span>
+            </td>
           </tr>
+          <tr>
+            <th>Ties</th>
+            <td>
+              {{map.ties}}
+            </td>
+          </tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
