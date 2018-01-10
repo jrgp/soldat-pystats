@@ -98,7 +98,12 @@ class ParseEvents():
       if event != self.generate_kill:
         date = data.get('date')
         if date:
-          data['date'] = int(time.mktime(parser.parse(date, self.parse_kill_date_parserinfo).timetuple()))
+          parsed = parser.parse(date, self.parse_kill_date_parserinfo)
+          if parsed:
+            # Ignore ancient events
+            if self.retention.too_old(parsed):
+              return None
+            data['date'] = int(time.mktime(parsed.timetuple()))
 
       return event(**data)
 
