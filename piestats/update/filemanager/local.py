@@ -7,10 +7,11 @@ import click
 
 class LocalFileManager(FileManager):
 
-  def __init__(self, r, keys, root):
+  def __init__(self, r, keys, root, retention):
     self.r = r
     self.keys = keys
     self.root = root
+    self.retention = retention
 
     self.last_log_times = []
     self.time_since_last = 0
@@ -38,6 +39,12 @@ class LocalFileManager(FileManager):
       for path in progressbar:
         key = self.keys.log_file(filename=path)
         size = os.path.getsize(path)
+        mtime = os.path.getmtime(path)
+
+        # Skip ancient files we have no business wasting time parsing
+        if self.retention.too_old_unix(mtime):
+          continue
+
         prev = self.r.get(key)
         if prev is None:
           pos = 0

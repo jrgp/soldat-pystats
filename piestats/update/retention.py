@@ -11,19 +11,21 @@ class Retention:
     self.keys = keys
     self.r = r
     self.manage = ManageEvents(r, keys)
+    self.oldest_allowed_unix = time() - (self.max_days * 86400)
 
   def too_old(self, date):
     return (datetime.now() - date).days > self.max_days
+
+  def too_old_unix(self, seconds):
+    return self.oldest_allowed_unix > seconds
 
   def run_retention(self):
     '''
       Periodically remove old kills, to save space and ignore old relevant stats.
     '''
-    oldest_allowed = time() - (self.max_days * 86400)
+    kill_ids = self.r.zrangebyscore(self.keys.kill_log, -1, self.oldest_allowed_unix)
 
-    kill_ids = self.r.zrangebyscore(self.keys.kill_log, -1, oldest_allowed)
-
-    print 'Processing retention.. trimming events up until %s' % datetime.utcfromtimestamp(oldest_allowed)
+    print 'Processing retention.. trimming events up until %s' % datetime.utcfromtimestamp(self.oldest_allowed_unix)
 
     if not kill_ids:
       return

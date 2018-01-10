@@ -10,10 +10,11 @@ import ftplib
 
 class FtpFileManager(FileManager):
 
-  def __init__(self, r, keys, root, connect_settings):
+  def __init__(self, r, keys, root, retention, connect_settings):
     self.r = r
     self.keys = keys
     self.root = root
+    self.retention = retention
     self.connect_settings = connect_settings
     self.ftp = None
 

@@ -49,11 +49,11 @@ def run_update(config_path):
 
       # Support getting logs via local files or ssh or ftp
       if server.log_source == 'local':
-        filemanager = LocalFileManager(r, keys, soldat_dir)
+        filemanager = LocalFileManager(r, keys, soldat_dir, retention)
       elif server.log_source == 'ssh':
-        filemanager = SshFileManager(r, keys, soldat_dir, server.connection_options)
+        filemanager = SshFileManager(r, keys, soldat_dir, retention, server.connection_options)
       elif server.log_source == 'ftp':
-        filemanager = FtpFileManager(r, keys, soldat_dir, server.connection_options)
+        filemanager = FtpFileManager(r, keys, soldat_dir, retention, server.connection_options)
 
       # Console logs
       update_events(r, keys, retention, filemanager)
