@@ -34,28 +34,20 @@ Round {{ round.id }}
             <td>{{ round.kills }}</td>
           </tr>
 
-          {% if round.flagmatch %}
-
           <tr>
-            <th>Winning Team</th>
+            <th>Outcome</th>
             <td>
-              {% if round.winning_team %}
-                <span class="team-{{round.winning_team}}">{{ round.winning_team.capitalize() }} Won</span>
-              {% elif round.tie %}
-                Tie
-              {% elif round.scores == 0%}
-                No Scores
-              {% endif %}
+              {{ macro.roundoutcome(urlargs, round) }}
             </td>
           </tr>
 
+          {% if round.flagmatch %}
           <tr>
             <th>Scores</th>
             <td>
               {{ macro.roundteamscores(round) }}
             </td>
           </tr>
-
           {% endif %}
 
         </tbody>

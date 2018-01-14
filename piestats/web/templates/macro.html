@@ -29,7 +29,20 @@
     <a href="/{{urlargs.server_slug}}/round/{{id}}">{% if text %}{{text}}{% else %} #{{id}}{% endif %}</a>
 {% endmacro %}
 
-
 {% macro roundteamscores(round) %}
     <span class="team-alpha">{{ round.alpha_scores }}</span>:<span class="team-bravo">{{ round.bravo_scores }}</span>
+{% endmacro %}
+
+{% macro roundoutcome(urlargs, round) %}
+  {% if round.flagmatch %}
+    {% if round.winning_team %}
+      <span class="team-{{round.winning_team}}">{{ round.winning_team.capitalize() }} Won</span>
+    {% elif round.tie %}
+      Tie
+    {% elif round.scores == 0%}
+      No Scores
+    {% endif %}
+  {% elif round.winning_player %}
+    {{ playerlink(urlargs, round.winning_player) }} Won
+  {% endif %}
 {% endmacro %}

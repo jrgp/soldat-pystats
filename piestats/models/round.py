@@ -1,5 +1,6 @@
 from datetime import datetime
 from collections import defaultdict
+from piestats.models.player import Player
 
 
 class Round:
@@ -7,6 +8,7 @@ class Round:
     self.info = kwargs
     self.playerstats = defaultdict(lambda: defaultdict(int))
     self.weaponstats = defaultdict(lambda: defaultdict(int))
+    self._winning_player = None
 
     for key, value in kwargs.iteritems():
       if key.startswith('scores_player:'):
@@ -104,15 +106,12 @@ class Round:
     if not self.players:
       return None
 
-    kills = 0
-    winner = None
+    if not self._winning_player:
+      self._winning_player = Player(
+          name=sorted(((player['kills'], player['name']) for player in self.players.itervalues()), reverse=True)[0][1]
+      )
 
-    for player in self.players.itervalues():
-      if player['kills'] > kills:
-        kills = player['kills']
-        winner = player['name']
-
-    return winner
+    return self._winning_player
 
   @property
   def players(self):

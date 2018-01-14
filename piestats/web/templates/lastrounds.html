@@ -52,15 +52,7 @@ Latest Rounds
           {% endif %}
         </td>
         <td>
-          {% if r.flagmatch %}
-            {% if r.winning_team %}
-              <span class="team-{{r.winning_team}}">{{ r.winning_team.capitalize() }} Won</span>
-            {% elif r.tie %}
-              Tie
-            {% elif r.scores == 0%}
-              No Scores
-            {% endif %}
-          {% endif %}
+          {{ macro.roundoutcome(urlargs, r) }}
         </td>
       </tr>
     {% endfor %}
