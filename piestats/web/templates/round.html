@@ -52,8 +52,7 @@ Round {{ round.id }}
           <tr>
             <th>Scores</th>
             <td>
-              <span class="team-alpha">{{ round.alpha_scores }}</span>
-              <span class="team-bravo">{{ round.bravo_scores }}</span>
+              {{ macro.roundteamscores(round) }}
             </td>
           </tr>
 

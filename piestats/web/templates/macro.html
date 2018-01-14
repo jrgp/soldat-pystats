@@ -28,3 +28,8 @@
 {% macro roundlink(urlargs, id, text=None) %}
     <a href="/{{urlargs.server_slug}}/round/{{id}}">{% if text %}{{text}}{% else %} #{{id}}{% endif %}</a>
 {% endmacro %}
+
+
+{% macro roundteamscores(round) %}
+    <span class="team-alpha">{{ round.alpha_scores }}</span>:<span class="team-bravo">{{ round.bravo_scores }}</span>
+{% endmacro %}

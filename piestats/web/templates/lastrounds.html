@@ -48,8 +48,7 @@ Latest Rounds
         <td>{{r.kills}}</td>
         <td>
           {% if r.flagmatch %}
-            <span class="team-alpha">{{r.alpha_scores}}</span>
-            <span class="team-bravo">{{r.bravo_scores}}</span>
+              {{ macro.roundteamscores(r) }}
           {% endif %}
         </td>
         <td>
