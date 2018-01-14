@@ -17,6 +17,7 @@ class FtpFileManager(FileManager):
     self.retention = retention
     self.connect_settings = connect_settings
     self.ftp = None
+    self.init_stats()
 
   def get_file_paths(self, sub_path, pattern='*'):
     if not self.ftp:
@@ -28,16 +29,12 @@ class FtpFileManager(FileManager):
     if not self.ftp:
       return
 
-    def progress_function(item):
-      if item:
-        return 'Parsing {0}'.format(item)
-
     files = self.get_file_paths(sub_path, pattern)
 
     with click.progressbar(files,
                            show_eta=False,
                            label='Parsing {0} logs from ftp'.format(len(files)),
-                           item_show_func=progress_function) as progressbar:
+                           item_show_func=self.progressbar_callback) as progressbar:
       for path in progressbar:
         try:
           size = self.ftp.size(path)

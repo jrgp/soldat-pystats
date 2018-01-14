@@ -17,20 +17,17 @@ class SshFileManager(FileManager):
     self.client = None
     self.ftpclient = None
     self.connect_settings = connect_settings
+    self.init_stats()
 
   def get_file_paths(self, sub_path, pattern='*'):
     return sorted(filter(lambda x: fnmatch(x, pattern), self.ftpclient.listdir(os.path.join(self.root, sub_path))))
 
   def get_files(self, sub_path, pattern='*'):
-    def progress_function(item):
-      if item:
-        return 'Parsing {0}'.format(item)
-
     files = self.get_file_paths(sub_path, pattern)
     with click.progressbar(files,
                            show_eta=False,
                            label='Parsing {0} logs from ssh'.format(len(files)),
-                           item_show_func=progress_function) as progressbar:
+                           item_show_func=self.progressbar_callback) as progressbar:
       for filename in progressbar:
         path = os.path.join(self.root, sub_path, filename)
         size = self.ftpclient.lstat(path).st_size
