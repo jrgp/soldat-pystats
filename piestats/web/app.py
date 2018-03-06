@@ -32,7 +32,7 @@ mimes = {'.css': 'text/css',
          '.woff': 'application/font-woff'}
 
 _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_.-]')
-_safe_username_re = re.compile('^[a-zA-Z0-9-\. ]+$')
+_safe_username_re = re.compile('^[^.][a-zA-Z0-9-\. ]+$')
 
 
 def secure_filename(filename):
