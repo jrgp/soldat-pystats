@@ -20,7 +20,7 @@ Statistics script which displays kill and player/country stats for multiple
  - Pretty graphs
  - Clean comfortable layout provided by Bootswatch
  - Uses Redis key value database instead of SQL so pages are fast even with
-   hundreds of thousands of recorded kills.
+   millions of recorded kills.
 
 # Requirements
 
