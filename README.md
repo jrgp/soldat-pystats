@@ -8,6 +8,7 @@ Statistics script which displays kill and player/country stats for multiple
  - [Home Page](http://jrgp.us/screenshots/soldat-pystats1.png)
  - [Players list](http://jrgp.us/screenshots/soldat-pystats2.png)
  - [Player profile](http://jrgp.us/screenshots/soldat-pystats3.png)
+ - [Map Profile with polygon view](http://jrgp.us/screenshots/soldat-pystats_map1.png)
 
 # Features
 
@@ -18,6 +19,7 @@ Statistics script which displays kill and player/country stats for multiple
  - Ability to connect to Soldat server's admin port and provide current status
  - Player search
  - Pretty graphs
+ - Display wireframe image of map polygons
  - Clean comfortable layout provided by Bootswatch
  - Uses Redis key value database instead of SQL so pages are fast even with
    millions of recorded kills.
