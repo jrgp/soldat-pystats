@@ -56,3 +56,11 @@ class Map:
   @property
   def weapons(self):
     return self.wepstats
+
+  @property
+  def svg_exists(self):
+    return 'svg_image' in self.info
+
+  @property
+  def svg(self):
+    return self.info['svg_image']

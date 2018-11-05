@@ -54,6 +54,19 @@
         </tbody>
       </table>
     </div>
+
+    {% if map.svg_exists %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Wireframe Polygons</h3>
+      </div>
+      <a href="{{macro.mapsvgurl(urlargs, map.name)}}">
+        <img style="margin: 20px;" src="{{macro.mapsvgurl(urlargs, map.name)}}"
+             title="Polygons for {{map.name}}"
+             alt="Polygons for {{map.name}}">
+      </a>
+    </div>
+    {% endif %}
   </div>
 
   <div class="col-xs-12  col-md-6">

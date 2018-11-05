@@ -169,6 +169,18 @@ class Map(ServerBase):
     self.render_template(resp, 'map.html', **data)
 
 
+class MapSVG(ServerBase):
+  def on_get(self, req, resp, server, map):
+    map_info = req.context['stats'].get_map(map, get_svg=True)
+    if not map_info:
+        raise falcon.HTTPNotFound()
+    if map_info.svg_exists:
+        resp.content_type = 'image/svg+xml'
+        resp.body = map_info.svg
+    else:
+        raise falcon.HTTPNotFound()
+
+
 class Player(ServerBase):
   def on_get(self, req, resp, server, player=None):
     if player is None:
@@ -432,6 +444,7 @@ def init_app(config_path=None):
     app.add_route('/{server}/players/pos/{pos}', Players())
 
     app.add_route('/{server}/map/{map}', Map())
+    app.add_route('/{server}/map/{map}/svg', MapSVG())
     app.add_route('/{server}/maps', Maps())
     app.add_route('/{server}/maps/pos/{pos}', Maps())
 

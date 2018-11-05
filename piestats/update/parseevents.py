@@ -5,6 +5,7 @@ from io import BytesIO
 from dateutil import parser
 
 from piestats.update.pms_parser import PmsReader
+from piestats.update.mapimage import generate_map_svg
 from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, MapList
 from piestats.models.kill import Kill
 
@@ -55,6 +56,8 @@ class ParseEvents():
 
       map_filename = os.path.basename(map_path)[:-4]
 
+      do_generate_svg = not self.r.hexists(self.keys.map_hash(map_filename), 'svg_image')
+
       # If we already have the data for this map in redis, don't bother parsing it again
       map_title = self.r.hget(self.keys.map_hash(map_filename), 'title')
       map_flags = self.r.hget(self.keys.map_hash(map_filename), 'flags')
@@ -62,7 +65,8 @@ class ParseEvents():
         map_titles[map_filename] = map_title
         if map_flags == 'yes':
           flag_score_maps.add(map_filename)
-        continue
+        if not do_generate_svg:
+            continue
 
       content = self.filemanager.get_data(map_path, 0)
 
@@ -74,17 +78,27 @@ class ParseEvents():
         print 'Failed reading map %s: %s' % (map_path, e)
         continue
 
-      title = reader.header.Name.text[:reader.header.Name.length].strip()
-      map_titles[map_filename] = title
+      # If we already have the generate svg for this map, don't generate it again
+      if do_generate_svg:
+          try:
+              generated_svg = generate_map_svg(reader)
+              self.r.hset(self.keys.map_hash(map_filename), 'svg_image', generated_svg)
+              print 'Saved generated SVG for %s' % map_filename
+          except Exception as e:
+              print 'Failed generating SVG for %s: %s' % (map_filename, e)
 
-      self.r.hset(self.keys.map_hash(map_filename), 'title', title)
+      if not map_title:
+          title = reader.header.Name.text[:reader.header.Name.length].strip()
+          map_titles[map_filename] = title
 
-      if any(map_filename.lower().startswith(prefix) for prefix in flag_round_map_prefixes):
-        for spawnpoint in reader.spawnpoints:
-          if spawnpoint.TypeText in score_spawnpoint_types:
-            flag_score_maps.add(map_filename)
-            self.r.hset(self.keys.map_hash(map_filename), 'flags', 'yes')
-            break
+          self.r.hset(self.keys.map_hash(map_filename), 'title', title)
+
+          if any(map_filename.lower().startswith(prefix) for prefix in flag_round_map_prefixes):
+            for spawnpoint in reader.spawnpoints:
+              if spawnpoint.TypeText in score_spawnpoint_types:
+                flag_score_maps.add(map_filename)
+                self.r.hset(self.keys.map_hash(map_filename), 'flags', 'yes')
+                break
 
     return map_titles, flag_score_maps
 

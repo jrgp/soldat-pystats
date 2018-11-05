@@ -66,10 +66,37 @@ class Results():
       return None
     return Round(round_id=_round, **info)
 
-  def get_map(self, _map):
-    info = self.r.hgetall(self.keys.map_hash(_map))
-    if not info:
+  def get_map(self, _map, get_svg=False):
+    # Manually get list of all keys we have for this map, so
+    # if we don't want to get the gigantic svg xml blob, we
+    # can selectively remove it
+    keys = self.r.hkeys(self.keys.map_hash(_map))
+
+    # No keys returned? Map doesn't exist
+    if not keys:
       return None
+
+    keys = set(keys)
+    has_svg = 'svg_image' in keys
+
+    if not get_svg:
+      keys.discard('svg_image')
+
+    keys = list(keys)
+
+    data = self.r.hmget(self.keys.map_hash(_map), keys)
+    if not data:
+      return None
+
+    # Recreate dict using the keys we wanted to have
+    info = dict(zip(keys, data))
+
+    # Make sure the svg_exists property on the map model
+    # will continue to work if we do in fact have the svg
+    # but are not retrieving it, by setting its key to None
+    if not get_svg and has_svg:
+      info['svg_image'] = None
+
     info['plays'] = self.r.zscore(self.keys.top_maps, _map) or 0
     return Map(name=_map, **info)
 

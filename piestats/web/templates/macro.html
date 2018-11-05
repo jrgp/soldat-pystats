@@ -25,6 +25,8 @@
     <a href="/{{urlargs.server_slug}}/map/{{name}}">{{ name }}</a>
 {% endmacro %}
 
+{% macro mapsvgurl(urlargs, name) %}/{{urlargs.server_slug}}/map/{{name}}/svg{% endmacro %}
+
 {% macro roundlink(urlargs, id, text=None) %}
   {% if id %}
       <a href="/{{urlargs.server_slug}}/round/{{id}}">{% if text %}{{text}}{% else %} #{{id}}{% endif %}</a>
