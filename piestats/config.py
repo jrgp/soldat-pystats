@@ -46,6 +46,17 @@ class Config():
     return servers
 
   @property
+  def ui_servers(self):
+    ''' Above, but skip duplicated slugs '''
+    result = []
+    seen_slugs = set()
+    for server in self.servers:
+      if server.url_slug not in seen_slugs:
+        seen_slugs.add(server.url_slug)
+        result.append(server)
+    return result
+
+  @property
   def data_retention(self):
     ''' Days of data to keep; defaults to 365 '''
     try:

@@ -36,13 +36,16 @@ class FtpFileManager(FileManager):
                            label='Parsing {0} logs from ftp'.format(len(files)),
                            item_show_func=self.progressbar_callback) as progressbar:
       for path in progressbar:
+        if self.retention.too_old_filename(os.path.basename(path)):
+          continue
+
         try:
           size = self.ftp.size(path)
         except ftplib.error_perm:
           continue
 
-        key = self.keys.log_file(filename='ftp://' + path)
-        prev = self.r.get(key)
+        key = self.filename_key(path)
+        prev = self.r.hget(self.keys.log_positions, key)
         if prev is None:
           pos = 0
         else:
@@ -52,7 +55,7 @@ class FtpFileManager(FileManager):
           if progressbar.is_hidden:
             print('Reading {filename} from offset {pos}'.format(filename=path, pos=pos))
           yield path, pos
-          self.r.set(key, size)
+          self.r.hset(self.keys.log_positions, key, size)
 
   def get_data(self, path, position):
     data = BytesIO()
@@ -74,3 +77,10 @@ class FtpFileManager(FileManager):
 
     if self.ftp:
       self.ftp.close()
+
+  def filename_key(self, filename):
+    return 'ftp://{username}@{hostname}:{port}/{filename}'.format(
+        filename=filename,
+        username=self.connect_settings['username'],
+        hostname=self.connect_settings['hostname'],
+        port=self.connect_settings['port'])

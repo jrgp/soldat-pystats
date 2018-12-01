@@ -34,6 +34,9 @@ class Keys:
     # Sorted set mapping timestamp to round ID ID
     self.round_log = '%s:round_log' % self.key_prefix
 
+    # Hash containing file size of log paths
+    self.log_positions = '%s:log_positions' % self.key_prefix
+
   def kills_per_day(self, day):
     ''' Plain keys for number of kills that happened on ``day`` '''
     return '%s:kills_per_day:%s' % (self.key_prefix, day)
@@ -45,10 +48,6 @@ class Keys:
   def map_hash(self, _map):
     ''' Hash of data for map ``_map``'''
     return '%s:map:%s' % (self.key_prefix, _map)
-
-  def log_file(self, filename):
-    ''' Plain keys containing file size of ``filename`` '''
-    return '%s:logs:%s' % (self.key_prefix, filename)
 
   def player_top_enemies(self, player):
     ''' Sorted set of people being killed by ``player`` '''

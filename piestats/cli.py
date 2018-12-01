@@ -39,7 +39,7 @@ def run_update(config_path):
     r = redis.Redis(**config.redis_connect)
 
     for server in config.servers:
-      print('Updating stats for {server}'.format(server=server.url_slug))
+      print('Updating stats for {server.url_slug} ({server.log_source})'.format(server=server))
 
       # Redis key name manager
       keys = Keys(config, server)

@@ -29,10 +29,12 @@ class SshFileManager(FileManager):
                            label='Parsing {0} logs from ssh'.format(len(files)),
                            item_show_func=self.progressbar_callback) as progressbar:
       for filename in progressbar:
+        if self.retention.too_old_filename(filename):
+          continue
         path = os.path.join(self.root, sub_path, filename)
         size = self.ftpclient.lstat(path).st_size
-        key = self.keys.log_file(filename='ssh://' + path)
-        prev = self.r.get(key)
+        key = self.filename_key(path)
+        prev = self.r.hget(self.keys.log_positions, key)
         if prev is None:
           pos = 0
         else:
@@ -41,7 +43,7 @@ class SshFileManager(FileManager):
           if progressbar.is_hidden:
             print('Reading {filename} from offset {pos}'.format(filename=path, pos=pos))
           yield path, pos
-          self.r.set(key, size)
+          self.r.hset(self.keys.log_positions, key, size)
 
   def get_data(self, path, position):
     with self.ftpclient.open(path, 'r') as h:
@@ -58,3 +60,10 @@ class SshFileManager(FileManager):
       with SFTPClient.from_transport(self.client.get_transport()) as ftpclient:
         self.ftpclient = ftpclient
         yield
+
+  def filename_key(self, filename):
+    return 'ssh://{username}@{hostname}:{port}/{filename}'.format(
+        filename=filename,
+        username=self.connect_settings.get('username'),
+        hostname=self.connect_settings.get('hostname'),
+        port=self.connect_settings.get('port'))

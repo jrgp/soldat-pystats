@@ -17,6 +17,9 @@ class FileManager():
   def get_data(self):
     raise NotImplemented('Should be implemented')
 
+  def filename_key(self):
+    raise NotImplemented('Should be implemented')
+
   @contextmanager
   def initialize(self):
     yield

@@ -1,6 +1,7 @@
 import click
-from time import time
-from datetime import datetime
+import re
+from time import time, mktime
+from datetime import datetime, date
 from piestats.update.manageevents import ManageEvents
 from piestats.models.kill import Kill
 
@@ -17,6 +18,18 @@ class Retention:
     return (datetime.now() - date).days > self.max_days
 
   def too_old_unix(self, seconds):
+    return self.oldest_allowed_unix > seconds
+
+  def too_old_filename(self, filename):
+    m = re.match('consolelog-(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)-\d+.txt', filename)
+
+    if not m:
+      return False
+
+    values = m.groupdict()
+
+    seconds = int(mktime(date(int(values['year']) + 2000, int(values['month']), int(values['day'])).timetuple()))
+
     return self.oldest_allowed_unix > seconds
 
   def run_retention(self):

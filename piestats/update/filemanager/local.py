@@ -24,15 +24,15 @@ class LocalFileManager(FileManager):
                            label='Parsing {0} local logs'.format(len(paths)),
                            item_show_func=self.progressbar_callback) as progressbar:
       for path in progressbar:
-        key = self.keys.log_file(filename=path)
         size = os.path.getsize(path)
         mtime = os.path.getmtime(path)
 
         # Skip ancient files we have no business wasting time parsing
-        if self.retention.too_old_unix(mtime):
+        if self.retention.too_old_unix(mtime) or self.retention.too_old_filename(os.path.basename(path)):
           continue
 
-        prev = self.r.get(key)
+        key = self.filename_key(path)
+        prev = self.r.hget(self.keys.log_positions, key)
         if prev is None:
           pos = 0
         else:
@@ -41,9 +41,12 @@ class LocalFileManager(FileManager):
           if progressbar.is_hidden:
             print('Reading {filename} from offset {pos}'.format(filename=path, pos=pos))
           yield path, pos
-          self.r.set(key, size)
+          self.r.hset(self.keys.log_positions, key, size)
 
   def get_data(self, path, position):
     with open(path, 'rb') as h:
       h.seek(position)
       return h.read()
+
+  def filename_key(self, filename):
+    return 'local:%s' % filename

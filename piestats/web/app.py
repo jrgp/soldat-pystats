@@ -104,7 +104,7 @@ class ServerBase(object):
             since=lambda: (datetime.now() - timedelta(days=req.context['config'].data_retention)).date(),
             timezone=str(req.context['config'].timezone)
         ),
-        servers=req.context['config'].servers,
+        servers=req.context['config'].ui_servers,
         current_server=req.context['server'],
         server_slug=req.context['server'].url_slug,
         urlargs=dict(server_slug=req.context['server'].url_slug, player_url=player_url),
