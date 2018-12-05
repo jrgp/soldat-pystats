@@ -5,6 +5,7 @@ import redis
 import os
 import click
 import time
+import logging
 from piestats.update import update_events
 from piestats.update.retention import Retention
 from piestats.update.lock import acquire_lock
@@ -62,7 +63,7 @@ def update(config_path):
     r = redis.Redis(**config.redis_connect)
 
     for server in config.servers:
-      print('Updating stats for {server.url_slug} ({server.log_source})'.format(server=server))
+      print('Updating stats for {server.url_slug} ({server.title}) ({server.log_source})'.format(server=server))
 
       # Redis key name manager
       keys = Keys(config, server)
@@ -82,7 +83,10 @@ def update(config_path):
           filemanager = FtpFileManager(r, keys, soldat_dir, retention, server.connection_options)
 
         # Console logs
-        update_events(r, keys, retention, filemanager)
+        try:
+            update_events(r, keys, retention, filemanager)
+        except Exception:
+            logging.exception('Failed updating stats for %s (%s) (%s)', server.url_slug, server.title, server.log_source)
 
       # Trim old events
       retention.run_retention()
