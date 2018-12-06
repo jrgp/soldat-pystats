@@ -16,15 +16,38 @@ from piestats.update.filemanager.ssh import SshFileManager
 from piestats.update.filemanager.ftp import FtpFileManager
 
 
-@click.command()
+def get_default_config_file():
+    # Maybe we're passed one via the environment
+    from_env = os.getenv('PYSTATS_CONF')
+    if from_env:
+        return from_env
+
+    # Or we're running this out of the git checkout and the user named
+    # their conf file like this
+    default_filename = 'config.yml'
+    if os.path.exists(default_filename):
+        return default_filename
+
+    # Otherwise prompt for it
+    return None
+
+
+@click.group()
+def cli():
+    '''
+    Piestats Soldat Stats App (https://github.com/jrgp/soldat-pystats)
+    '''
+
+
+@cli.command()
 @click.option(
     '--config_path',
     '-c',
     help='Path to config yaml file.',
-    default=lambda: os.getenv('PYSTATS_CONF'),
+    default=get_default_config_file,
     type=click.Path(exists=True, dir_okay=False),
     required=True)
-def run_update(config_path):
+def update(config_path):
   '''
     Run updates. Pass me path to config file which contains settings for redis
     as well as which soldat servers to process data for.
@@ -66,17 +89,17 @@ def run_update(config_path):
       print('Updating took {0} seconds'.format(round(time.time() - start, 2)))
 
 
-@click.command()
+@cli.command()
 @click.option(
     '--config_path',
     '-c',
     help='Path to config yaml file.',
-    default=lambda: os.getenv('PYSTATS_CONF'),
+    default=get_default_config_file,
     type=click.Path(exists=True, dir_okay=False),
     required=True)
-def run_site(config_path):
+def web(config_path):
   '''
-    Spawn falcon app using embedded gunicorn. Pass me path to config file with redis connection + key
+    Serve website. Pass me path to config file with redis connection + key
     prefix settings.
   '''
 
@@ -114,3 +137,7 @@ def run_site(config_path):
   # Start the embedded gunicorn
   g_server = App(run_options)
   g_server.run()
+
+
+if __name__ == '__main__':
+  cli()

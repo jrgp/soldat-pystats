@@ -56,15 +56,15 @@ To install to your venv but point to your code so you can edit and dev and run:
 
     python setup.py develop
 
-Copy config.yml.samp to config.yml after editing it to fit your setup
+Copy `config.yml.samp` to `config.yml` after editing it to fit your setup
 
 Run update script. Probably add this to cron.
 
-    runupdate -c config.yml
+    piestats update -c config.yml
 
 Quickly start website. (Bind to all NICs on port 5000)
 
-    runsite -c config.yml
+    piestats web -c config.yml
 
 # Gunicorn Example
 
