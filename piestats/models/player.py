@@ -92,3 +92,7 @@ class Player:
     for key in self.mapstats:
       self.mapstats[key]['name'] = key
     return self.mapstats
+
+  @property
+  def names(self):
+    return self.info.get('names', [])

@@ -27,7 +27,7 @@ class ParseEvents():
                   '|USSOCOM|XM214 Minigun|Bow|Flame Bow)')
 
     self.event_regex = (
-        (EventPlayerJoin, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d (?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:\S+')),
+        (EventPlayerJoin, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:(?P<hwid>\S+)')),
         (EventNextMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) Next map: (?P<map>[^$]+)')),
         (EventNextMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) /map (?P<map>[^(\s]+)')),
         (EventRequestMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \[.+\] !map (?P<map>[^(\s]+)')),

@@ -135,3 +135,22 @@ class Round:
   @property
   def empty(self):
     return not self.players and not self.kills and not self.scores
+
+  def resolve_player_ids(self, resolver):
+    '''
+      Translate player IDs to names
+    '''
+    if not self.players:
+      return self
+
+    new_players = {}
+
+    for player in self.players.itervalues():
+      player['id'] = player['name']
+      name = resolver(player['name'])
+      player['name'] = name
+      new_players[name] = player
+
+    self.players = new_players
+
+    return self

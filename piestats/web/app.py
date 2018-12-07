@@ -70,6 +70,8 @@ def bad_username(username):
 
 
 def player_url(server, username):
+  if not username:
+    return None
   if bad_username(username):
     return '/{server}/player?name={username}'.format(server=server, username=urllib.quote_plus(username))
   else:
@@ -217,8 +219,8 @@ class Kills(ServerBase):
 
     def kill_decorate(kill):
       info = kill.__dict__
-      info['killer_obj'] = req.context['stats'].get_player_fields(kill.killer, ['lastcountry'])
-      info['victim_obj'] = req.context['stats'].get_player_fields(kill.victim, ['lastcountry'])
+      info['killer_obj'] = req.context['stats'].get_player_fields_by_name(kill.killer, ['lastcountry'])
+      info['victim_obj'] = req.context['stats'].get_player_fields_by_name(kill.victim, ['lastcountry'])
       info['datetime'] = data['pretty_datetime'](datetime.utcfromtimestamp(int(info['timestamp'])))
       info['killer_team'] = kill.killer_team
       info['victim_team'] = kill.victim_team
@@ -307,7 +309,7 @@ class Round(ServerBase):
       return
 
     def player_decorate(player):
-      player['obj'] = req.context['stats'].get_player_fields(player['name'], ['lastcountry'])
+      player['obj'] = req.context['stats'].get_player_fields(player['id'], ['lastcountry'])
       return player
 
     data['players'] = (player_decorate(player) for player in data['round'].players.itervalues())
@@ -406,12 +408,7 @@ class Search(ServerBase):
       self.render_template(resp, 'player_not_found.html', **self.more_data(req))
       return
 
-    results = req.context['stats'].player_search(player_name)
-
-    players = []
-
-    for player, kills in results:
-      players.append(req.context['stats'].get_player_fields(player, ['lastcountry', 'lastseen', 'kills']))
+    players = req.context['stats'].player_search(player_name)
 
     if len(players) == 1:
       raise HTTPFound(player_url(req.context['server'].url_slug, players[0].name))

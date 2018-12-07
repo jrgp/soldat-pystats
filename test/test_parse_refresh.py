@@ -42,5 +42,6 @@ class TestParseRefresh(unittest.TestCase):
     for i, name in enumerate(names):
       self.assertEqual(r['players'][i]['name'], name)
 
+
 if __name__ == '__main__':
   unittest.main()

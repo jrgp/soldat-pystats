@@ -1,6 +1,7 @@
 from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, MapList
 from piestats.models.kill import Kill
 from piestats.models.round import Round
+from piestats.update.hwid import Hwid
 from IPy import IP
 from datetime import datetime
 import pkg_resources
@@ -20,6 +21,8 @@ class ManageEvents():
     self.valid_score_maps = set()
     self.lobby_maps = ('Lothic', 'Lobby')
 
+    self.hwid = Hwid(self.r, self.keys)
+
     self.geoip = None
     if GeoIP:
       try:
@@ -34,7 +37,8 @@ class ManageEvents():
       Given an event object, determine which method to delegate it
     '''
     if isinstance(event, EventPlayerJoin):
-      self.update_country(event.ip, event.player)
+      player_id = self.hwid.register_hwid(event.player, event.hwid, event.date)
+      self.update_country(event.ip, player_id)
       self.update_player_search(event.player)
     elif isinstance(event, EventNextMap):
       self.update_map(event.map, event.date)
@@ -43,7 +47,7 @@ class ManageEvents():
     elif isinstance(event, EventInvalidMap):
       self.kill_map(event.map)
     elif isinstance(event, EventScore):
-      self.update_score(event.player, event.team, event.date)
+      self.update_score(self.hwid.get_player_id_from_name(event.player), event.team, event.date)
     elif isinstance(event, Kill):
       self.apply_kill(event)
 
@@ -155,6 +159,10 @@ class ManageEvents():
     if abs(incr) != 1:
       print 'Invalid increment value for kill: {kill}'.format(kill=kill)
       return
+
+    # Convert victim and killer to their IDs
+    kill.victim = self.hwid.get_player_id_from_name(kill.victim)
+    kill.killer = self.hwid.get_player_id_from_name(kill.killer)
 
     # Add kill to our internal log
     if incr == 1:

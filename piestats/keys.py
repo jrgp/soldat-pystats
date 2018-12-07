@@ -37,6 +37,15 @@ class Keys:
     # Hash containing file size of log paths
     self.log_positions = '%s:log_positions' % self.key_prefix
 
+    # Last numeric player id, which we increment
+    self.last_player_id = '%s:last_player_id' % self.key_prefix
+
+    # map names to ID
+    self.name_to_id = '%s:player_name_to_id' % self.key_prefix
+
+    # map hwid to ID
+    self.hwid_to_id = '%s:hwid_to_id' % self.key_prefix
+
   def kills_per_day(self, day):
     ''' Plain keys for number of kills that happened on ``day`` '''
     return '%s:kills_per_day:%s' % (self.key_prefix, day)
@@ -64,3 +73,6 @@ class Keys:
   def round_hash(self, round_id):
     ''' Hash of data for round ID ``round_id``'''
     return '%s:round_data:%s' % (self.key_prefix, round_id)
+
+  def player_id_to_names(self, player_id):
+    return '%s:player_id_to_names:%s' % (self.key_prefix, player_id)

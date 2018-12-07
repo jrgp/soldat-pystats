@@ -27,5 +27,6 @@ class TestKeys(unittest.TestCase):
       assert k.player_top_victims('jrgp') == 'pystats:server1:player_top_victims:jrgp'
       assert k.weapon_top_killers('HK MP5') == 'pystats:server1:weapon_top_killers:HK MP5'
 
+
 if __name__ == '__main__':
   unittest.main()

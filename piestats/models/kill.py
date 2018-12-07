@@ -60,3 +60,11 @@ class Kill():
       Dump the kill to msgpack. Just a tuple with the args used to create this class
     '''
     return msgpack.dumps((self.killer, self.victim, self.weapon, self.timestamp, self._killer_team, self._victim_team, self.round_id), use_bin_type=False)
+
+  def resolve_player_ids(self, resolver):
+    '''
+      Translate player IDs to names
+    '''
+    self.killer = resolver(self.killer)
+    self.victim = resolver(self.victim)
+    return self
