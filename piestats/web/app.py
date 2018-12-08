@@ -17,6 +17,7 @@ from piestats.config import Config
 from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from piestats.status import Status
+from piestats.web.helpers import PaginationHelper
 
 ui_root = os.environ.get('STATIC_ROOT', os.path.abspath(os.path.dirname(__file__)))
 
@@ -246,54 +247,40 @@ class Kills(ServerBase):
 
 class Maps(ServerBase):
   def on_get(self, req, resp, server, pos=0):
-    startat = int(pos)
-    if (startat % 20):
-      startat = 0
+    pager = PaginationHelper(
+        bare_route='/{server_slug}/maps'.format(server_slug=req.context['server'].url_slug),
+        num_items=req.context['stats'].get_num_maps(),
+        offset=pos,
+        interval=20)
 
     data = {
         'page_title': 'Top maps',
-        'next_url': '/{server_slug}/maps/pos/{startat}'.format(startat=startat + 20, server_slug=req.context['server'].url_slug),
-        'maps': req.context['stats'].get_top_maps(startat),
+        'next_url': pager.next_url,
+        'prev_url': pager.prev_url,
+        'maps': req.context['stats'].get_top_maps(pager.offset),
     }
 
     data.update(self.more_data(req))
-
-    if startat >= 20:
-      data['prev_url'] = '/{server_slug}/maps/pos/{startat}'.format(startat=startat - 20, server_slug=req.context['server'].url_slug)
-    else:
-      data['prev_url'] = False
-
-    num_maps = req.context['stats'].get_num_maps()
-
-    if (startat + 20) > num_maps:
-      data['next_url'] = False
 
     self.render_template(resp, 'maps.html', **data)
 
 
 class Rounds(ServerBase):
   def on_get(self, req, resp, server, pos=0):
-    startat = int(pos)
-    if (startat % 20):
-      startat = 0
+    pager = PaginationHelper(
+        bare_route='/{server_slug}/rounds'.format(server_slug=req.context['server'].url_slug),
+        num_items=req.context['stats'].get_num_rounds(),
+        offset=pos,
+        interval=20)
 
     data = {
         'page_title': 'Latest Rounds',
-        'next_url': '/{server_slug}/rounds/pos/{startat}'.format(startat=startat + 20, server_slug=req.context['server'].url_slug),
-        'rounds': req.context['stats'].get_last_rounds(startat),
+        'next_url': pager.next_url,
+        'prev_url': pager.prev_url,
+        'rounds': req.context['stats'].get_last_rounds(pager.offset),
     }
 
     data.update(self.more_data(req))
-
-    if startat >= 20:
-      data['prev_url'] = '/{server_slug}/rounds/pos/{startat}'.format(startat=startat - 20, server_slug=req.context['server'].url_slug)
-    else:
-      data['prev_url'] = False
-
-    num_rounds = req.context['stats'].get_num_rounds()
-
-    if (startat + 20) > num_rounds:
-      data['next_url'] = False
 
     self.render_template(resp, 'lastrounds.html', **data)
 
@@ -322,27 +309,20 @@ class Round(ServerBase):
 
 class Players(ServerBase):
   def on_get(self, req, resp, server, pos=0):
-    startat = int(pos)
-    if (startat % 20):
-      startat = 0
+    pager = PaginationHelper(
+        bare_route='/{server_slug}/players'.format(server_slug=req.context['server'].url_slug),
+        num_items=req.context['stats'].get_num_players(),
+        offset=pos,
+        interval=20)
 
     data = {
         'page_title': 'Top Players',
-        'next_url': '/{server_slug}/players/pos/{startat}'.format(startat=startat + 20, server_slug=req.context['server'].url_slug),
-        'players': req.context['stats'].get_top_killers(startat),
+        'next_url': pager.next_url,
+        'prev_url': pager.prev_url,
+        'players': req.context['stats'].get_top_killers(pager.offset),
     }
 
     data.update(self.more_data(req))
-
-    if startat >= 20:
-      data['prev_url'] = '/{server_slug}/players/pos/{startat}'.format(startat=startat - 20, server_slug=req.context['server'].url_slug)
-    else:
-      data['prev_url'] = False
-
-    num_players = req.context['stats'].get_num_players()
-
-    if (startat + 20) > num_players:
-      data['next_url'] = False
 
     self.render_template(resp, 'players.html', **data)
 
