@@ -441,19 +441,19 @@ def init_app(config_path=None):
     app.add_route('/{server}/player', Player())
 
     app.add_route('/{server}/players', Players())
-    app.add_route('/{server}/players/pos/{pos}', Players())
+    app.add_route('/{server}/players/pos/{pos:int}', Players())
 
     app.add_route('/{server}/map/{map}', Map())
     app.add_route('/{server}/map/{map}/svg', MapSVG())
     app.add_route('/{server}/maps', Maps())
-    app.add_route('/{server}/maps/pos/{pos}', Maps())
+    app.add_route('/{server}/maps/pos/{pos:int}', Maps())
 
     app.add_route('/{server}/round/{round}', Round())
     app.add_route('/{server}/rounds', Rounds())
-    app.add_route('/{server}/rounds/pos/{pos}', Rounds())
+    app.add_route('/{server}/rounds/pos/{pos:int}', Rounds())
 
     app.add_route('/{server}/kills', Kills())
-    app.add_route('/{server}/kills/pos/{pos}', Kills())
+    app.add_route('/{server}/kills/pos/{pos:int}', Kills())
 
     app.add_route('/{server}/weapons', Weapons())
 
