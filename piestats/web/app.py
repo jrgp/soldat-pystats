@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import falcon
 import redis
 import ujson
-from falcon import HTTPNotFound, HTTPFound
+from falcon import HTTPNotFound, HTTPFound, HTTP_404
 from jinja2 import FileSystemLoader
 from jinja2.sandbox import SandboxedEnvironment
 from babel.dates import format_datetime
@@ -115,9 +115,12 @@ class ServerBase(object):
         req=req
     )
 
-  def render_template(self, resp, page, **data):
+  def render_template(self, resp, page, response_code=None, **data):
     resp.content_type = 'text/html'
     resp.body = jinja2_env.get_template(page).render(**data)
+
+    if response_code is not None:
+        resp.status = response_code
 
 
 class ServerMiddleware(object):
@@ -165,7 +168,7 @@ class Map(ServerBase):
     data.update(self.more_data(req))
 
     if not data['map']:
-      self.render_template(resp, 'map_not_found.html', **data)
+      self.render_template(resp, 'map_not_found.html', response_code=HTTP_404, **data)
       return
 
     self.render_template(resp, 'map.html', **data)
@@ -196,7 +199,7 @@ class Player(ServerBase):
     data.update(self.more_data(req))
 
     if not data['player']:
-      self.render_template(resp, 'player_not_found.html', **data)
+      self.render_template(resp, 'player_not_found.html', response_code=HTTP_404, **data)
       return
 
     self.render_template(resp, 'player.html',
