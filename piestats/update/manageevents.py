@@ -183,15 +183,15 @@ class ManageEvents():
     if self.current_map:
       if kill.suicide:
         self.r.hincrby(self.keys.map_hash(self.current_map), 'suicides', incr)
-        self.r.hincrby(self.keys.map_hash(self.current_map), 'suicides:' + kill.weapon, incr)
-        self.r.hincrby(self.keys.player_hash(kill.victim), 'suicides_map:' + self.current_map, incr)
+        self.r.hincrby(self.keys.map_hash(self.current_map), 'suicides:%s' % kill.weapon, incr)
+        self.r.hincrby(self.keys.player_hash(kill.victim), 'suicides_map:%s' % self.current_map, incr)
       else:
         self.r.hincrby(self.keys.map_hash(self.current_map), 'kills', incr)
-        self.r.hincrby(self.keys.map_hash(self.current_map), 'kills:' + kill.weapon, incr)
+        self.r.hincrby(self.keys.map_hash(self.current_map), 'kills:%s' % kill.weapon, incr)
 
         # Player kills per this map
-        self.r.hincrby(self.keys.player_hash(kill.killer), 'kills_map:' + self.current_map, incr)
-        self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths_map:' + self.current_map, incr)
+        self.r.hincrby(self.keys.player_hash(kill.killer), 'kills_map:%s' % self.current_map, incr)
+        self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths_map:%s' % self.current_map, incr)
 
     # Stuff that only makes sense for non suicides
     if not kill.suicide:
@@ -199,9 +199,9 @@ class ManageEvents():
       self.r.hincrby(self.keys.player_hash(kill.killer), 'kills', incr)
 
       if incr == 1 and self.round_id:
-        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_player:' + kill.killer)
+        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_player:%s' % kill.killer)
         self.r.hincrby(self.keys.round_hash(self.round_id), 'kills')
-        self.r.hincrby(self.keys.round_hash(self.round_id), 'deaths_player:' + kill.victim)
+        self.r.hincrby(self.keys.round_hash(self.round_id), 'deaths_player:%s' % kill.victim)
 
     # Increment number of deaths for victim
     self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths', incr)
@@ -229,11 +229,11 @@ class ManageEvents():
     # Update weapon stats..
     if not kill.suicide:
       self.r.zincrby(self.keys.top_weapons, kill.weapon)
-      self.r.hincrby(self.keys.player_hash(kill.killer), 'kills:' + kill.weapon, incr)
-      self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths:' + kill.weapon, incr)
+      self.r.hincrby(self.keys.player_hash(kill.killer), 'kills:%s' % kill.weapon, incr)
+      self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths:%s' % kill.weapon, incr)
 
       if incr == 1 and self.round_id:
-        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_weapon:' + kill.weapon)
+        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_weapon:%s' % kill.weapon)
 
     # If we're not a suicide, update top enemy kills for playeself.r..
     if not kill.suicide:
