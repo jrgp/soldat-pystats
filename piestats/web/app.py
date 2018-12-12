@@ -210,13 +210,16 @@ class Player(ServerBase):
 
 class Kills(ServerBase):
   def on_get(self, req, resp, server, pos=0):
-    startat = int(pos)
-    if (startat % 20):
-      startat = 0
+    pager = PaginationHelper(
+        bare_route='/{server_slug}/kills'.format(server_slug=req.context['server'].url_slug),
+        num_items=req.context['stats'].get_num_kills(),
+        offset=pos,
+        interval=20)
 
     data = {
         'page_title': 'Latest Kills',
-        'next_url': '/{server_slug}/kills/pos/{startat}'.format(startat=startat + 20, server_slug=req.context['server'].url_slug),
+        'next_url': pager.next_url,
+        'prev_url': pager.prev_url,
     }
 
     data.update(self.more_data(req))
@@ -230,17 +233,7 @@ class Kills(ServerBase):
       info['victim_team'] = kill.victim_team
       return info
 
-    data['kills'] = (kill_decorate(kill) for kill in req.context['stats'].get_last_kills(startat))
-
-    if startat >= 20:
-      data['prev_url'] = '/{server_slug}/kills/pos/{startat}'.format(startat=startat - 20, server_slug=req.context['server'].url_slug)
-    else:
-      data['prev_url'] = False
-
-    num_kills = req.context['stats'].get_num_kills()
-
-    if (startat + 20) > num_kills:
-      data['next_url'] = False
+    data['kills'] = (kill_decorate(kill) for kill in req.context['stats'].get_last_kills(pager.offset))
 
     self.render_template(resp, 'latestkills.html', **data)
 

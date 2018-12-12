@@ -7,21 +7,7 @@ Latest Rounds
 
 {% block content %}
 
-<nav>
-  <ul class="pager">
-  {% if prev_url %}
-    <li><a href="{{ prev_url }}">Newer</a></li>
-  {% else %}
-    <li class="disabled"><a href="" onclick="return false;"><span aria-hidden="true">Newer</span></a></li>
-  {% endif %}
-
-  {% if next_url %}
-    <li><a href="{{ next_url }}">Older</a></li>
-  {% else %}
-    <li class="disabled"><a href="" onclick="return false;"><span aria-hidden="true">Older</span></a></li>
-  {% endif %}
-  </ul>
-</nav>
+{{ macro.pager(prev_url, next_url) }}
 
 <div class="panel panel-default">
   <table class="table table-striped">
