@@ -60,3 +60,7 @@ class Server:
       return self.info['connection']
     else:
       return dict()
+
+  @property
+  def ignore_players(self):
+    return self.info.get('ignore_players', [])

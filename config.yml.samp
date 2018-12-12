@@ -17,8 +17,12 @@ soldat_servers:
     port: 23020
     password: notreal
 
+    # Ignore events (kills/caps/etc) with these player names
+    ignore_players: [ 'Major', 'Major(1)', 'Major(2)', 'Major(3)', 'Major(4)', 'Major(5)' ]
+
   # When you have multiple servers, the nav bar at the top with player search
   # and the server browser dropdown appears.
+
 
 # Days to keep track of stats
 data_retention: 30

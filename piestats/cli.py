@@ -69,7 +69,7 @@ def update(config_path):
       keys = Keys(config, server)
 
       # Limit our data to however much retention
-      retention = Retention(r, keys, config)
+      retention = Retention(r, keys, config, server)
 
       # Parse each of our soldat DIRs
       for soldat_dir in server.dirs:
@@ -84,7 +84,7 @@ def update(config_path):
 
         # Console logs
         try:
-            update_events(r, keys, retention, filemanager)
+            update_events(r, keys, retention, filemanager, server)
         except Exception:
             logging.exception('Failed updating stats for %s (%s) (%s)', server.url_slug, server.title, server.log_source)
 

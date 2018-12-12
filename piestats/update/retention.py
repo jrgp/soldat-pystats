@@ -7,11 +7,11 @@ from piestats.models.kill import Kill
 
 
 class Retention:
-  def __init__(self, r, keys, config):
+  def __init__(self, r, keys, config, server):
     self.max_days = config.data_retention
     self.keys = keys
     self.r = r
-    self.manage = ManageEvents(r, keys)
+    self.manage = ManageEvents(r, keys, server)
     self.oldest_allowed_unix = time() - (self.max_days * 86400)
 
   def too_old(self, date):

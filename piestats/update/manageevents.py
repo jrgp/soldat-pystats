@@ -13,13 +13,14 @@ except ImportError:
 
 
 class ManageEvents():
-  def __init__(self, r, keys):
+  def __init__(self, r, keys, server):
     self.r = r
     self.keys = keys
     self.current_map = None
     self.round_id = None
     self.valid_score_maps = set()
     self.lobby_maps = ('Lothic', 'Lobby')
+    self.ignore_players = server.ignore_players
 
     self.hwid = Hwid(self.r, self.keys)
 
@@ -37,9 +38,10 @@ class ManageEvents():
       Given an event object, determine which method to delegate it
     '''
     if isinstance(event, EventPlayerJoin):
-      player_id = self.hwid.register_hwid(event.player, event.hwid, event.date)
-      self.update_country(event.ip, player_id)
-      self.update_player_search(event.player)
+      if event.player not in self.ignore_players:
+          player_id = self.hwid.register_hwid(event.player, event.hwid, event.date)
+          self.update_country(event.ip, player_id)
+          self.update_player_search(event.player)
     elif isinstance(event, EventNextMap):
       self.update_map(event.map, event.date)
     elif isinstance(event, MapList):
@@ -47,9 +49,11 @@ class ManageEvents():
     elif isinstance(event, EventInvalidMap):
       self.kill_map(event.map)
     elif isinstance(event, EventScore):
-      self.update_score(self.hwid.get_player_id_from_name(event.player), event.team, event.date)
+      if event.player not in self.ignore_players:
+          self.update_score(self.hwid.get_player_id_from_name(event.player), event.team, event.date)
     elif isinstance(event, Kill):
-      self.apply_kill(event)
+      if event.killer not in self.ignore_players and event.victim not in self.ignore_players:
+          self.apply_kill(event)
 
   def update_player_search(self, player):
       '''
