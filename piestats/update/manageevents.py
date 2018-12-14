@@ -19,7 +19,7 @@ class ManageEvents():
     self.current_map = None
     self.round_id = None
     self.valid_score_maps = set()
-    self.lobby_maps = ('Lothic', 'Lobby')
+    self.ignore_maps = server.ignore_maps
     self.ignore_players = server.ignore_players
 
     self.hwid = Hwid(self.r, self.keys)
@@ -49,10 +49,12 @@ class ManageEvents():
     elif isinstance(event, EventInvalidMap):
       self.kill_map(event.map)
     elif isinstance(event, EventScore):
-      if event.player not in self.ignore_players:
+      if event.player not in self.ignore_players and (self.current_map is None or self.current_map not in self.ignore_maps):
           self.update_score(self.hwid.get_player_id_from_name(event.player), event.team, event.date)
     elif isinstance(event, Kill):
-      if event.killer not in self.ignore_players and event.victim not in self.ignore_players:
+      if(event.killer not in self.ignore_players and
+         event.victim not in self.ignore_players and
+         (self.current_map is None or self.current_map not in self.ignore_maps)):
           self.apply_kill(event)
 
   def update_player_search(self, player):
@@ -113,10 +115,10 @@ class ManageEvents():
     self.current_map = map
 
     if map:
-      self.r.zincrby(self.keys.top_maps, map)
 
       # Start a new round if this round is using a real map and not a placeholder one
-      if map not in self.lobby_maps:
+      if map not in self.ignore_maps:
+        self.r.zincrby(self.keys.top_maps, map)
         self.round_id = self.r.incr(self.keys.last_round_id)
         self.r.hmset(self.keys.round_hash(self.round_id), {
             'started': date,

@@ -1,3 +1,7 @@
+# Maps and player names to ignore. referred to below.
+aliases:
+- &ignore_maps [ 'Lothic', 'Lobby' ]
+- &ignore_players [ 'Major', 'Major(1)', 'Major(2)', 'Major(3)', 'Major(4)', 'Major(5)' ]
 
 # One block per server entry. If more than one is present,
 # the site will let you choose which as well as incorporate
@@ -17,8 +21,12 @@ soldat_servers:
     port: 23020
     password: notreal
 
-    # Ignore events (kills/caps/etc) with these player names
-    ignore_players: [ 'Major', 'Major(1)', 'Major(2)', 'Major(3)', 'Major(4)', 'Major(5)' ]
+    # Ignore events with these player names
+    ignore_players: *ignore_players
+
+    # Ignore events (kills/caps/rounds/etc) on maps like this
+    ignore_maps: *ignore_maps
+
 
   # When you have multiple servers, the nav bar at the top with player search
   # and the server browser dropdown appears.

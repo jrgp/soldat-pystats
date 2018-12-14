@@ -64,3 +64,7 @@ class Server:
   @property
   def ignore_players(self):
     return self.info.get('ignore_players', [])
+
+  @property
+  def ignore_maps(self):
+    return self.info.get('ignore_maps', [])
