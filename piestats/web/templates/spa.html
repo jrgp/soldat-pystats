@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/static/slate.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    window.servers = {{ servers | tojson  }};
+    window.since = {{ since  | tojson }};
+    window.timezone = {{ timezone | tojson }};
+  </script>
+  <script src="/static/jquery-1.11.3.min.js"></script>
+  <script src="/static/bootstrap.min.js"></script>
+  <script src="/static/webpack/bundle.js"></script>
+</body>
+</html>

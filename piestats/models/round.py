@@ -64,6 +64,27 @@ class Round:
     return max(0, self.get_int('finished') - self.get_int('started'))
 
   @property
+  def pretty_duration(self):
+    duration = self.duration
+    if duration:
+      hours, remainder = divmod(duration, 3600)
+      minutes, seconds = divmod(remainder, 60)
+      resp = []
+
+      if hours:
+        resp.append('%dh' % hours)
+
+      if minutes:
+        resp.append('%dm' % minutes)
+
+      if seconds:
+        resp.append('%ds' % seconds)
+
+      return ''.join(resp)
+    else:
+      return '-'
+
+  @property
   def kills(self):
     ''' Total count of kills '''
     return self.get_int('kills')

@@ -1,4 +1,4 @@
-import socket
+from gevent import socket
 import logging
 from struct import unpack
 from IPy import IP
@@ -118,7 +118,7 @@ class Status:
     ''' Connect to server, send request for data and wait for it, then parse and return it '''
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(4.0)
+    s.settimeout(2.0)
 
     buf = ''
     info = None

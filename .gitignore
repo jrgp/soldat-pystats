@@ -31,3 +31,4 @@ ftp_config.yml
 kills/
 soldat/
 .cache
+node_modules

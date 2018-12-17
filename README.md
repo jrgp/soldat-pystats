@@ -1,7 +1,7 @@
 # soldat-pystats
 
 Statistics script which displays kill and player/country stats for multiple
-[Soldat](http://soldat.pl/) game servers. Powered by Python + [Redis](http://redis.io/) + [Falcon](https://falconframework.org/) and styled with [Bootswatch](http://bootswatch.com/).
+[Soldat](http://soldat.pl/) game servers. Powered by Python + [Redis](http://redis.io/) + [Falcon](https://falconframework.org/) + [ReactJS](https://reactjs.org/) and styled with [Bootswatch](http://bootswatch.com/).
 
 # Screenshots
 
@@ -42,7 +42,7 @@ First, have an install of Redis database runnning. The following will do.
 
     sudo apt-get install redis-server
 
-### Dev guide/Quickstart
+### Quickstart
 
 Install python virtualenv tool
 
@@ -66,6 +66,10 @@ Run update script. Probably add this to cron.
 Quickly start website. (Bind to all NICs on port 5000)
 
     piestats web -c config.yml
+
+### Frontend development
+
+If you would like to develop the React-based frontend, [read the web README](piestats/web/README.md).
 
 # Gunicorn Example
 

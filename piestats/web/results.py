@@ -165,7 +165,9 @@ class Results():
     for kill_id in kill_ids:
       kill_data = self.r.hget(self.keys.kill_data, kill_id)
       if kill_data:
-        yield Kill.from_redis(kill_data).resolve_player_ids(self.get_name_from_id)
+        kill = Kill.from_redis(kill_data).resolve_player_ids(self.get_name_from_id)
+        kill._id = kill_id
+        yield kill
 
   def get_last_rounds(self, startat=0, incr=20):
     ''' given pagination, get list of most recent Round objects '''

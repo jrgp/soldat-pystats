@@ -1,0 +1,57 @@
+#mainContainer {
+  margin-top: 100px; margin-bottom: 100px;
+}
+
+#mainContainer > .page-header {
+  border: none;
+}
+
+.nowidth {
+  width: 0;
+}
+
+.alignright {
+  text-align: right;
+}
+
+.alignleft {
+  text-align: left;
+}
+
+.aligncenter {
+  text-align: center;
+}
+
+.mapsvg {
+  margin: 20px;
+}
+
+.team-alpha, .team-alpha:hover {
+  color: #ff4242;
+  text-transform: capitalize;
+}
+
+.team-bravo, .team-bravo:hover {
+  color: #80aef7;
+  text-transform: capitalize;
+}
+
+.team-charlie, .team-charlie:hover {
+  color: green;
+  text-transform: capitalize;
+}
+
+.team-delta, .team-delta:hover {
+  color: yellow;
+  text-transform: capitalize;
+}
+
+.team-spectator, .team-spectator:hover {
+  color: purple;
+  text-transform: capitalize;
+}
+
+.team-none, .team-none:hover {
+  color: gray;
+  text-transform: capitalize;
+}

@@ -1,14 +1,12 @@
 import os
 import re
 import logging
-import urllib
-from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import falcon
 import redis
 import ujson
-from falcon import HTTPNotFound, HTTPFound, HTTP_404
+from falcon import HTTPNotFound, HTTPFound
 from jinja2 import FileSystemLoader
 from jinja2.sandbox import SandboxedEnvironment
 from babel.dates import format_datetime
@@ -30,10 +28,11 @@ mimes = {'.css': 'text/css',
          '.png': 'image/png',
          '.svg': 'image/svg+xml',
          '.ttf': 'application/octet-stream',
-         '.woff': 'application/font-woff'}
+         '.woff': 'application/font-woff',
+         '.ico': 'image/x-icon',
+         }
 
 _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_.-]')
-_safe_username_re = re.compile('^[^.][a-zA-Z0-9-\. ]+$')
 
 
 def secure_filename(filename):
@@ -43,40 +42,6 @@ def secure_filename(filename):
     filename = str(_filename_ascii_strip_re.sub('', '_'.join(
         filename.split()))).strip('._')
     return filename
-
-
-def pretty_duration(source_seconds):
-  hours, remainder = divmod(source_seconds, 3600)
-  minutes, seconds = divmod(remainder, 60)
-  resp = []
-
-  if hours:
-    resp.append('%dh' % hours)
-
-  if minutes:
-    resp.append('%dm' % minutes)
-
-  if seconds:
-    resp.append('%ds' % seconds)
-
-  return ''.join(resp)
-
-
-def pretty_datetime(timezone):
-  return lambda date: format_datetime(date, tzinfo=timezone)
-
-
-def bad_username(username):
-  return not _safe_username_re.match(username)
-
-
-def player_url(server, username):
-  if not username:
-    return None
-  if bad_username(username):
-    return '/{server}/player?name={username}'.format(server=server, username=urllib.quote_plus(username))
-  else:
-    return '/{server}/player/{username}'.format(server=server, username=username)
 
 
 class StaticResource(object):
@@ -98,24 +63,26 @@ class StaticResource(object):
             raise HTTPNotFound()
 
 
-class ServerBase(object):
-  def more_data(self, req):
-    return dict(
-        footer=dict(
-            num_kills=req.context['stats'].get_num_kills,
-            num_players=req.context['stats'].get_num_players,
-            since=lambda: (datetime.now() - timedelta(days=req.context['config'].data_retention)).date(),
-            timezone=str(req.context['config'].timezone)
-        ),
-        servers=req.context['config'].ui_servers,
-        current_server=req.context['server'],
-        server_slug=req.context['server'].url_slug,
-        urlargs=dict(server_slug=req.context['server'].url_slug, player_url=player_url),
-        pretty_datetime=pretty_datetime(req.context['config'].timezone),
-        pretty_duration=pretty_duration,
-        req=req
-    )
+class StaticFile(object):
+    allow_read_no_auth = True
+    frontend_route = False
 
+    def __init__(self, path):
+        self.path = path.lstrip('/')
+
+    def on_get(self, req, resp):
+        suffix = os.path.splitext(self.path)[1]
+        resp.content_type = mimes.get(suffix, 'application/octet-stream')
+
+        filepath = os.path.join(ui_root, self.path)
+        try:
+            resp.stream = open(filepath, 'rb')
+            resp.stream_len = os.path.getsize(filepath)
+        except IOError:
+            raise HTTPNotFound()
+
+
+class ServerBase(object):
   def render_template(self, resp, page, response_code=None, **data):
     resp.content_type = 'text/html'
     resp.body = jinja2_env.get_template(page).render(**data)
@@ -139,7 +106,8 @@ class ServerMiddleware(object):
     try:
       req.context['server'] = self.config.get_server(server_slug)
     except InvalidServer:
-      raise HTTPFound('/')
+      resp.body = ujson.dumps({'error': 'Server not found'})
+      raise HTTPNotFound()
 
     req.context['stats'] = Results(self.config, req.context['server'])
 
@@ -149,30 +117,47 @@ class Index(object):
     raise HTTPFound('/%s' % req.context['config'].servers[0].url_slug)
 
 
-class Weapons(ServerBase):
+def sink_func(config):
+    def inner(req, resp):
+        data = {
+            'servers': [],
+            'since': str((datetime.now() - timedelta(days=config.data_retention)).date()),
+            'timezone': str(config.timezone),
+            'tojson': ujson.dumps
+        }
+
+        for server in config.ui_servers:
+            results = Results(config, server)
+            data['servers'].append({
+                'slug': server.url_slug,
+                'title': server.title,
+                'num_kills': results.get_num_kills(),
+                'num_players': results.get_num_players(),
+            })
+
+        ServerBase().render_template(resp, 'spa.html', **data)
+    return inner
+
+
+class ApiWeapons(ServerBase):
   def on_get(self, req, resp, server):
     data = {
-        'page_title': 'Weapons',
-        'weapons': req.context['stats'].get_top_weapons(),
+        'data': [{'name': name, 'kills': kills} for name, kills in req.context['stats'].get_top_weapons()],
     }
-    data.update(self.more_data(req))
-    self.render_template(resp, 'weapons.html', **data)
+    resp.body = ujson.dumps(data)
 
 
-class Map(ServerBase):
+class ApiMap(ServerBase):
   def on_get(self, req, resp, server, map):
     data = {
-        'page_title': 'Map %s' % map,
-        'map': req.context['stats'].get_map(map),
+        'data': req.context['stats'].get_map(map),
     }
 
-    data.update(self.more_data(req))
+    if not data['data']:
+      resp.body = ujson.dumps({'error': 'Map not found'})
+      raise HTTPNotFound()
 
-    if not data['map']:
-      self.render_template(resp, 'map_not_found.html', response_code=HTTP_404, **data)
-      return
-
-    self.render_template(resp, 'map.html', **data)
+    resp.body = ujson.dumps(data)
 
 
 class MapSVG(ServerBase):
@@ -187,7 +172,7 @@ class MapSVG(ServerBase):
         raise falcon.HTTPNotFound()
 
 
-class Player(ServerBase):
+class ApiPlayer(ServerBase):
   def on_get(self, req, resp, server, player=None):
     if player is None:
       player = req.get_param('name', required=True)
@@ -197,18 +182,14 @@ class Player(ServerBase):
         top_victims=req.context['stats'].get_player_top_victims(player, 0, 10)
     )
 
-    data.update(self.more_data(req))
-
     if not data['player']:
-      self.render_template(resp, 'player_not_found.html', response_code=HTTP_404, **data)
-      return
+      resp.body = ujson.dumps({'error': 'Player not found'})
+      raise HTTPNotFound()
 
-    self.render_template(resp, 'player.html',
-                         page_title=data['player'].name,
-                         **data)
+    resp.body = ujson.dumps({'data': data})
 
 
-class Kills(ServerBase):
+class ApiKills(ServerBase):
   def on_get(self, req, resp, server, pos=0):
     pager = PaginationHelper(
         bare_route='/{server_slug}/kills'.format(server_slug=req.context['server'].url_slug),
@@ -216,29 +197,24 @@ class Kills(ServerBase):
         offset=pos,
         interval=20)
 
-    data = {
-        'page_title': 'Latest Kills',
-        'next_url': pager.next_url,
-        'prev_url': pager.prev_url,
-    }
-
-    data.update(self.more_data(req))
-
     def kill_decorate(kill):
       info = kill.__dict__
       info['killer_obj'] = req.context['stats'].get_player_fields_by_name(kill.killer, ['lastcountry'])
       info['victim_obj'] = req.context['stats'].get_player_fields_by_name(kill.victim, ['lastcountry'])
-      info['datetime'] = data['pretty_datetime'](datetime.utcfromtimestamp(int(info['timestamp'])))
+      info['datetime'] = int(info['timestamp'])
       info['killer_team'] = kill.killer_team
       info['victim_team'] = kill.victim_team
       return info
 
-    data['kills'] = (kill_decorate(kill) for kill in req.context['stats'].get_last_kills(pager.offset))
+    data = {
+        'data': [kill_decorate(kill) for kill in req.context['stats'].get_last_kills(pager.offset)],
+        'total_items': pager.num_items,
+    }
 
-    self.render_template(resp, 'latestkills.html', **data)
+    resp.body = ujson.dumps(data)
 
 
-class Maps(ServerBase):
+class ApiMaps(ServerBase):
   def on_get(self, req, resp, server, pos=0):
     pager = PaginationHelper(
         bare_route='/{server_slug}/maps'.format(server_slug=req.context['server'].url_slug),
@@ -247,18 +223,14 @@ class Maps(ServerBase):
         interval=20)
 
     data = {
-        'page_title': 'Top maps',
-        'next_url': pager.next_url,
-        'prev_url': pager.prev_url,
-        'maps': req.context['stats'].get_top_maps(pager.offset),
+        'data': req.context['stats'].get_top_maps(pager.offset),
+        'total_items': pager.num_items
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'maps.html', **data)
+    resp.body = ujson.dumps(data)
 
 
-class Rounds(ServerBase):
+class ApiRounds(ServerBase):
   def on_get(self, req, resp, server, pos=0):
     pager = PaginationHelper(
         bare_route='/{server_slug}/rounds'.format(server_slug=req.context['server'].url_slug),
@@ -267,40 +239,33 @@ class Rounds(ServerBase):
         interval=20)
 
     data = {
-        'page_title': 'Latest Rounds',
-        'next_url': pager.next_url,
-        'prev_url': pager.prev_url,
-        'rounds': req.context['stats'].get_last_rounds(pager.offset),
+        'total_items': pager.num_items,
+        'data': req.context['stats'].get_last_rounds(pager.offset),
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'lastrounds.html', **data)
+    resp.body = ujson.dumps(data)
 
 
-class Round(ServerBase):
+class ApiRound(ServerBase):
   def on_get(self, req, resp, server, round):
     data = {
-        'page_title': 'Round %s' % round,
         'round': req.context['stats'].get_round(round),
     }
 
-    data.update(self.more_data(req))
-
     if not data['round']:
-      self.render_template(resp, 'not_found.html', item='round', **data)
-      return
+      resp.body = ujson.dumps({'error': 'Round not found'})
+      raise HTTPNotFound()
 
     def player_decorate(player):
       player['obj'] = req.context['stats'].get_player_fields(player['id'], ['lastcountry'])
       return player
 
-    data['players'] = (player_decorate(player) for player in data['round'].players.itervalues())
+    data['players'] = [player_decorate(player) for player in data['round'].players.itervalues()]
 
-    self.render_template(resp, 'round.html', **data)
+    resp.body = ujson.dumps(dict(data=data))
 
 
-class Players(ServerBase):
+class ApiPlayers(ServerBase):
   def on_get(self, req, resp, server, pos=0):
     pager = PaginationHelper(
         bare_route='/{server_slug}/players'.format(server_slug=req.context['server'].url_slug),
@@ -309,24 +274,19 @@ class Players(ServerBase):
         interval=20)
 
     data = {
-        'page_title': 'Top Players',
-        'next_url': pager.next_url,
-        'prev_url': pager.prev_url,
-        'players': req.context['stats'].get_top_killers(pager.offset),
+        'data': req.context['stats'].get_top_killers(pager.offset),
+        'total_items': pager.num_items,
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'players.html', **data)
+    resp.body = ujson.dumps(data)
 
 
-class Server(ServerBase):
+class ApiServer(ServerBase):
   def on_get(self, req, resp, server):
     raw_kills_per_date = req.context['stats'].get_kills_for_date_range()
-    kills_per_date = OrderedDict(zip(
-                                 map(
-                                     lambda d: str(format_datetime(d.date(), 'yyyy-MM-dd', tzinfo=req.context['config'].timezone)), raw_kills_per_date.keys()),
-                                 raw_kills_per_date.values()))
+    kills_per_date = zip(map(lambda d: str(format_datetime(d.date(), 'yyyy-MM-dd', tzinfo=req.context['config'].timezone)),
+                             raw_kills_per_date.keys()),
+                         raw_kills_per_date.values())[::-1]
     colors = [
         'red',
         'blue',
@@ -337,7 +297,6 @@ class Server(ServerBase):
         'purple',
     ]
     data = dict(
-        page_title='Stats overview',
         killsperdate=kills_per_date,
         topcountries=[
             dict(
@@ -347,25 +306,23 @@ class Server(ServerBase):
             )
             for country, players in req.context['stats'].get_top_countries(len(colors) - 1)],
         show_server_status=req.context['server'].admin_details is not None,
-        server_slug=req.context['server'].url_slug
     )
-    data.update(self.more_data(req))
-    self.render_template(resp, 'index.html', **data)
+    resp.body = ujson.dumps({'data': data})
 
 
-class StatusRoute(ServerBase):
+class ApiStatus(ServerBase):
   def on_get(self, req, resp, server):
     admin_details = req.context['server'].admin_details
 
     if not admin_details:
-      resp.body = ujson.dumps(dict(success=False, info='Admin settings not specified'))
+      resp.body = ujson.dumps(dict(info=None, error='Admin settings not specified'))
       return
 
     status = Status(**admin_details)
     info = status.get_info()
 
     if not info:
-      resp.body = ujson.dumps(dict(success=False, info='Failed getting server status'))
+      resp.body = ujson.dumps(dict(info=None, error='Failed getting server status'))
       return
 
     # Hide player IP from outside world
@@ -374,29 +331,19 @@ class StatusRoute(ServerBase):
 
     info['server_slug'] = req.context['server'].url_slug
 
-    resp.body = ujson.dumps(dict(success=True, info=info))
+    resp.body = ujson.dumps(dict(info=info, error=None))
 
 
-class Search(ServerBase):
+class ApiSearch(ServerBase):
   def on_get(self, req, resp, server):
-    player_name = req.get_param('player')
-    if not player_name:
-      self.render_template(resp, 'player_not_found.html', **self.more_data(req))
-      return
-
+    player_name = req.get_param('name', required=True)
     players = req.context['stats'].player_search(player_name)
 
-    if len(players) == 1:
-      raise HTTPFound(player_url(req.context['server'].url_slug, players[0].name))
-
     data = {
-        'page_title': 'Search results',
-        'results': players,
+        'results': players
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'player_search.html', **data)
+    resp.body = ujson.dumps(data)
 
 
 def init_app(config_path=None):
@@ -410,35 +357,38 @@ def init_app(config_path=None):
 
     app = falcon.API(middleware=[ServerMiddleware(config)])
 
-    app.add_route('/{server}/player/{player}', Player())
-    app.add_route('/{server}/player', Player())
+    app.add_route('/v0/{server}/map/{map}/svg', MapSVG())
 
-    app.add_route('/{server}/players', Players())
-    app.add_route('/{server}/players/pos/{pos:int}', Players())
+    # API routes
+    app.add_route('/v0/{server}/players', ApiPlayers())
+    app.add_route('/v0/{server}/players/pos/{pos:int}', ApiPlayers())
+    app.add_route('/v0/{server}/kills', ApiKills())
+    app.add_route('/v0/{server}/kills/pos/{pos:int}', ApiKills())
+    app.add_route('/v0/{server}/weapons', ApiWeapons())
+    app.add_route('/v0/{server}/map/{map}', ApiMap())
+    app.add_route('/v0/{server}/maps', ApiMaps())
+    app.add_route('/v0/{server}/maps/pos/{pos:int}', ApiMaps())
+    app.add_route('/v0/{server}/rounds', ApiRounds())
+    app.add_route('/v0/{server}/rounds/pos/{pos:int}', ApiRounds())
+    app.add_route('/v0/{server}/round/{round:int}', ApiRound())
+    app.add_route('/v0/{server}/player/{player}', ApiPlayer())
+    app.add_route('/v0/{server}/player', ApiPlayer())
+    app.add_route('/v0/{server}/status', ApiStatus())
+    app.add_route('/v0/{server}/search', ApiSearch())
+    app.add_route('/v0/{server}', ApiServer())
 
-    app.add_route('/{server}/map/{map}', Map())
-    app.add_route('/{server}/map/{map}/svg', MapSVG())
-    app.add_route('/{server}/maps', Maps())
-    app.add_route('/{server}/maps/pos/{pos:int}', Maps())
-
-    app.add_route('/{server}/round/{round}', Round())
-    app.add_route('/{server}/rounds', Rounds())
-    app.add_route('/{server}/rounds/pos/{pos:int}', Rounds())
-
-    app.add_route('/{server}/kills', Kills())
-    app.add_route('/{server}/kills/pos/{pos:int}', Kills())
-
-    app.add_route('/{server}/weapons', Weapons())
-
-    app.add_route('/{server}/search', Search())
-
-    app.add_route('/{server}/status', StatusRoute())
-
-    app.add_route('/{server}', Server())
-    app.add_route('/', Index())
-
+    # static assets
     app.add_route('/static/{filename}', StaticResource('/static'))
+    app.add_route('/static/webpack/{filename}', StaticResource('/static/webpack'))
     app.add_route('/static/soldatguns/{filename}', StaticResource('/static/soldatguns'))
     app.add_route('/static/flags/{filename}', StaticResource('/static/flags'))
+    app.add_route('/static/src/{filename}', StaticResource('/static/src'))
+    app.add_route('/favicon.ico', StaticFile('/static/favicon.ico'))
+
+    # Still make home page redirect to first server
+    app.add_route('/', Index())
+
+    # Catch all to SPA
+    app.add_sink(sink_func(config), '/')
 
     return app
