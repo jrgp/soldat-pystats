@@ -112,6 +112,8 @@ class ServerBase(object):
         server_slug=req.context['server'].url_slug,
         urlargs=dict(server_slug=req.context['server'].url_slug, player_url=player_url),
         pretty_datetime=pretty_datetime(req.context['config'].timezone),
+        enumerate=enumerate,
+        len=len,
         pretty_duration=pretty_duration,
         req=req
     )

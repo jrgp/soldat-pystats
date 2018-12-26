@@ -237,14 +237,16 @@ class Results():
     ''' get most recent name this id is tied to '''
     names = self.get_all_names_from_id(player_id)
     if names:
-      return names[0]
+      return names[0][0]
     else:
       return None
 
-  def get_all_names_from_id(self, player_id, limit=10):
+  def get_all_names_from_id(self, player_id):
     ''' get all names this ID is tied to, sorted by most recent use descending '''
-    names = self.r.zrevrange(self.keys.player_id_to_names(player_id), 0, limit)
-    return remove_redundant_player_names(names)
+    names_with_scores = self.r.zrevrange(self.keys.player_id_to_names(player_id), 0, -1, withscores=True)
+    filtered = remove_redundant_player_names([r[0] for r in names_with_scores])
+    names_with_scores_dict = dict(names_with_scores)
+    return [(k, names_with_scores_dict[k]) for k in filtered]
 
   def get_id_from_name(self, name):
     ''' get latest id this name is tied to '''

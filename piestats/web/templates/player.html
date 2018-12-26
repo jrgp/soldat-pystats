@@ -52,10 +52,14 @@
             </td>
           </tr>
           {% endif %}
-        <tr>
-          <th>Known names</th>
-          <td>{{ ', '.join(player.names)}}</td>
-        </tr>
+          <tr>
+            <th>Known names</th>
+            <td>
+              {% for i, (name, date) in enumerate(player.names) %}
+                <span title="{{pretty_datetime(date)}}" rel="tooltip">{{name}}</span>{% if i != len(player.names) - 1 %}, {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -164,4 +168,9 @@
     </div>
   </div>
 </div>
+<script>
+$(function(){
+  $('span[rel="tooltip"]').tooltip();
+});
+</script>
 {% endblock %}
