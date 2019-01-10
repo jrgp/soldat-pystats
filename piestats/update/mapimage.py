@@ -1,18 +1,27 @@
-import cStringIO
+# Colors to match the bootswatch theme we use
+polygon_fill_color = '#3e444c'
+polygon_stroke_color = '#000'
+
+poly_tmpl = '<polygon fill="{fill}" points="{points}" stroke="{stroke}" />'
+svg_tmpl = '''<?xml version="1.0" encoding="utf-8" ?>
+<svg baseProfile="tiny" height="100%" preserveAspectRatio="xMidYMid meet" version="1.2" viewBox="{viewbox}"
+      width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">
+{polys}
+</svg>'''
 
 
-try:
-    import svgwrite
-    have_svg_write = True
-except ImportError:
-    have_svg_write = False
+def get_map_xml(dimensions, reader):
+    return svg_tmpl.format(
+        viewbox='0 0 %d %d' % dimensions,
+        polys=''.join(poly_tmpl.format(
+            fill=polygon_fill_color,
+            stroke=polygon_stroke_color,
+            points=' '.join('{v.x},{v.y}'.format(v=vertex)
+                            for vertex in polygon.Vertexes)) for polygon in reader.polygons))
 
 
 def generate_map_svg(reader):
     ''' Generate SVG xml of map's polygon wireframe '''
-
-    if not have_svg_write:
-        raise Exception('svgwrite not installed')
 
     # Calculate maximums for image width/height
     max_vertex_x = -1
@@ -41,22 +50,4 @@ def generate_map_svg(reader):
 
     dimensions = (int(max_vertex_x), int(max_vertex_y))
 
-    # Colors to match the bootswatch theme we use
-    polygon_fill_color = '#3e444c'
-    polygon_stroke_color = '#000'
-
-    dwg = svgwrite.Drawing(
-        filename=None,  # Filename is unused as we just grab the generated xml rather than saving the image somewhere
-        profile='tiny',
-        viewBox='0 0 %d %d' % dimensions,  # Allow us to automatically scale down the huge poly coordinate locations
-        preserveAspectRatio='xMidYMid meet')  # Center it uniformly in the browser's viewport
-
-    for poly in reader.polygons:
-      dwg.add(dwg.polygon(
-          points=[(vertex.x, vertex.y) for vertex in poly.Vertexes],
-          fill=polygon_fill_color,
-          stroke=polygon_stroke_color))
-
-    handle = cStringIO.StringIO()
-    dwg.write(handle, False)
-    return handle.getvalue()
+    return get_map_xml(dimensions, reader)
