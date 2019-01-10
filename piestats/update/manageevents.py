@@ -170,6 +170,8 @@ class ManageEvents():
     kill.victim = self.hwid.get_player_id_from_name(kill.victim)
     kill.killer = self.hwid.get_player_id_from_name(kill.killer)
 
+    pipe = self.r.pipeline()
+
     # Add kill to our internal log
     if incr == 1:
 
@@ -177,79 +179,81 @@ class ManageEvents():
       if self.round_id:
         kill.round_id = self.round_id
 
-      kill_id = self.r.incr(self.keys.last_kill_id)
-      self.r.hset(self.keys.kill_data, kill_id, kill.to_redis())
-      self.r.zadd(self.keys.kill_log, kill_id, kill.timestamp)
+      kill_id = pipe.incr(self.keys.last_kill_id)
+      pipe.hset(self.keys.kill_data, kill_id, kill.to_redis())
+      pipe.zadd(self.keys.kill_log, kill_id, kill.timestamp)
 
     # Map logic
     if self.current_map:
       if kill.suicide:
-        self.r.hincrby(self.keys.map_hash(self.current_map), 'suicides', incr)
-        self.r.hincrby(self.keys.map_hash(self.current_map), 'suicides:%s' % kill.weapon, incr)
-        self.r.hincrby(self.keys.player_hash(kill.victim), 'suicides_map:%s' % self.current_map, incr)
+        pipe.hincrby(self.keys.map_hash(self.current_map), 'suicides', incr)
+        pipe.hincrby(self.keys.map_hash(self.current_map), 'suicides:%s' % kill.weapon, incr)
+        pipe.hincrby(self.keys.player_hash(kill.victim), 'suicides_map:%s' % self.current_map, incr)
       else:
-        self.r.hincrby(self.keys.map_hash(self.current_map), 'kills', incr)
-        self.r.hincrby(self.keys.map_hash(self.current_map), 'kills:%s' % kill.weapon, incr)
+        pipe.hincrby(self.keys.map_hash(self.current_map), 'kills', incr)
+        pipe.hincrby(self.keys.map_hash(self.current_map), 'kills:%s' % kill.weapon, incr)
 
         # Player kills per this map
-        self.r.hincrby(self.keys.player_hash(kill.killer), 'kills_map:%s' % self.current_map, incr)
-        self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths_map:%s' % self.current_map, incr)
+        pipe.hincrby(self.keys.player_hash(kill.killer), 'kills_map:%s' % self.current_map, incr)
+        pipe.hincrby(self.keys.player_hash(kill.victim), 'deaths_map:%s' % self.current_map, incr)
 
     # Stuff that only makes sense for non suicides
     if not kill.suicide:
-      self.r.zincrby(self.keys.top_players, kill.killer, incr)
-      self.r.hincrby(self.keys.player_hash(kill.killer), 'kills', incr)
+      pipe.zincrby(self.keys.top_players, kill.killer, incr)
+      pipe.hincrby(self.keys.player_hash(kill.killer), 'kills', incr)
 
       if incr == 1 and self.round_id:
-        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_player:%s' % kill.killer)
-        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills')
-        self.r.hincrby(self.keys.round_hash(self.round_id), 'deaths_player:%s' % kill.victim)
+        pipe.hincrby(self.keys.round_hash(self.round_id), 'kills_player:%s' % kill.killer)
+        pipe.hincrby(self.keys.round_hash(self.round_id), 'kills')
+        pipe.hincrby(self.keys.round_hash(self.round_id), 'deaths_player:%s' % kill.victim)
 
     # Increment number of deaths for victim
-    self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths', incr)
+    pipe.hincrby(self.keys.player_hash(kill.victim), 'deaths', incr)
 
     # Update first/last time we saw player
     if incr == 1:
-      self.r.hsetnx(self.keys.player_hash(kill.killer), 'firstseen', kill.timestamp)
+      pipe.hsetnx(self.keys.player_hash(kill.killer), 'firstseen', kill.timestamp)
 
       # Don't overwrite a previous bigger value with a smaller value
       old_last_seen = int(self.r.hget(self.keys.player_hash(kill.killer), 'lastseen') or 0)
 
       if kill.timestamp > old_last_seen:
-        self.r.hset(self.keys.player_hash(kill.killer), 'lastseen', kill.timestamp)
+        pipe.hset(self.keys.player_hash(kill.killer), 'lastseen', kill.timestamp)
 
     # Update first/last time we saw victim, if they're not the same..
     if incr == 1 and not kill.suicide:
-      self.r.hsetnx(self.keys.player_hash(kill.victim), 'firstseen', kill.timestamp)
+      pipe.hsetnx(self.keys.player_hash(kill.victim), 'firstseen', kill.timestamp)
 
       # Don't overwrite a previous bigger value with a smaller value
       old_last_seen = int(self.r.hget(self.keys.player_hash(kill.victim), 'lastseen') or 0)
 
       if kill.timestamp > old_last_seen:
-        self.r.hset(self.keys.player_hash(kill.victim), 'lastseen', kill.timestamp)
+        pipe.hset(self.keys.player_hash(kill.victim), 'lastseen', kill.timestamp)
 
     # Update weapon stats..
     if not kill.suicide:
-      self.r.zincrby(self.keys.top_weapons, kill.weapon)
-      self.r.hincrby(self.keys.player_hash(kill.killer), 'kills:%s' % kill.weapon, incr)
-      self.r.hincrby(self.keys.player_hash(kill.victim), 'deaths:%s' % kill.weapon, incr)
+      pipe.zincrby(self.keys.top_weapons, kill.weapon)
+      pipe.hincrby(self.keys.player_hash(kill.killer), 'kills:%s' % kill.weapon, incr)
+      pipe.hincrby(self.keys.player_hash(kill.victim), 'deaths:%s' % kill.weapon, incr)
 
       if incr == 1 and self.round_id:
-        self.r.hincrby(self.keys.round_hash(self.round_id), 'kills_weapon:%s' % kill.weapon)
+        pipe.hincrby(self.keys.round_hash(self.round_id), 'kills_weapon:%s' % kill.weapon)
 
-    # If we're not a suicide, update top enemy kills for playeself.r..
+    # If we're not a suicide, update top enemy kills for playepipe..
     if not kill.suicide:
       # Top people the killer has killed
-      self.r.zincrby(self.keys.player_top_enemies(kill.killer), kill.victim, incr)
+      pipe.zincrby(self.keys.player_top_enemies(kill.killer), kill.victim, incr)
 
       # Top people the victim has died by
-      self.r.zincrby(self.keys.player_top_victims(kill.victim), kill.killer, incr)
+      pipe.zincrby(self.keys.player_top_victims(kill.victim), kill.killer, incr)
 
     # If we're not a sucide, add this legit kill to the number of kills for this
     # day
     if incr == 1 and not kill.suicide:
       text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
-      self.r.incr(self.keys.kills_per_day(text_today), incr)
+      pipe.incr(self.keys.kills_per_day(text_today), incr)
+
+    pipe.execute()
 
   def rollback_kill(self, kill, kill_id):
     '''
