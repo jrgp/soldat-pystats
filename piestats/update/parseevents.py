@@ -2,7 +2,7 @@ import re
 import os
 import time
 from io import BytesIO
-from dateutil import parser
+from datetime import datetime
 
 from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
@@ -19,7 +19,6 @@ class ParseEvents():
     self.keys = keys
     self.retention = retention
     self.filemanager = filemanager
-    self.parse_kill_date_parserinfo = parser.parserinfo(yearfirst=True)
 
     kill_regex = ('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \((?P<killer_team>\d)\) (?P<killer>.+) killed \((?P<victim_team>\d)\) (?P<victim>.+) '
                   'with (?P<weapon>Ak-74|Barrett M82A1|Chainsaw|Cluster Grenades|Combat Knife|Desert Eagles|'
@@ -42,6 +41,9 @@ class ParseEvents():
     self.requested_map = None
     self.requested_map_change = None
     self.map_titles = {}
+
+  def parse_date(self, datestring):
+    return datetime.strptime(datestring, '%y-%m-%d %H:%M:%S')
 
   def build_map_names(self):
     map_titles = {}
@@ -114,12 +116,11 @@ class ParseEvents():
       if event != self.generate_kill:
         date = data.get('date')
         if date:
-          parsed = parser.parse(date, self.parse_kill_date_parserinfo)
-          if parsed:
-            # Ignore ancient events
-            if self.retention.too_old(parsed):
-              return None
-            data['date'] = int(time.mktime(parsed.timetuple()))
+          parsed = self.parse_date(date)
+          # Ignore ancient events
+          if self.retention.too_old(parsed):
+            return None
+          data['date'] = int(time.mktime(parsed.timetuple()))
 
       return event(**data)
 
@@ -166,7 +167,7 @@ class ParseEvents():
           yield event
 
   def generate_kill(self, *args, **kwargs):
-    date = parser.parse(kwargs['date'], self.parse_kill_date_parserinfo)
+    date = self.parse_date(kwargs['date'])
 
     if self.retention.too_old(date):
       return None
