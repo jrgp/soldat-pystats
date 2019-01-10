@@ -1,7 +1,7 @@
 import click
 import re
 from time import time, mktime
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from piestats.update.manageevents import ManageEvents
 from piestats.models.kill import Kill
 
@@ -13,9 +13,10 @@ class Retention:
     self.r = r
     self.manage = ManageEvents(r, keys, server)
     self.oldest_allowed_unix = time() - (self.max_days * 86400)
+    self.oldest_allowed_datetime = datetime.now() - timedelta(days=self.max_days)
 
   def too_old(self, date):
-    return (datetime.now() - date).days > self.max_days
+    return self.oldest_allowed_datetime > date
 
   def too_old_unix(self, seconds):
     return self.oldest_allowed_unix > seconds
