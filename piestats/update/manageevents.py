@@ -179,7 +179,7 @@ class ManageEvents():
       if self.round_id:
         kill.round_id = self.round_id
 
-      kill_id = pipe.incr(self.keys.last_kill_id)
+      kill_id = self.r.incr(self.keys.last_kill_id)
       pipe.hset(self.keys.kill_data, kill_id, kill.to_redis())
       pipe.zadd(self.keys.kill_log, kill_id, kill.timestamp)
 
