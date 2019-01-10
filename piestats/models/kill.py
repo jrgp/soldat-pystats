@@ -12,11 +12,13 @@ team_names = (
 
 
 class Kill():
-  def __init__(self, killer, victim, weapon, timestamp, killer_team=-1, victim_team=-1, round_id=0):
+  def __init__(self, killer, victim, weapon, date, killer_team=-1, victim_team=-1, round_id=0):
+    if weapon == 'Flame Bow':
+        weapon = 'Bow'
     self.killer = killer
     self.victim = victim
     self.weapon = weapon
-    self.timestamp = timestamp
+    self.date = date
     self._killer_team = int(killer_team)
     self._victim_team = int(victim_team)
     self.round_id = round_id
@@ -31,9 +33,9 @@ class Kill():
   @property
   def datetime(self):
     '''
-      Get timestamp in python datetime format instead of int
+      Get date in python datetime format instead of int
     '''
-    return datetime.utcfromtimestamp(int(self.timestamp))
+    return datetime.utcfromtimestamp(int(self.date))
 
   @property
   def killer_team(self):
@@ -59,7 +61,7 @@ class Kill():
     '''
       Dump the kill to msgpack. Just a tuple with the args used to create this class
     '''
-    return msgpack.dumps((self.killer, self.victim, self.weapon, self.timestamp, self._killer_team, self._victim_team, self.round_id), use_bin_type=False)
+    return msgpack.dumps((self.killer, self.victim, self.weapon, self.date, self._killer_team, self._victim_team, self.round_id), use_bin_type=False)
 
   def resolve_player_ids(self, resolver):
     '''

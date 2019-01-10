@@ -32,7 +32,7 @@ class ParseEvents():
         (EventRequestMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \[.+\] !map (?P<map>[^(\s]+)')),
         (EventInvalidMap, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d Map not found \((?P<map>\S+)\)')),
         (EventScore, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$')),
-        (self.generate_kill, re.compile(kill_regex)),
+        (Kill, re.compile(kill_regex)),
 
         # Make absolutely sure this is last
         (EventBareLog, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<line>[^$]+)$')),
@@ -41,9 +41,6 @@ class ParseEvents():
     self.requested_map = None
     self.requested_map_change = None
     self.map_titles = {}
-
-  def parse_date(self, datestring):
-    return datetime.strptime(datestring, '%y-%m-%d %H:%M:%S')
 
   def build_map_names(self):
     map_titles = {}
@@ -105,6 +102,9 @@ class ParseEvents():
     return map_titles, flag_score_maps
 
   def parse_line(self, line):
+    '''
+      Run our regexes against a line and return the first event object that matches
+    '''
     for event, regex in self.event_regex:
       m = regex.match(line.strip())
       if not m:
@@ -112,12 +112,10 @@ class ParseEvents():
 
       data = m.groupdict()
 
-      # Add datetimes manually for non kills
-      if event != self.generate_kill:
-        date = data.get('date')
-        if date:
-          parsed = self.parse_date(date)
-          # Ignore ancient events
+      # Parse dates and ignore ancient events
+      date = data.get('date')
+      if date:
+          parsed = datetime.strptime(data['date'], '%y-%m-%d %H:%M:%S')
           if self.retention.too_old(parsed):
             return None
           data['date'] = int(time.mktime(parsed.timetuple()))
@@ -125,6 +123,9 @@ class ParseEvents():
       return event(**data)
 
   def parse_events(self, contents):
+    '''
+      Run through a text file and yield all events we find in it
+    '''
     for line in contents.splitlines():
       event = self.parse_line(line)
       if event is None:
@@ -165,20 +166,3 @@ class ParseEvents():
       for path, position in self.filemanager.get_files('logs', 'consolelog*.txt'):
         for event in self.parse_events(self.filemanager.get_data(path, position)):
           yield event
-
-  def generate_kill(self, *args, **kwargs):
-    date = self.parse_date(kwargs['date'])
-
-    if self.retention.too_old(date):
-      return None
-
-    if kwargs['weapon'] == 'Flame Bow':
-      kwargs['weapon'] = 'Bow'
-
-    return Kill(
-        kwargs['killer'],
-        kwargs['victim'],
-        kwargs['weapon'],
-        int(time.mktime(date.timetuple())),
-        kwargs['killer_team'],
-        kwargs['victim_team'])

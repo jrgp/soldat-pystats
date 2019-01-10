@@ -62,7 +62,7 @@ class TestParseEvents(unittest.TestCase):
     self.assertEqual(event.killer, 'r|2 Der Exorzischt')
     self.assertEqual(event.victim, 'r|3 Benedetta Zavatta')
     self.assertEqual(event.weapon, 'Grenade')
-    self.assertEqual(event.timestamp, 1458986180)
+    self.assertEqual(event.date, 1458986180)
     self.assertEqual(event.killer_team, 'bravo')
     self.assertEqual(event.victim_team, 'alpha')
 

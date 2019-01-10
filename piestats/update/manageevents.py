@@ -181,7 +181,7 @@ class ManageEvents():
 
       kill_id = self.r.incr(self.keys.last_kill_id)
       pipe.hset(self.keys.kill_data, kill_id, kill.to_redis())
-      pipe.zadd(self.keys.kill_log, kill_id, kill.timestamp)
+      pipe.zadd(self.keys.kill_log, kill_id, kill.date)
 
     # Map logic
     if self.current_map:
@@ -212,23 +212,23 @@ class ManageEvents():
 
     # Update first/last time we saw player
     if incr == 1:
-      pipe.hsetnx(self.keys.player_hash(kill.killer), 'firstseen', kill.timestamp)
+      pipe.hsetnx(self.keys.player_hash(kill.killer), 'firstseen', kill.date)
 
       # Don't overwrite a previous bigger value with a smaller value
       old_last_seen = int(self.r.hget(self.keys.player_hash(kill.killer), 'lastseen') or 0)
 
-      if kill.timestamp > old_last_seen:
-        pipe.hset(self.keys.player_hash(kill.killer), 'lastseen', kill.timestamp)
+      if kill.date > old_last_seen:
+        pipe.hset(self.keys.player_hash(kill.killer), 'lastseen', kill.date)
 
     # Update first/last time we saw victim, if they're not the same..
     if incr == 1 and not kill.suicide:
-      pipe.hsetnx(self.keys.player_hash(kill.victim), 'firstseen', kill.timestamp)
+      pipe.hsetnx(self.keys.player_hash(kill.victim), 'firstseen', kill.date)
 
       # Don't overwrite a previous bigger value with a smaller value
       old_last_seen = int(self.r.hget(self.keys.player_hash(kill.victim), 'lastseen') or 0)
 
-      if kill.timestamp > old_last_seen:
-        pipe.hset(self.keys.player_hash(kill.victim), 'lastseen', kill.timestamp)
+      if kill.date > old_last_seen:
+        pipe.hset(self.keys.player_hash(kill.victim), 'lastseen', kill.date)
 
     # Update weapon stats..
     if not kill.suicide:
@@ -250,7 +250,7 @@ class ManageEvents():
     # If we're not a sucide, add this legit kill to the number of kills for this
     # day
     if incr == 1 and not kill.suicide:
-      text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
+      text_today = str(datetime.utcfromtimestamp(kill.date).date())
       pipe.incr(self.keys.kills_per_day(text_today), incr)
 
     pipe.execute()
@@ -265,7 +265,7 @@ class ManageEvents():
         self.apply_kill(kill, -1)
 
         # Kill kills per day from this date
-        text_today = str(datetime.utcfromtimestamp(kill.timestamp).date())
+        text_today = str(datetime.utcfromtimestamp(kill.date).date())
         self.r.delete(self.keys.kills_per_day(text_today))
 
     # Kill the kill

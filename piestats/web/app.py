@@ -230,7 +230,7 @@ class Kills(ServerBase):
       info = kill.__dict__
       info['killer_obj'] = req.context['stats'].get_player_fields_by_name(kill.killer, ['lastcountry'])
       info['victim_obj'] = req.context['stats'].get_player_fields_by_name(kill.victim, ['lastcountry'])
-      info['datetime'] = data['pretty_datetime'](datetime.utcfromtimestamp(int(info['timestamp'])))
+      info['datetime'] = data['pretty_datetime'](datetime.utcfromtimestamp(int(info['date'])))
       info['killer_team'] = kill.killer_team
       info['victim_team'] = kill.victim_team
       return info

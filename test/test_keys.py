@@ -22,7 +22,6 @@ class TestKeys(unittest.TestCase):
       assert k.top_maps == 'pystats:server1:top_maps'
       assert k.kills_per_day('2016-10-30') == 'pystats:server1:kills_per_day:2016-10-30'
       assert k.player_hash('jrgp') == 'pystats:server1:player:jrgp'
-      assert k.log_file('/home/soldat2/logs/consolelog-16-03-24-02.txt') == 'pystats:server1:logs:/home/soldat2/logs/consolelog-16-03-24-02.txt'
       assert k.player_top_enemies('jrgp') == 'pystats:server1:player_top_enemies:jrgp'
       assert k.player_top_victims('jrgp') == 'pystats:server1:player_top_victims:jrgp'
       assert k.weapon_top_killers('HK MP5') == 'pystats:server1:weapon_top_killers:HK MP5'
