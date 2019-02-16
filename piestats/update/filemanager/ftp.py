@@ -25,24 +25,51 @@ class FtpFileManager(FileManager):
 
     return sorted(os.path.join(self.root, sub_path, filename) for filename in self.ftp.nlst(os.path.join(self.root, sub_path)) if fnmatch(filename, pattern))
 
+  def get_paths_with_size(self, sub_path, pattern='*'):
+    ''' Try to get a list of tuples of (path, size). If we can't get size, it is then None '''
+
+    data = BytesIO()
+    self.ftp.retrbinary('MLSD %s' % os.path.join(self.root, sub_path), data.write)
+    lines = data.getvalue().splitlines()
+
+    result = []
+    for line in lines:
+      parts = line.split(';')
+      filename = parts[-1].strip()
+      if not fnmatch(filename, pattern):
+        continue
+      size = None
+      for fact in parts[:-1]:
+        if fact.lower().startswith('size='):
+          try:
+            size = int(fact.split('=')[1])
+            break
+          except Exception:
+            break
+      result.append((os.path.join(self.root, sub_path, filename), size))
+
+    return sorted(result)
+
   def get_files(self, sub_path, pattern='*'):
     if not self.ftp:
       return
 
-    files = self.get_file_paths(sub_path, pattern)
+    files = self.get_paths_with_size(sub_path, pattern)
 
     with click.progressbar(files,
                            show_eta=False,
                            label='Parsing {0} logs from ftp'.format(len(files)),
                            item_show_func=self.progressbar_callback) as progressbar:
-      for path in progressbar:
+      for (path, size) in progressbar:
         if self.retention.too_old_filename(os.path.basename(path)):
           continue
 
-        try:
-          size = self.ftp.size(path)
-        except ftplib.error_perm:
-          continue
+        if size is None:
+          try:
+            size = self.ftp.size(path)
+          except ftplib.error_perm:
+            print 'Could not get size of %s' % path
+            continue
 
         key = self.filename_key(path)
         prev = self.r.hget(self.keys.log_positions, key)
