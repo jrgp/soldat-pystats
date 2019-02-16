@@ -93,7 +93,7 @@ class Hwid:
             # Garbage fire of many-to-many mapping of HWID to playername
             if existing_hwid_id != existing_name_id:
                 player_id = existing_hwid_id
-                print ('\n\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
+                print ('\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
                        hwid, existing_hwid_id, name, existing_name_id, player_id))
                 self.r.hset(self.keys.hwid_to_id, hwid, player_id)
                 self.r.hset(self.keys.name_to_id, name, player_id)

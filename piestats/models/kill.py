@@ -12,7 +12,7 @@ team_names = (
 
 
 class Kill():
-  def __init__(self, killer, victim, weapon, date, killer_team=-1, victim_team=-1, round_id=0):
+  def __init__(self, killer, victim, weapon, date, killer_team=-1, victim_team=-1, round_id=0, map=None):
     if weapon == 'Flame Bow':
         weapon = 'Bow'
     self.killer = killer
@@ -22,6 +22,7 @@ class Kill():
     self._killer_team = int(killer_team)
     self._victim_team = int(victim_team)
     self.round_id = round_id
+    self.map = map
 
   @property
   def suicide(self):
@@ -61,7 +62,14 @@ class Kill():
     '''
       Dump the kill to msgpack. Just a tuple with the args used to create this class
     '''
-    return msgpack.dumps((self.killer, self.victim, self.weapon, self.date, self._killer_team, self._victim_team, self.round_id), use_bin_type=False)
+    return msgpack.dumps(self.to_tuple(), use_bin_type=False)
+
+  def to_tuple(self):
+    return (self.killer, self.victim, self.weapon, self.date, self._killer_team, self._victim_team, self.round_id, self.map)
+
+  @classmethod
+  def from_tuple(cls, item):
+    return cls(*item)
 
   def resolve_player_ids(self, resolver):
     '''

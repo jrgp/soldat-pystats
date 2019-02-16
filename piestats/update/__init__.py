@@ -8,8 +8,7 @@ def update_events(r, keys, retention, filemanager, server):
   parse = ParseEvents(retention, filemanager, r, keys)
 
   # Interact with redis to store and delete kills and events
-  manage = ManageEvents(r, keys, server)
-
-  for event in parse.get_events():
-    if event:
-      manage.apply_event(event)
+  with ManageEvents(r, keys, server) as manage:
+    for event in parse.get_events():
+      if event:
+        manage.apply_event(event)

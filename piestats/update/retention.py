@@ -11,7 +11,7 @@ class Retention:
     self.max_days = config.data_retention
     self.keys = keys
     self.r = r
-    self.manage = ManageEvents(r, keys, server)
+    self.server = server
     self.oldest_allowed_unix = time() - (self.max_days * 86400)
     self.oldest_allowed_datetime = datetime.now() - timedelta(days=self.max_days)
 
@@ -44,15 +44,16 @@ class Retention:
     if not kill_ids:
       return
 
-    with click.progressbar(kill_ids,
-                           show_eta=False,
-                           label='Killing %d kills' % len(kill_ids),
-                           item_show_func=lambda item: 'Kill ID %s' % item if item else '') as progressbar:
+    with ManageEvents(self.r, self.keys, self.server) as manage:
+      with click.progressbar(kill_ids,
+                             show_eta=False,
+                             label='Killing %d kills' % len(kill_ids),
+                             item_show_func=lambda item: 'Kill ID %s' % item if item else '') as progressbar:
 
-      for kill_id in progressbar:
-        kill_data = self.r.hget(self.keys.kill_data, kill_id)
-        if kill_data:
-          kill = Kill.from_redis(kill_data)
-        else:
-          kill = None
-        self.manage.rollback_kill(kill, kill_id)
+        for kill_id in progressbar:
+          kill_data = self.r.hget(self.keys.kill_data, kill_id)
+          if kill_data:
+            kill = Kill.from_redis(kill_data)
+          else:
+            kill = None
+          manage.rollback_kill(kill, kill_id)
