@@ -62,20 +62,22 @@ class ApplyKillQueue():
     ''' Listen on its pipe for kill events, and apply them '''
     setproctitle('piestats update worker %d' % number)
 
-    rlist = [pipe.fileno()]
+    pipe_fd = pipe.fileno()
     try:
       while True:
 
-        select.select(rlist, [], [], .1)
+        rlist, _, _ = select.select([pipe_fd], [], [], .1)
 
         # Make this process die either when we're told to or if our parent is killed before us
         if self.kill_event.is_set() or os.getppid() != original_parent_ppid:
+          pipe.close()
           return
 
-        kill_tuple, incr = msgpack.loads(pipe.recv_bytes(), use_list=False)
+        if pipe_fd in rlist:
+          kill_tuple, incr = msgpack.loads(pipe.recv_bytes(), use_list=False)
 
-        kill = Kill.from_tuple(kill_tuple)
-        self.apply_kill(kill, incr)
+          kill = Kill.from_tuple(kill_tuple)
+          self.apply_kill(kill, incr)
 
     except KeyboardInterrupt:
       return
