@@ -36,4 +36,10 @@ class FileManager():
           self.last_log_times.append(now - self.time_since_last)
           time_stat = ' (%.2fs per log)' % (sum(self.last_log_times) / len(self.last_log_times))
         self.time_since_last = now
+
+        # sometimes the item is a tuple with the first elem being the name and the rest
+        # being helpful metadata for the filemanager
+        if isinstance(item, tuple):
+          item = item[0]
+
         return 'Parsing %s%s' % (item, time_stat)

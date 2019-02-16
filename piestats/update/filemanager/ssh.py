@@ -20,19 +20,29 @@ class SshFileManager(FileManager):
     self.init_stats()
 
   def get_file_paths(self, sub_path, pattern='*'):
-    return sorted(filter(lambda x: fnmatch(x, pattern), self.ftpclient.listdir(os.path.join(self.root, sub_path))))
+    return sorted(os.path.join(self.root, sub_path, filename)
+                  for filename in self.ftpclient.listdir(os.path.join(self.root, sub_path)) if fnmatch(filename, pattern))
+
+  def get_paths_with_size(self, sub_path, pattern='*'):
+    ''' List of tuples of (path, size) '''
+    result = []
+
+    for item in self.ftpclient.listdir_attr(os.path.join(self.root, sub_path)):
+      if not fnmatch(item.filename, pattern):
+        continue
+      result.append((os.path.join(self.root, sub_path, item.filename), item.st_size))
+
+    return sorted(result)
 
   def get_files(self, sub_path, pattern='*'):
-    files = self.get_file_paths(sub_path, pattern)
+    files = self.get_paths_with_size(sub_path, pattern)
     with click.progressbar(files,
                            show_eta=False,
                            label='Parsing {0} logs from ssh'.format(len(files)),
                            item_show_func=self.progressbar_callback) as progressbar:
-      for filename in progressbar:
-        if self.retention.too_old_filename(filename):
+      for (path, size) in progressbar:
+        if self.retention.too_old_filename(os.path.basename(path)):
           continue
-        path = os.path.join(self.root, sub_path, filename)
-        size = self.ftpclient.lstat(path).st_size
         key = self.filename_key(path)
         prev = self.r.hget(self.keys.log_positions, key)
         if prev is None:
