@@ -291,6 +291,20 @@ class ManageEvents():
             elif old_round.tie:
               self.r.hincrby(self.keys.map_hash(old_map), 'ties')
 
+    # What if the last logged round is empty?
+    else:
+      old_round_id = self.r.get(self.keys.last_round_id)
+      if old_round_id:
+        old_round_data = self.r.hgetall(self.keys.round_hash(old_round_id))
+        if old_round_data:
+          old_round = Round(**old_round_data)
+
+          # If it has no kills or no scores or anything else just delete it
+          if old_round.empty:
+            print 'Killing old empty round id %s' % old_round_id
+            self.r.delete(self.keys.round_hash(old_round_id))
+            self.r.zrem(self.keys.round_log, old_round_id)
+
     self.round_id = None
     self.current_map = map
 
