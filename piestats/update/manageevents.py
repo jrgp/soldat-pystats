@@ -350,7 +350,7 @@ class ManageEvents():
     # Round stats
     if self.round_id:
       self.r.hincrby(self.keys.round_hash(self.round_id), 'scores:' + team)
-      self.r.hincrby(self.keys.round_hash(self.round_id), 'scores_player:' + team + ':' + player)
+      self.r.hincrby(self.keys.round_hash(self.round_id), 'scores_player:' + team + ':' + str(player))
 
   def apply_kill(self, kill, incr=1):
     '''
