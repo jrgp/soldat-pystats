@@ -32,6 +32,7 @@ python-mimeparse==1.6.0
 pytz==2017.3
 pyyaml>=4.2b1
 redis==2.10.6
+setproctitle==1.1.10
 six==1.11.0
 tox==2.9.1
 ujson==1.35
