@@ -1,5 +1,6 @@
 from datetime import datetime
 import msgpack
+from piestats.models.base import JsonSerializableModel
 
 team_names = (
     'none',
@@ -11,7 +12,12 @@ team_names = (
 )
 
 
-class Kill():
+class Kill(JsonSerializableModel):
+  ''' Object representing a kill event '''
+
+  json_fields = ('killer', 'victim', 'weapon', 'datetime', 'killer_team', 'victim_team',
+                 'round_id')
+
   def __init__(self, killer, victim, weapon, date, killer_team=-1, victim_team=-1, round_id=0, map=None):
     if weapon == 'Flame Bow':
         weapon = 'Bow'

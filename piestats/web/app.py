@@ -118,7 +118,22 @@ class ServerBase(object):
         req=req
     )
 
-  def render_template(self, resp, page, response_code=None, **data):
+  def render_template(self, req, resp, page, response_code=None, **data):
+    # Add json support to essentially all routes
+    if req.context['do_json']:
+        if response_code == HTTP_404:
+            raise falcon.HTTPNotFound()
+        else:
+            # Remove stuff not useful for json
+            data.pop('page_title', None)
+
+            # Give it
+            resp.body = ujson.dumps(data)
+            return
+
+    # Add stuff needed for displaying the template
+    data.update(self.more_data(req))
+
     resp.content_type = 'text/html'
     resp.body = jinja2_env.get_template(page).render(**data)
 
@@ -131,6 +146,7 @@ class ServerMiddleware(object):
     self.config = config
 
   def process_resource(self, req, resp, resource, params):
+    req.context['do_json'] = req.get_param('json') is not None or req.get_header('Accept') == 'application/json'
     req.context['config'] = self.config
 
     if not isinstance(resource, ServerBase):
@@ -157,8 +173,7 @@ class Weapons(ServerBase):
         'page_title': 'Weapons',
         'weapons': req.context['stats'].get_top_weapons(),
     }
-    data.update(self.more_data(req))
-    self.render_template(resp, 'weapons.html', **data)
+    self.render_template(req, resp, 'weapons.html', **data)
 
 
 class Map(ServerBase):
@@ -168,13 +183,11 @@ class Map(ServerBase):
         'map': req.context['stats'].get_map(map),
     }
 
-    data.update(self.more_data(req))
-
     if not data['map']:
-      self.render_template(resp, 'map_not_found.html', response_code=HTTP_404, **data)
+      self.render_template(req, resp, 'map_not_found.html', response_code=HTTP_404, **data)
       return
 
-    self.render_template(resp, 'map.html', **data)
+    self.render_template(req, resp, 'map.html', **data)
 
 
 class MapSVG(ServerBase):
@@ -199,13 +212,11 @@ class Player(ServerBase):
         top_victims=req.context['stats'].get_player_top_victims(player, 0, 10)
     )
 
-    data.update(self.more_data(req))
-
     if not data['player']:
-      self.render_template(resp, 'player_not_found.html', response_code=HTTP_404, **data)
+      self.render_template(req, resp, 'player_not_found.html', response_code=HTTP_404, **data)
       return
 
-    self.render_template(resp, 'player.html',
+    self.render_template(req, resp, 'player.html',
                          page_title=data['player'].name,
                          **data)
 
@@ -224,20 +235,17 @@ class Kills(ServerBase):
         'prev_url': pager.prev_url,
     }
 
-    data.update(self.more_data(req))
-
     def kill_decorate(kill):
       info = kill.__dict__
       info['killer_obj'] = req.context['stats'].get_player_fields_by_name(kill.killer, ['lastcountry'])
       info['victim_obj'] = req.context['stats'].get_player_fields_by_name(kill.victim, ['lastcountry'])
-      info['datetime'] = data['pretty_datetime'](datetime.utcfromtimestamp(int(info['date'])))
       info['killer_team'] = kill.killer_team
       info['victim_team'] = kill.victim_team
       return info
 
     data['kills'] = (kill_decorate(kill) for kill in req.context['stats'].get_last_kills(pager.offset))
 
-    self.render_template(resp, 'latestkills.html', **data)
+    self.render_template(req, resp, 'latestkills.html', **data)
 
 
 class Maps(ServerBase):
@@ -255,9 +263,7 @@ class Maps(ServerBase):
         'maps': req.context['stats'].get_top_maps(pager.offset),
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'maps.html', **data)
+    self.render_template(req, resp, 'maps.html', **data)
 
 
 class Rounds(ServerBase):
@@ -275,9 +281,7 @@ class Rounds(ServerBase):
         'rounds': req.context['stats'].get_last_rounds(pager.offset),
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'lastrounds.html', **data)
+    self.render_template(req, resp, 'lastrounds.html', **data)
 
 
 class Round(ServerBase):
@@ -287,10 +291,8 @@ class Round(ServerBase):
         'round': req.context['stats'].get_round(round),
     }
 
-    data.update(self.more_data(req))
-
     if not data['round']:
-      self.render_template(resp, 'not_found.html', item='round', **data)
+      self.render_template(req, resp, 'not_found.html', item='round', **data)
       return
 
     def player_decorate(player):
@@ -299,7 +301,7 @@ class Round(ServerBase):
 
     data['players'] = (player_decorate(player) for player in data['round'].players.itervalues())
 
-    self.render_template(resp, 'round.html', **data)
+    self.render_template(req, resp, 'round.html', **data)
 
 
 class Players(ServerBase):
@@ -317,9 +319,7 @@ class Players(ServerBase):
         'players': req.context['stats'].get_top_killers(pager.offset),
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'players.html', **data)
+    self.render_template(req, resp, 'players.html', **data)
 
 
 class Server(ServerBase):
@@ -351,8 +351,7 @@ class Server(ServerBase):
         show_server_status=req.context['server'].admin_details is not None,
         server_slug=req.context['server'].url_slug
     )
-    data.update(self.more_data(req))
-    self.render_template(resp, 'index.html', **data)
+    self.render_template(req, resp, 'index.html', **data)
 
 
 class StatusRoute(ServerBase):
@@ -383,7 +382,7 @@ class Search(ServerBase):
   def on_get(self, req, resp, server):
     player_name = req.get_param('player')
     if not player_name:
-      self.render_template(resp, 'player_not_found.html', **self.more_data(req))
+      self.render_template(req, resp, 'player_not_found.html', **self.more_data(req))
       return
 
     players = req.context['stats'].player_search(player_name)
@@ -396,9 +395,7 @@ class Search(ServerBase):
         'results': players,
     }
 
-    data.update(self.more_data(req))
-
-    self.render_template(resp, 'player_search.html', **data)
+    self.render_template(req, resp, 'player_search.html', **data)
 
 
 def init_app(config_path=None):

@@ -1,7 +1,13 @@
 from collections import defaultdict
+from piestats.models.base import JsonSerializableModel
 
 
-class Map:
+class Map(JsonSerializableModel):
+  ''' Object representing a map '''
+
+  json_fields = ('name', 'flags', 'plays', 'kills', 'scores_alpha', 'scores_bravo',
+                 'wins_alpha', 'wins_bravo', 'ties', 'weapons', 'svg_exists')
+
   def __init__(self, *args, **kwargs):
     self.info = kwargs
     self.wepstats = defaultdict(lambda: defaultdict(int))

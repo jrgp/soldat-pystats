@@ -1,9 +1,16 @@
 from datetime import datetime
 from collections import defaultdict
 from piestats.models.player import Player
+from piestats.models.base import JsonSerializableModel
 
 
-class Round:
+class Round(JsonSerializableModel):
+  ''' Object representing a round '''
+
+  json_fields = ('id', 'started', 'finished', 'duration', 'kills', 'alpha_scores',
+                 'bravo_scores', 'map', 'flagmatch', 'tie', 'winning_team',
+                 'winning_player', 'players', 'events', 'weapons', 'empty')
+
   def __init__(self, *args, **kwargs):
     self.info = kwargs
     self.playerstats = defaultdict(lambda: defaultdict(int))

@@ -1,7 +1,12 @@
 import logging
+from piestats.models.base import JsonSerializableModel
 
 
-class Server:
+class Server(JsonSerializableModel):
+  ''' Object representing a server and its config '''
+
+  json_fields = ('title', 'url_slug')
+
   def __init__(self, **info):
     self.info = info
 

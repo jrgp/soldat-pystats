@@ -1,8 +1,15 @@
 from datetime import datetime
 from collections import defaultdict
+from piestats.models.base import JsonSerializableModel
 
 
-class Player:
+class Player(JsonSerializableModel):
+  ''' Object representing a player '''
+
+  # Whitelist of object properties to be given when serialized to json
+  json_fields = ('name', 'kills', 'deaths', 'firstseen', 'lastseen', 'weapons',
+                 'lastcountry', 'scores_alpha', 'scores_bravo', 'maps', 'names')
+
   def __init__(self, *args, **kwargs):
     self.info = kwargs
     self.wepstats = defaultdict(lambda: defaultdict(int))
