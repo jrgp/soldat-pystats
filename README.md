@@ -47,7 +47,7 @@ First, have an install of Redis database runnning. The following will do.
 
 Install python virtualenv tool as well as build dependencies
 
-    sudo apt-get install python-virtualenv python-dev
+    sudo apt-get install python-virtualenv python-dev libyaml-dev
 
 Create & activate venv (run this before next commands):
 
