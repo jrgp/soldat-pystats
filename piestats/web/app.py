@@ -295,12 +295,6 @@ class Round(ServerBase):
       self.render_template(req, resp, 'not_found.html', item='round', **data)
       return
 
-    def player_decorate(player):
-      player['obj'] = req.context['stats'].get_player_fields(player['id'], ['lastcountry'])
-      return player
-
-    data['players'] = (player_decorate(player) for player in data['round'].players.itervalues())
-
     self.render_template(req, resp, 'round.html', **data)
 
 

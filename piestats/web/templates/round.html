@@ -97,15 +97,15 @@ Round {{ round.id }}
           </tr>
          </thead>
          <tbody>
-          {% for player in players|sort(attribute='kills', reverse=True) %}
+          {% for player in round.players.values()|sort(attribute='kills', reverse=True) %}
             <tr>
-              <td style="text-align: right; width: 0;">{{ macro.playerlink(urlargs, player.obj, true) }}</td>
+              <td style="text-align: right; width: 0;">{{ macro.playerlink(urlargs, player, true) }}</td>
               <td>{{ player.kills }}</td>
               <td>{{ player.deaths }}</td>
               <td>
                 {% if round.flagmatch %}
-                    <span class="team-alpha">{{player.get('Alpha_scores', 0)}}</span>
-                    <span class="team-bravo">{{player.get('Bravo_scores', 0)}}</span>
+                    <span class="team-alpha">{{player.scores_alpha}}</span>
+                    <span class="team-bravo">{{player.scores_bravo}}</span>
                 {% endif %}
               </td>
             </tr>

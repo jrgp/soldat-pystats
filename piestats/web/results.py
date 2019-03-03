@@ -80,7 +80,7 @@ class Results():
     info = self.r.hgetall(self.keys.round_hash(_round))
     if not info:
       return None
-    return Round(round_id=_round, **info).resolve_player_ids(self.get_name_from_id)
+    return Round(round_id=_round, **info).resolve_players(self)
 
   def get_map(self, _map, get_svg=False):
     ''' given a map name, get a Map object '''
@@ -175,7 +175,7 @@ class Results():
       round_data = self.r.hgetall(self.keys.round_hash(round_id))
       if round_data:
         round_data['round_id'] = round_id
-        yield Round(**round_data).resolve_player_ids(self.get_name_from_id)
+        yield Round(**round_data).resolve_players(self)
 
   def get_top_weapons(self):
     ''' get list of tuples of weapon to kills '''

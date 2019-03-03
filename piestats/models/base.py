@@ -10,3 +10,6 @@ class JsonSerializableModel:
   def __json__(self):
     ''' Return generated json to ujson for this object instance, using the fields defined in parent '''
     return ujson.dumps({key: getattr(self, key) for key in self.json_fields})
+
+  # Hack because jinja's sort's attribute setting seems try to do dict access instead of object access
+  __getitem__ = getattr
