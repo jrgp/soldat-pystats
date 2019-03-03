@@ -11,7 +11,7 @@ class Map(JsonSerializableModel):
   def __init__(self, *args, **kwargs):
     self.info = kwargs
     self.wepstats = defaultdict(lambda: defaultdict(int))
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
       if key.startswith('kills:'):
         stat, wep = key.split(':')
         self.wepstats[wep][stat] = int(value)

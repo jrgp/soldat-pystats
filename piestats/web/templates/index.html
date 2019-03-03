@@ -41,7 +41,7 @@ Stats Overview
   // Our latest kills line chart
   var killsCtx = document.getElementById('chart_latest_kills').getContext('2d');
   var data = {
-    labels: {{killsperdate.keys()[::-1]|safe}},
+    labels: {{list(killsperdate.keys())[::-1]|safe}},
     datasets: [
       {
         label: 'Kills per day',
@@ -51,7 +51,7 @@ Stats Overview
         pointStrokeColor: '#fff',
         pointHighlightFill: '#fff',
         pointHighlightStroke: 'rgba(220,220,220,1)',
-        data: {{killsperdate.values()[::-1]|safe}}
+        data: {{list(killsperdate.values())[::-1]|safe}}
       }
     ]
   };

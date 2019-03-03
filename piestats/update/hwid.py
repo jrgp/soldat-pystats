@@ -1,5 +1,6 @@
 from time import time
 from collections import deque
+from piestats.compat import kill_bytes
 
 
 class BoundedCache:
@@ -26,7 +27,7 @@ class BoundedCache:
         if len(self.dict) > self.maxsize:
             evict = self.keys.pop()
             self.dict.pop(evict)
-            print '\n\nEvicted %s (size %s)\n\n' % (key, len(self.dict))
+            print('\n\nEvicted %s (size %s)\n\n' % (key, len(self.dict)))
 
         self.dict[key] = value
         self.keys.appendleft(key)
@@ -41,6 +42,8 @@ class Hwid:
 
     def get_player_id_from_name(self, name):
         ''' get what player id this name currently maps to. if there is none, instantiate one '''
+        name = kill_bytes(name)
+
         # Refer to our local cache
         cached = self.player_name_cache.get(name)
         if cached:
@@ -50,11 +53,11 @@ class Hwid:
 
         # Case where we have track of player joining
         if existing_name_id is not None:
-            player_id = existing_name_id
+            player_id = int(existing_name_id)
 
         # Case where we don't. Bot? Start it off.
         else:
-            player_id = self.r.incr(self.keys.last_player_id)
+            player_id = int(self.r.incr(self.keys.last_player_id))
             self.r.hset(self.keys.name_to_id, name, player_id)
             self.r.zadd(self.keys.player_id_to_names(player_id), name, time())
 
@@ -67,13 +70,23 @@ class Hwid:
           crux of hwid dedupe functionality.
           called based on the "player join" console log lines. instantiate a player ID for this name or tie it to an existing name
         '''
+        name = kill_bytes(name)
+        hwid = kill_bytes(hwid)
+        date = int(date)
+
         # Try to formulate proper mapping of hwid to id
         existing_hwid_id = self.r.hget(self.keys.hwid_to_id, hwid)
         existing_name_id = self.r.hget(self.keys.name_to_id, name)
 
+        if existing_hwid_id is not None:
+            existing_hwid_id = int(existing_hwid_id)
+
+        if existing_name_id is not None:
+            existing_name_id = int(existing_name_id)
+
         # No ID for this combo set yet? Map it
         if existing_hwid_id is None and existing_name_id is None:
-            player_id = self.r.incr(self.keys.last_player_id)
+            player_id = int(self.r.incr(self.keys.last_player_id))
 
             self.r.hset(self.keys.hwid_to_id, hwid, player_id)
             self.r.hset(self.keys.name_to_id, name, player_id)
@@ -93,8 +106,8 @@ class Hwid:
             # Garbage fire of many-to-many mapping of HWID to playername
             if existing_hwid_id != existing_name_id:
                 player_id = existing_hwid_id
-                print ('\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
-                       hwid, existing_hwid_id, name, existing_name_id, player_id))
+                print(('\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
+                       hwid, existing_hwid_id, name, existing_name_id, player_id)))
                 self.r.hset(self.keys.hwid_to_id, hwid, player_id)
                 self.r.hset(self.keys.name_to_id, name, player_id)
 

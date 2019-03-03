@@ -8,6 +8,7 @@ from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
 from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, MapList
 from piestats.models.kill import Kill
+from piestats.compat import kill_bytes
 
 flag_round_map_prefixes = ('ctf_', 'inf_', 'tw_')
 
@@ -20,22 +21,22 @@ class ParseEvents():
     self.retention = retention
     self.filemanager = filemanager
 
-    kill_regex = ('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \((?P<killer_team>\d)\) (?P<killer>.+) killed \((?P<victim_team>\d)\) (?P<victim>.+) '
+    kill_regex = (r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \((?P<killer_team>\d)\) (?P<killer>.+) killed \((?P<victim_team>\d)\) (?P<victim>.+) '
                   'with (?P<weapon>Ak-74|Barrett M82A1|Chainsaw|Cluster Grenades|Combat Knife|Desert Eagles|'
                   'FN Minimi|Grenade|Hands|HK MP5|LAW|M79|Ruger 77|Selfkill|Spas-12|Stationary gun|Steyr AUG'
                   '|USSOCOM|XM214 Minigun|Bow|Flame Bow)')
 
     self.event_regex = (
-        (EventPlayerJoin, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:(?P<hwid>\S+)')),
-        (EventNextMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) Next map: (?P<map>[^$]+)')),
-        (EventNextMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) /map (?P<map>[^(\s]+)')),
-        (EventRequestMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \[.+\] !map (?P<map>[^(\s]+)')),
-        (EventInvalidMap, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d Map not found \((?P<map>\S+)\)')),
-        (EventScore, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$')),
+        (EventPlayerJoin, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:(?P<hwid>\S+)')),
+        (EventNextMap, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) Next map: (?P<map>[^$]+)')),
+        (EventNextMap, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) /map (?P<map>[^(\s]+)')),
+        (EventRequestMap, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \[.+\] !map (?P<map>[^(\s]+)')),
+        (EventInvalidMap, re.compile(r'\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d Map not found \((?P<map>\S+)\)')),
+        (EventScore, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$')),
         (Kill, re.compile(kill_regex)),
 
         # Make absolutely sure this is last
-        (EventBareLog, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<line>[^$]+)$')),
+        (EventBareLog, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<line>[^$]+)$')),
     )
 
     self.requested_map = None
@@ -49,7 +50,7 @@ class ParseEvents():
 
     map_paths = self.filemanager.get_file_paths('maps', '*.pms')
 
-    print 'Parsing %d maps' % len(map_paths)
+    print('Parsing %d maps' % len(map_paths))
 
     for map_path in map_paths:
 
@@ -74,7 +75,7 @@ class ParseEvents():
       try:
         reader.parse(BytesIO(content))
       except Exception as e:
-        print 'Failed reading map %s: %s' % (map_path, e)
+        print('Failed reading map %s: %s' % (map_path, e))
         continue
 
       # If we already have the generate svg for this map, don't generate it again
@@ -82,9 +83,9 @@ class ParseEvents():
           try:
               generated_svg = generate_map_svg(reader)
               self.r.hset(self.keys.map_hash(map_filename), 'svg_image', generated_svg)
-              print 'Saved generated SVG for %s' % map_filename
+              print('Saved generated SVG for %s' % map_filename)
           except Exception as e:
-              print 'Failed generating SVG for %s: %s' % (map_filename, e)
+              print('Failed generating SVG for %s: %s' % (map_filename, e))
 
       if not map_title:
           title = reader.header.Name.text[:reader.header.Name.length].strip()
@@ -106,7 +107,13 @@ class ParseEvents():
       Run our regexes against a line and return the first event object that matches
     '''
     for event, regex in self.event_regex:
-      m = regex.match(line.strip())
+      try:
+        line = kill_bytes(line.strip())
+      except UnicodeDecodeError:
+        print('Could not parse line "%s"' % line)
+        continue
+
+      m = regex.match(line)
       if not m:
         continue
 

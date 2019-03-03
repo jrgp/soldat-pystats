@@ -60,7 +60,7 @@ def update(config_path):
     r = redis.Redis(**config.redis_connect)
 
     for server in config.servers:
-      print('Updating stats for {server.url_slug} ({server.title}) ({server.log_source})'.format(server=server))
+      print(('Updating stats for {server.url_slug} ({server.title}) ({server.log_source})'.format(server=server)))
 
       # Redis key name manager
       keys = Keys(config, server)
@@ -87,7 +87,7 @@ def update(config_path):
 
       # Trim old events
       retention.run_retention()
-      print('Updating took {0} seconds'.format(round(time.time() - start, 2)))
+      print(('Updating took {0} seconds'.format(round(time.time() - start, 2))))
 
 
 @cli.command()
@@ -116,7 +116,7 @@ def web(config_path):
       super(App, self).__init__()
 
     def load_config(self):
-      for key, value in self.options.iteritems():
+      for key, value in self.options.items():
         if key in self.cfg.settings and value is not None:
           self.cfg.set(key.lower(), value)
 

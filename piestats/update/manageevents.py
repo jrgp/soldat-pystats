@@ -11,6 +11,7 @@ from setproctitle import setproctitle
 import select
 import msgpack
 import os
+from piestats.compat import strip_bytes_from_dict
 
 try:
   import GeoIP
@@ -37,7 +38,7 @@ class ApplyKillQueue():
     self.kill_event = multiprocessing.Event()
 
     my_pid = os.getpid()
-    for number in xrange(nproc):
+    for number in range(nproc):
       r_pipe, w_pipe = multiprocessing.Pipe(False)
       proc = multiprocessing.Process(target=self.worker, args=(number, r_pipe, my_pid))
       proc.start()
@@ -91,7 +92,7 @@ class ApplyKillQueue():
       Apply a kill, incrementing (or decrementing) all relevant metrics
     '''
     if abs(incr) != 1:
-      print 'Invalid increment value for kill: {kill}'.format(kill=kill)
+      print('Invalid increment value for kill: {kill}'.format(kill=kill))
       return
 
     # Convert victim and killer to their IDs
@@ -200,9 +201,9 @@ class ManageEvents():
       try:
         self.geoip = GeoIP.open(pkg_resources.resource_filename('piestats.update', 'GeoIP.dat'), GeoIP.GEOIP_MMAP_CACHE)
       except Exception as e:
-        print 'Failed loading geoip file %s' % e
+        print('Failed loading geoip file %s' % e)
     else:
-      print 'GeoIP looking up not supported'
+      print('GeoIP looking up not supported')
 
   def __enter__(self):
     ''' When our context manager is initialized, initialize our kill queue '''
@@ -275,7 +276,7 @@ class ManageEvents():
 
       # Finish up old round's stats
       if old_map:
-        old_round_data = self.r.hgetall(self.keys.round_hash(old_round_id))
+        old_round_data = strip_bytes_from_dict(self.r.hgetall(self.keys.round_hash(old_round_id)))
         if old_round_data:
           old_round = Round(**old_round_data)
 
@@ -295,13 +296,13 @@ class ManageEvents():
     else:
       old_round_id = self.r.get(self.keys.last_round_id)
       if old_round_id:
-        old_round_data = self.r.hgetall(self.keys.round_hash(old_round_id))
+        old_round_data = strip_bytes_from_dict(self.r.hgetall(self.keys.round_hash(old_round_id)))
         if old_round_data:
           old_round = Round(**old_round_data)
 
           # If it has no kills or no scores or anything else just delete it
           if old_round.empty:
-            print 'Killing old empty round id %s' % old_round_id
+            print('Killing old empty round id %s' % old_round_id)
             self.r.delete(self.keys.round_hash(old_round_id))
             self.r.zrem(self.keys.round_log, old_round_id)
 

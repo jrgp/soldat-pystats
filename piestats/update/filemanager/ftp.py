@@ -68,7 +68,7 @@ class FtpFileManager(FileManager):
           try:
             size = self.ftp.size(path)
           except ftplib.error_perm:
-            print 'Could not get size of %s' % path
+            print('Could not get size of %s' % path)
             continue
 
         key = self.filename_key(path)
@@ -80,7 +80,7 @@ class FtpFileManager(FileManager):
 
         if size > pos:
           if progressbar.is_hidden:
-            print('Reading {filename} from offset {pos}'.format(filename=path, pos=pos))
+            print(('Reading {filename} from offset {pos}'.format(filename=path, pos=pos)))
           yield path, pos
           self.r.hset(self.keys.log_positions, key, size)
 

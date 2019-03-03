@@ -47,7 +47,7 @@ class PmsReader(object):
     logging.info('read header. now reading polys')
 
     # All polygons
-    for i in xrange(self.header.PolyCount):
+    for i in range(self.header.PolyCount):
       polygon = T_Polygon()
       if not h.readinto(polygon):
         logging.error('Failed reading polygon #{}'.format(i))
@@ -59,9 +59,9 @@ class PmsReader(object):
     # Skip sector data we don't immediately care about
     sector_division = self._get_long(h)
     num_sectors = self._get_long(h)
-    for i in xrange(((num_sectors * 2) + 1) * ((num_sectors * 2) + 1)):
+    for i in range(((num_sectors * 2) + 1) * ((num_sectors * 2) + 1)):
       sector_polys = unpack('H', h.read(2))[0]
-      for j in xrange(sector_polys):
+      for j in range(sector_polys):
         h.read(2)
 
     self.min_x = sector_division * -num_sectors
@@ -73,7 +73,7 @@ class PmsReader(object):
 
     # All props (scenery placements)
     prop_count = self._get_long(h)
-    for i in xrange(prop_count):
+    for i in range(prop_count):
       prop = T_Prop()
       if not h.readinto(prop):
         logging.error('Failed reading prop #{}'.format(i))
@@ -84,7 +84,7 @@ class PmsReader(object):
 
     # All sceneries (map prop style to scenery filename)
     scenery_count = self._get_long(h)
-    for i in xrange(scenery_count):
+    for i in range(scenery_count):
       scenery = T_Scenery()
       if not h.readinto(scenery):
         logging.error('Failed reading scenery #{}'.format(i))
@@ -95,7 +95,7 @@ class PmsReader(object):
 
     # Colliders
     collider_count = self._get_long(h)
-    for i in xrange(collider_count):
+    for i in range(collider_count):
       collider = T_Collider()
       if not h.readinto(collider):
         logging.error('Failed reading collider #{}'.format(i))
@@ -106,7 +106,7 @@ class PmsReader(object):
 
     # Spawnpoints
     spawnpoint_count = self._get_long(h)
-    for i in xrange(spawnpoint_count):
+    for i in range(spawnpoint_count):
       spawnpoint = T_Spawnpoint()
       if not h.readinto(spawnpoint):
         logging.error('Failed reading spawnpoint #{}'.format(i))
@@ -118,7 +118,7 @@ class PmsReader(object):
     # Waypoints
     waypoint_count = self._get_long(h)
 
-    for i in xrange(waypoint_count):
+    for i in range(waypoint_count):
       waypoint = T_Waypoint()
       if not h.readinto(waypoint):
         logging.error('Failed reading waypoint #{}'.format(i))

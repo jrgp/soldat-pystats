@@ -34,25 +34,25 @@ class Status:
     }
 
     # See http://wiki.soldat.pl/index.php/Refresh for docs on the binary response
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['name'] = unpack('25p', sock.recv(25))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['team'] = unpack('B', sock.recv(1))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['kills'] = unpack('H', sock.recv(2))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['deaths'] = unpack('H', sock.recv(2))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['ping'] = unpack('B', sock.recv(1))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['id'] = unpack('B', sock.recv(1))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['ip'] = '.'.join(map(str, unpack('4B', sock.recv(4))))
 
     info['score'] = {
@@ -72,7 +72,7 @@ class Status:
     empty_players = set()
 
     # Post processing of player results
-    for key, player in info['players'].iteritems():
+    for key, player in info['players'].items():
 
       # Disregard this player if the name field is empty
       if player['name'] == '':
@@ -106,11 +106,11 @@ class Status:
       pass
 
     # Make the players object just an array
-    info['players'] = info['players'].values()
+    info['players'] = list(info['players'].values())
 
     # Convenience
     info['minutesLeft'] = info['currentTime'] / 60 / 60
-    info['botCount'] = len(filter(lambda x: x['bot'], info['players']))
+    info['botCount'] = len([x for x in info['players'] if x['bot']])
 
     return info
 

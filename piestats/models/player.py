@@ -14,7 +14,7 @@ class Player(JsonSerializableModel):
     self.info = kwargs
     self.wepstats = defaultdict(lambda: defaultdict(int))
     self.mapstats = defaultdict(lambda: defaultdict(int))
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
 
       try:
         value = int(value)

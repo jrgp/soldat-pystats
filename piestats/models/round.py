@@ -17,7 +17,7 @@ class Round(JsonSerializableModel):
     self.weaponstats = defaultdict(lambda: defaultdict(int))
     self._winning_player = None
 
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
       if key.startswith('scores_player:'):
         _, team, player_id = key.split(':', 2)
         player_id = int(player_id)
@@ -115,7 +115,7 @@ class Round(JsonSerializableModel):
 
     if not self._winning_player:
       self._winning_player = Player(
-          name=sorted(((player.kills, player.name) for player in self.players.itervalues()), reverse=True)[0][1]
+          name=sorted(((player.kills, player.name) for player in self.players.values()), reverse=True)[0][1]
       )
 
     return self._winning_player
@@ -152,7 +152,7 @@ class Round(JsonSerializableModel):
 
     new_players = {}
 
-    for player_id, data in self.playerstats.iteritems():
+    for player_id, data in self.playerstats.items():
       player = results.get_player_fields(player_id, ['lastcountry'])
       if not player:
         continue

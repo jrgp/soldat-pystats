@@ -1,6 +1,7 @@
 from datetime import datetime
 import msgpack
 from piestats.models.base import JsonSerializableModel
+from piestats.compat import strip_bytes_from_list
 
 team_names = (
     'none',
@@ -62,7 +63,7 @@ class Kill(JsonSerializableModel):
       Class factory to instantiate a new instance of this class based on a msgpack
       representation
     '''
-    return cls(*msgpack.loads(item, use_list=False))
+    return cls(*strip_bytes_from_list(msgpack.loads(item, use_list=False)))
 
   def to_redis(self):
     '''
@@ -81,6 +82,6 @@ class Kill(JsonSerializableModel):
     '''
       Translate player IDs to names
     '''
-    self.killer = resolver(self.killer)
-    self.victim = resolver(self.victim)
+    self.killer = resolver(int(self.killer))
+    self.victim = resolver(int(self.victim))
     return self

@@ -23,7 +23,7 @@ def acquire_lock():
     yield
     return
 
-  print 'Acquiring lock (ensuring only one update is running at once)'
+  print('Acquiring lock (ensuring only one update is running at once)')
 
   try:
     fcntl.lockf(handle, fcntl.LOCK_EX)
@@ -31,7 +31,7 @@ def acquire_lock():
   # This should never fail and instead just block if another instance has the lock,
   # but in case it does fail, don't bail the updater
   except Exception as e:
-    print 'Failed acquiring lock: %s' % e
+    print('Failed acquiring lock: %s' % e)
 
   try:
     yield

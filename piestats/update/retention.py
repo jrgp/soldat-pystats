@@ -22,7 +22,7 @@ class Retention:
     return self.oldest_allowed_unix > seconds
 
   def too_old_filename(self, filename):
-    m = re.match('consolelog-(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)-\d+.txt', filename)
+    m = re.match(r'consolelog-(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)-\d+.txt', filename)
 
     if not m:
       return False
@@ -39,7 +39,7 @@ class Retention:
     '''
     kill_ids = self.r.zrangebyscore(self.keys.kill_log, -1, self.oldest_allowed_unix)
 
-    print 'Processing retention.. trimming events up until %s' % datetime.utcfromtimestamp(self.oldest_allowed_unix)
+    print('Processing retention.. trimming events up until %s' % datetime.utcfromtimestamp(self.oldest_allowed_unix))
 
     if not kill_ids:
       return

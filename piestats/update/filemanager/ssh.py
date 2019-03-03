@@ -51,7 +51,7 @@ class SshFileManager(FileManager):
           pos = int(prev)
         if size > pos:
           if progressbar.is_hidden:
-            print('Reading {filename} from offset {pos}'.format(filename=path, pos=pos))
+            print(('Reading {filename} from offset {pos}'.format(filename=path, pos=pos)))
           yield path, pos
           self.r.hset(self.keys.log_positions, key, size)
 

@@ -9,7 +9,7 @@ class Config():
   def __init__(self, conf_path):
     ''' Pass me path to config file; I'll load usefulness out of it '''
     with open(conf_path, 'r') as h:
-      data = yaml.load(h)
+      data = yaml.safe_load(h)
 
       if not isinstance(data, dict):
         raise RuntimeError('Loaded yaml is garbage: {0}'.format(data))

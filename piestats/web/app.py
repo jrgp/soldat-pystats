@@ -2,6 +2,7 @@ import os
 import re
 import logging
 import urllib
+import urllib.parse
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -33,7 +34,7 @@ mimes = {'.css': 'text/css',
          '.woff': 'application/font-woff'}
 
 _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_.-]')
-_safe_username_re = re.compile('^[^.][a-zA-Z0-9-\. ]+$')
+_safe_username_re = re.compile(r'^[^.][a-zA-Z0-9-\. ]+$')
 
 
 def secure_filename(filename):
@@ -74,7 +75,7 @@ def player_url(server, username):
   if not username:
     return None
   if bad_username(username):
-    return '/{server}/player?name={username}'.format(server=server, username=urllib.quote_plus(username))
+    return '/{server}/player?name={username}'.format(server=server, username=urllib.parse.quote_plus(username))
   else:
     return '/{server}/player/{username}'.format(server=server, username=username)
 
@@ -114,6 +115,7 @@ class ServerBase(object):
         pretty_datetime=pretty_datetime(req.context['config'].timezone),
         enumerate=enumerate,
         len=len,
+        list=list,
         pretty_duration=pretty_duration,
         req=req
     )
