@@ -60,13 +60,18 @@ To install to your venv but point to your code so you can edit and dev and run:
 
 Copy `config.yml.samp` to `config.yml` after editing it to fit your setup
 
-Run update script. Probably add this to cron.
+Quickly start website. (Bind to all NICs on port 5000). You can change the port at the bottom of `config.yml`
+
+    piestats web -c config.yml
+
+Run stats update
 
     piestats update -c config.yml
 
-Quickly start website. (Bind to all NICs on port 5000)
+Crontab example for running stats update every hour. Change paths accordingly!
 
-    piestats web -c config.yml
+    @hourly /home/pystats/soldat-pystats/env/bin/piestats update -c /home/pystats/soldat-pystats/config.yml
+
 
 # Gunicorn Example
 
