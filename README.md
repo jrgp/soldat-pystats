@@ -24,6 +24,7 @@ Statistics script which displays kill and player/country stats for multiple
  - Clean comfortable layout provided by Bootswatch
  - Uses Redis key value database instead of SQL so pages are fast even with
    millions of recorded kills.
+ - HTML or JSON output for data. To get JSON, `?json=yes` to any URL, or request json using the `Accept` header
 
 # Requirements
 
