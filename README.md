@@ -43,7 +43,7 @@ First, have an install of Redis database runnning. The following will do.
 
     sudo apt-get install redis-server
 
-### Dev guide/Quickstart
+### Quickstart
 
 Install python virtualenv tool as well as build dependencies
 
@@ -72,14 +72,8 @@ Crontab example for running stats update every hour. Change paths accordingly!
 
     @hourly /home/pystats/soldat-pystats/env/bin/piestats update -c /home/pystats/soldat-pystats/config.yml
 
+See the [webserver guide](WEBSERVER.md) if you want to remove the :5000 from the URLs.
 
-# Gunicorn Example
-
-Use a command like the following to run pystats under gunicorn, listening on port 5000, for production instead of dev.
-
-    gunicorn 'piestats.web:init_app()' -b 0:5000 --max-requests 1000 -w 4 -k gevent --access-logfile - -e PYSTATS_CONF=config.yml
-
-If huge QPS is needed, using uwsgi instead of gunicorn would be better.
 
 # Contact
  - Joe Gillotti - <joe@u13.net>
