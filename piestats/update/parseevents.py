@@ -39,7 +39,6 @@ class ParseEvents():
     )
 
     self.requested_map = None
-    self.requested_map_change = None
     self.map_titles = {}
 
   def build_map_names(self):
