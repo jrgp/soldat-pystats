@@ -6,7 +6,7 @@ from datetime import datetime
 
 from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
-from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, MapList
+from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, MapList, EventRestart
 from piestats.models.kill import Kill
 
 flag_round_map_prefixes = ('ctf_', 'inf_', 'tw_')
@@ -30,6 +30,8 @@ class ParseEvents():
         (EventNextMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) Next map: (?P<map>[^$]+)')),
         (EventNextMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) /map (?P<map>[^(\s]+)')),
         (EventRequestMap, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \[.+\] !map (?P<map>[^(\s]+)')),
+        (EventRestart, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) /restart \([^\)]+\)$')),
+        (EventRestart, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) Restarting...$')),
         (EventInvalidMap, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d Map not found \((?P<map>\S+)\)')),
         (EventScore, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$')),
         (Kill, re.compile(kill_regex)),
@@ -39,6 +41,7 @@ class ParseEvents():
     )
 
     self.requested_map = None
+    self.last_map = None
     self.map_titles = {}
 
   def build_map_names(self):
@@ -130,6 +133,12 @@ class ParseEvents():
       if event is None:
           continue
 
+      # If it's a restart request, prepare for a new map/round end event
+      if isinstance(event, EventRestart):
+          if self.last_map is not None:
+              self.requested_map = self.last_map
+          continue
+
       # If it's a next map event, swallow it and do some logic
       if isinstance(event, EventNextMap) or isinstance(event, EventRequestMap):
         if event.map in self.map_titles:
@@ -151,6 +160,7 @@ class ParseEvents():
       # If it is, yield the change map event
       if isinstance(event, EventBareLog) and self.requested_map is not None:
           if event.line.strip() == self.map_titles[self.requested_map]:
+              self.last_map = self.requested_map
               yield EventNextMap(map=self.requested_map, date=event.date)
               self.requested_map = None
               continue

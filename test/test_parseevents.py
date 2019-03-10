@@ -1,6 +1,6 @@
 import unittest
 from piestats.update.parseevents import ParseEvents
-from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog
+from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, EventRestart
 from piestats.models.kill import Kill
 
 
@@ -48,6 +48,14 @@ class TestParseEvents(unittest.TestCase):
     event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 /map ctf_Guardian(78.50.103.50[IMP darDar])')
     self.assertIsInstance(event, EventNextMap)
     self.assertEqual(event.map, 'ctf_Guardian')
+
+  def test_parse_cmd_restart(self):
+    event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 /restart (78.50.103.50)')
+    self.assertIsInstance(event, EventRestart)
+
+  def test_parse_restart_notif(self):
+    event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 Restarting...')
+    self.assertIsInstance(event, EventRestart)
 
   def test_parse_invalid_map(self):
     event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 Map not found (ctf_Wretch)')
@@ -139,6 +147,55 @@ class TestParseEvents(unittest.TestCase):
 
     self.assertIsInstance(events[1], EventNextMap)
     self.assertEqual(events[1].map, 'ctf_Rotten')
+
+  def test_parse_event_state_3(self):
+    contents = (
+      '19-03-09 18:13:19 Next map: duo_Ash\n'
+      '19-03-09 18:13:24 duo_Ash by nettse\n'
+      '19-03-09 18:15:31 /restart (1.1.1.1)\n'
+      '19-03-09 18:15:36 duo_Ash by nettse'
+    )
+    parser = ParseEvents(retention, None, None, None)
+    parser.map_titles = {'duo_Ash': 'duo_Ash by nettse'}
+    events = list(parser.parse_events(contents))
+
+    self.assertIsInstance(events[0], EventNextMap)
+    self.assertIs(events[0].map, None)
+
+    self.assertIsInstance(events[1], EventNextMap)
+    self.assertEqual(events[1].map, 'duo_Ash')
+
+    self.assertIsInstance(events[2], EventNextMap)
+    self.assertEqual(events[2].map, 'duo_Ash')
+
+
+  def test_parse_event_state_4(self):
+    contents = (
+      '19-03-09 18:13:19 Next map: duo_Ash\n'
+      '19-03-09 18:13:24 duo_Ash by nettse\n'
+      '19-03-09 18:20:20 [AXE] !map Guardian\n'
+      '19-03-09 18:20:25 [nU^nettse] !r\n'
+      '19-03-09 18:20:25 Restarting...\n'
+      '19-03-09 18:20:30 duo_Ash by nettse'
+    )
+    parser = ParseEvents(retention, None, None, None)
+    parser.map_titles = {'duo_Ash': 'duo_Ash by nettse'}
+    events = list(parser.parse_events(contents))
+
+    self.assertIsInstance(events[0], EventNextMap)
+    self.assertIs(events[0].map, None)
+
+    self.assertIsInstance(events[1], EventNextMap)
+    self.assertEqual(events[1].map, 'duo_Ash')
+
+    self.assertIsInstance(events[2], EventNextMap)
+    self.assertIs(events[2].map, None)
+
+    self.assertIsInstance(events[3], EventBareLog)
+
+    self.assertIsInstance(events[4], EventNextMap)
+    self.assertEqual(events[4].map, 'duo_Ash')
+
 
 if __name__ == '__main__':
   unittest.main()
