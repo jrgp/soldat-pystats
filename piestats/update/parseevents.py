@@ -137,6 +137,14 @@ class ParseEvents():
           self.requested_map = event.map
         else:
           self.requested_map = None
+
+          # Maybe doing shorthand Rotten for ctf_Rotten
+          for prefix in flag_round_map_prefixes:
+            potential_map = prefix + event.map
+            if potential_map in self.map_titles:
+              self.requested_map = potential_map
+              break
+
         yield EventNextMap(map=None, date=event.date)
         continue
 

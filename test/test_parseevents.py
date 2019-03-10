@@ -110,16 +110,35 @@ class TestParseEvents(unittest.TestCase):
   def test_parse_event_state_1(self):
     contents = (
       '19-03-09 18:21:59 [SoNNy`] !map ctf_Guardian\n'
+      '19-03-09 18:30:21 [nU^<|SKELETON|>] pia mapa\n'
       '19-03-09 18:22:05 ctf_Guardian by SuoW'
     )
     parser = ParseEvents(retention, None, None, None)
     parser.map_titles = {'ctf_Guardian': 'ctf_Guardian by SuoW'}
     events = list(parser.parse_events(contents))
+
     self.assertIsInstance(events[0], EventNextMap)
     self.assertIs(events[0].map, None)
-    self.assertIsInstance(events[1], EventNextMap)
-    self.assertEqual(events[1].map, 'ctf_Guardian')
 
+    self.assertIsInstance(events[1], EventBareLog)
+
+    self.assertIsInstance(events[2], EventNextMap)
+    self.assertEqual(events[2].map, 'ctf_Guardian')
+
+  def test_parse_event_state_2(self):
+    contents = (
+      '19-03-09 18:30:18 [AXE] !map Rotten\n'
+      '19-03-09 18:30:23 Rotten by Biggles'
+    )
+    parser = ParseEvents(retention, None, None, None)
+    parser.map_titles = {'ctf_Rotten': 'Rotten by Biggles'}
+    events = list(parser.parse_events(contents))
+
+    self.assertIsInstance(events[0], EventNextMap)
+    self.assertIs(events[0].map, None)
+
+    self.assertIsInstance(events[1], EventNextMap)
+    self.assertEqual(events[1].map, 'ctf_Rotten')
 
 if __name__ == '__main__':
   unittest.main()
