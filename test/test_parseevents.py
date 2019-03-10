@@ -19,25 +19,25 @@ class TestParseEvents(unittest.TestCase):
     self.assertEqual(event.player, 'rage rage foo rage')
     self.assertEqual(event.ip, '84.120.15.45')
     self.assertEqual(event.hwid, '4DD3F08B8AA')
-    assert isinstance(event.date, int)
+    self.assertIsInstance(event.date, int)
 
   def test_parse_next_map(self):
     event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 Next map: Blox')
     self.assertIsInstance(event, EventNextMap)
     self.assertEqual(event.map, 'Blox')
-    assert isinstance(event.date, int)
+    self.assertIsInstance(event.date, int)
 
   def test_parse_cmd_map(self):
     event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 /map ctf_Wretch (198.136.48.50)')
     self.assertIsInstance(event, EventNextMap)
     self.assertEqual(event.map, 'ctf_Wretch')
-    assert isinstance(event.date, int)
+    self.assertIsInstance(event.date, int)
 
   def test_parse_bare_log(self):
     event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 area6_Leaf by chakapoko maker')
     self.assertIsInstance(event, EventBareLog)
     self.assertEqual(event.line, 'area6_Leaf by chakapoko maker')
-    assert isinstance(event.date, int)
+    self.assertIsInstance(event.date, int)
 
   def test_parse_req_map(self):
     event = ParseEvents(retention, None, None, None).parse_line('16-03-11 11:34:59 [DDSSTINY] !map ctf_Rotten')
@@ -59,7 +59,7 @@ class TestParseEvents(unittest.TestCase):
     self.assertIsInstance(event, EventScore)
     self.assertEqual(event.player, 'Gandalf')
     self.assertEqual(event.team, 'Alpha')
-    assert isinstance(event.date, int)
+    self.assertIsInstance(event.date, int)
 
   def test_parse_kill_1(self):
     event = ParseEvents(retention, None, None, None).parse_line('16-03-26 02:56:20 (2) r|2 Der Exorzischt killed (1) r|3 Benedetta Zavatta with Grenade')
