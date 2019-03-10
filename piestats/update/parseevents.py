@@ -92,7 +92,7 @@ class ParseEvents():
 
           self.r.hset(self.keys.map_hash(map_filename), 'title', title)
 
-          if any(map_filename.lower().startswith(prefix) for prefix in flag_round_map_prefixes):
+          if map_filename.lower().startswith(flag_round_map_prefixes):
             for spawnpoint in reader.spawnpoints:
               if spawnpoint.TypeText in score_spawnpoint_types:
                 flag_score_maps.add(map_filename)
