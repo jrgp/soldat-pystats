@@ -18,6 +18,8 @@ class TestParseEvents(unittest.TestCase):
     self.assertIsInstance(event, EventPlayerJoin)
     self.assertEqual(event.player, 'rage rage foo rage')
     self.assertEqual(event.ip, '84.120.15.45')
+    self.assertEqual(event.hwid, '4DD3F08B8AA')
+    assert isinstance(event.date, int)
 
   def test_parse_next_map(self):
     event = ParseEvents(retention, None, None, None).parse_line('15-02-11 20:37:48 Next map: Blox')
