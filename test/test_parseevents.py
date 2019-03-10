@@ -107,6 +107,19 @@ class TestParseEvents(unittest.TestCase):
     self.assertEqual(event.killer_team, 'none')
     self.assertEqual(event.victim_team, 'none')
 
+  def test_parse_event_state_1(self):
+    contents = (
+      '19-03-09 18:21:59 [SoNNy`] !map ctf_Guardian\n'
+      '19-03-09 18:22:05 ctf_Guardian by SuoW'
+    )
+    parser = ParseEvents(retention, None, None, None)
+    parser.map_titles = {'ctf_Guardian': 'ctf_Guardian by SuoW'}
+    events = list(parser.parse_events(contents))
+    self.assertIsInstance(events[0], EventNextMap)
+    self.assertIs(events[0].map, None)
+    self.assertIsInstance(events[1], EventNextMap)
+    self.assertEqual(events[1].map, 'ctf_Guardian')
+
 
 if __name__ == '__main__':
   unittest.main()
