@@ -2,10 +2,13 @@ import unittest
 from piestats.update.parseevents import ParseEvents
 from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog
 from piestats.models.kill import Kill
-from mock import MagicMock
 
-retention = MagicMock()
-retention.configure_mock(**{'too_old.return_value': False})
+
+class FakeRetention():
+    def too_old(self, x):
+        return False
+
+retention = FakeRetention()
 
 
 class TestParseEvents(unittest.TestCase):
