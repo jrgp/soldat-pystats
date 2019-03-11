@@ -8,6 +8,7 @@ class FakeRetention():
     def too_old(self, x):
         return False
 
+
 retention = FakeRetention()
 
 
@@ -117,9 +118,9 @@ class TestParseEvents(unittest.TestCase):
 
   def test_parse_event_state_1(self):
     contents = (
-      '19-03-09 18:21:59 [SoNNy`] !map ctf_Guardian\n'
-      '19-03-09 18:30:21 [nU^<|SKELETON|>] pia mapa\n'
-      '19-03-09 18:22:05 ctf_Guardian by SuoW'
+        '19-03-09 18:21:59 [SoNNy`] !map ctf_Guardian\n'
+        '19-03-09 18:30:21 [nU^<|SKELETON|>] pia mapa\n'
+        '19-03-09 18:22:05 ctf_Guardian by SuoW'
     )
     parser = ParseEvents(retention, None, None, None)
     parser.map_titles = {'ctf_Guardian': 'ctf_Guardian by SuoW'}
@@ -135,8 +136,8 @@ class TestParseEvents(unittest.TestCase):
 
   def test_parse_event_state_2(self):
     contents = (
-      '19-03-09 18:30:18 [AXE] !map Rotten\n'
-      '19-03-09 18:30:23 Rotten by Biggles'
+        '19-03-09 18:30:18 [AXE] !map Rotten\n'
+        '19-03-09 18:30:23 Rotten by Biggles'
     )
     parser = ParseEvents(retention, None, None, None)
     parser.map_titles = {'ctf_Rotten': 'Rotten by Biggles'}
@@ -150,10 +151,10 @@ class TestParseEvents(unittest.TestCase):
 
   def test_parse_event_state_3(self):
     contents = (
-      '19-03-09 18:13:19 Next map: duo_Ash\n'
-      '19-03-09 18:13:24 duo_Ash by nettse\n'
-      '19-03-09 18:15:31 /restart (1.1.1.1)\n'
-      '19-03-09 18:15:36 duo_Ash by nettse'
+        '19-03-09 18:13:19 Next map: duo_Ash\n'
+        '19-03-09 18:13:24 duo_Ash by nettse\n'
+        '19-03-09 18:15:31 /restart (1.1.1.1)\n'
+        '19-03-09 18:15:36 duo_Ash by nettse'
     )
     parser = ParseEvents(retention, None, None, None)
     parser.map_titles = {'duo_Ash': 'duo_Ash by nettse'}
@@ -168,15 +169,14 @@ class TestParseEvents(unittest.TestCase):
     self.assertIsInstance(events[2], EventNextMap)
     self.assertEqual(events[2].map, 'duo_Ash')
 
-
   def test_parse_event_state_4(self):
     contents = (
-      '19-03-09 18:13:19 Next map: duo_Ash\n'
-      '19-03-09 18:13:24 duo_Ash by nettse\n'
-      '19-03-09 18:20:20 [AXE] !map Guardian\n'
-      '19-03-09 18:20:25 [nU^nettse] !r\n'
-      '19-03-09 18:20:25 Restarting...\n'
-      '19-03-09 18:20:30 duo_Ash by nettse'
+        '19-03-09 18:13:19 Next map: duo_Ash\n'
+        '19-03-09 18:13:24 duo_Ash by nettse\n'
+        '19-03-09 18:20:20 [AXE] !map Guardian\n'
+        '19-03-09 18:20:25 [nU^nettse] !r\n'
+        '19-03-09 18:20:25 Restarting...\n'
+        '19-03-09 18:20:30 duo_Ash by nettse'
     )
     parser = ParseEvents(retention, None, None, None)
     parser.map_titles = {'duo_Ash': 'duo_Ash by nettse'}
