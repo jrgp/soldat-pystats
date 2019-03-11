@@ -49,6 +49,11 @@ Install python virtualenv tool as well as build dependencies
 
     sudo apt-get install python-virtualenv python-dev libyaml-dev
 
+Download latest version of pystats
+
+    git clone https://github.com/jrgp/soldat-pystats.git
+    cd soldat-pystats
+
 Create & activate venv (run this before next commands):
 
     virtualenv env
