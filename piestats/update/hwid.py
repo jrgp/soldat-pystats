@@ -26,7 +26,6 @@ class BoundedCache:
         if len(self.dict) > self.maxsize:
             evict = self.keys.pop()
             self.dict.pop(evict)
-            print '\n\nEvicted %s (size %s)\n\n' % (key, len(self.dict))
 
         self.dict[key] = value
         self.keys.appendleft(key)
@@ -58,7 +57,7 @@ class Hwid:
             self.r.hset(self.keys.name_to_id, name, player_id)
             self.r.zadd(self.keys.player_id_to_names(player_id), name, time())
 
-        self.player_name_cache.set(player_id, name)
+        self.player_name_cache.set(name, player_id)
 
         return player_id
 
