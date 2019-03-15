@@ -1,4 +1,4 @@
-from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, MapList
+from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, MapList, EventLogChange
 from piestats.models.kill import Kill
 from piestats.models.round import Round
 from piestats.update.hwid import Hwid
@@ -186,6 +186,7 @@ class ManageEvents():
     self.r = r
     self.keys = keys
     self.current_map = None
+    self.current_logfile = None
     self.round_id = None
     self.valid_score_maps = set()
     self.ignore_maps = server.ignore_maps
@@ -236,6 +237,8 @@ class ManageEvents():
          event.victim not in self.ignore_players and
          (self.current_map is None or self.current_map not in self.ignore_maps)):
           self.apply_kill(event)
+    elif isinstance(event, EventLogChange):
+      self.log_change(event.path)
 
   def update_player_search(self, player):
       '''
@@ -260,6 +263,33 @@ class ManageEvents():
 
   def update_maps_list(self, maps, score_maps):
       self.valid_score_maps = score_maps
+
+  def log_change(self, path):
+    ''' Looking at a new logfile. Cleanup/resurrect round. '''
+
+    # Keep track of this so we can refer to it when we create rounds based on map change
+    self.current_logfile = path
+
+    # Clean these up as rounds/state don't cross log boundaries
+    self.round_id = None
+    self.current_map = None
+
+    # It's possible we're still parsing the same logfile as last time, and the
+    # last round we saw wasn't finished when we stopped parsing it
+    old_round_id = self.r.hget(self.keys.last_round_id_per_log, path)
+
+    if old_round_id:
+      old_round_id = int(old_round_id)
+      old_round_data = self.r.hgetall(self.keys.round_hash(old_round_id))
+
+      if old_round_data:
+        old_round = Round(**old_round_data)
+
+        # If the last round for this logfile is unfinished, continue with it
+        if old_round.finished is None:
+          print '\nLoaded old unfinished round ID %d from file %s' % (old_round_id, self.current_logfile)
+          self.round_id = old_round_id
+          self.current_map = old_round.map
 
   def update_map(self, map, date):
     '''
@@ -319,6 +349,7 @@ class ManageEvents():
             'map': map,
             'flags': 'yes' if self.current_map in self.valid_score_maps else 'no'
         })
+        self.r.hset(self.keys.last_round_id_per_log, self.current_logfile, self.round_id)
         self.r.zadd(self.keys.round_log, self.round_id, date)
 
   def kill_map(self, map):

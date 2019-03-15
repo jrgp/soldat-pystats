@@ -6,7 +6,8 @@ from datetime import datetime
 
 from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
-from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, MapList, EventRestart
+from piestats.models.events import (EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, MapList,
+                                    EventRestart, EventLogChange)
 from piestats.models.kill import Kill
 
 flag_round_map_prefixes = ('ctf_', 'inf_', 'tw_')
@@ -181,5 +182,9 @@ class ParseEvents():
           yield MapList(maps=self.map_titles, score_maps=flag_score_maps)
 
       for path, position in self.filemanager.get_files('logs', 'consolelog*.txt'):
+
+        # Let ManageEvents be aware of the current logfile for things like round boundaries and resurrections
+        yield EventLogChange(path=self.filemanager.filename_key(path))
+
         for event in self.parse_events(self.filemanager.get_data(path, position)):
           yield event
