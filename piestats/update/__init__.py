@@ -41,6 +41,9 @@ def update_events(r, keys, retention, filemanager, server):
     # Maintain round state with this
     round_manager = RoundManager(r=r, keys=keys, flag_score_maps=flag_score_maps)
 
+    # Maybe the last round is empty. Delete it if so
+    round_manager.tweak_last_round()
+
     for logfile, events in parse.get_events():
       for decorated_event in decorate_events(events,
                                              map_titles=map_titles,

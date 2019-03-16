@@ -7,6 +7,21 @@ class RoundManager():
     self.keys = keys
     self.flag_score_maps = flag_score_maps
 
+  def tweak_last_round(self):
+    ''' If the last round for this server is empty, delete it'''
+    round_id = self.r.get(self.keys.last_round_id)
+    if round_id is not None:
+      round_id = int(round_id)
+      last_round = self.get_round_by_id(round_id)
+      if last_round:
+        if last_round.empty:
+          self.delete_round(round_id)
+
+  def delete_round(self, round_id):
+    ''' Delete a round '''
+    self.r.delete(self.keys.round_hash(round_id))
+    self.r.zrem(self.keys.round_log, round_id)
+
   def get_round_by_id(self, round_id):
     ''' Given a round ID, get back a round object with all info on it, or None '''
 
@@ -55,8 +70,7 @@ class RoundManager():
       raise ValueError('Will not end round %d with no date' % round_id)
 
     if old_round.empty:
-      self.r.delete(self.keys.round_hash(round_id))
-      self.r.zrem(self.keys.round_log, round_id)
+      self.delete_round(round_id)
     else:
       self.r.hset(self.keys.round_hash(round_id), 'finished', date)
       if old_round.winning_team:
