@@ -1,14 +1,48 @@
-from piestats.update.manageevents import ManageEvents
+import pkg_resources
+
 from piestats.update.parseevents import ParseEvents
+from piestats.update.applyevents import ApplyEvents
+from piestats.update.roundmanager import RoundManager
+from piestats.update.decorateevents import decorate_events
+from piestats.update.hwid import Hwid
+
+try:
+  import GeoIP
+except ImportError:
+  GeoIP = None
 
 
 def update_events(r, keys, retention, filemanager, server):
 
-  # Get kills and events out of our logs
+  # Get raw events out of logs
   parse = ParseEvents(retention, filemanager, r, keys)
 
-  # Interact with redis to store and delete kills and events
-  with ManageEvents(r, keys, server) as manage:
-    for event in parse.get_events():
-      if event:
-        manage.apply_event(event)
+  # Need these
+  map_titles, flag_score_maps = parse.build_map_names()
+
+  # Manager of HWID <-> Name mappings
+  hwid = Hwid(r, keys)
+
+  # GeoIP lookups
+  if GeoIP:
+    try:
+      geoip_obj = GeoIP.open(pkg_resources.resource_filename('piestats.update', 'GeoIP.dat'), GeoIP.GEOIP_MMAP_CACHE)
+    except Exception as e:
+      print 'Failed loading geoip file %s' % e
+  else:
+    print 'GeoIP looking up not supported'
+
+  # Apply events with this
+  apply_events = ApplyEvents(r=r, keys=keys, hwid=hwid, geoip=geoip_obj)
+
+  # Maintain round state with this
+  round_manager = RoundManager(r=r, keys=keys, flag_score_maps=flag_score_maps)
+
+  for logfile, events in parse.get_events():
+    for decorated_event in decorate_events(events,
+                                           map_titles=map_titles,
+                                           ignore_maps=server.ignore_maps,
+                                           ignore_players=server.ignore_players,
+                                           round_manager=round_manager,
+                                           logfile=logfile):
+      apply_events.apply(decorated_event)

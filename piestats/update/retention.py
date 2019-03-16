@@ -2,8 +2,9 @@ import click
 import re
 from time import time, mktime
 from datetime import datetime, date, timedelta
-from piestats.update.manageevents import ManageEvents
+from piestats.update.applyevents import ApplyEvents
 from piestats.models.kill import Kill
+from piestats.update.hwid import Hwid
 
 
 class Retention:
@@ -14,6 +15,7 @@ class Retention:
     self.server = server
     self.oldest_allowed_unix = time() - (self.max_days * 86400)
     self.oldest_allowed_datetime = datetime.now() - timedelta(days=self.max_days)
+    self.apply_events = ApplyEvents(r=r, keys=keys, hwid=Hwid(r=r, keys=keys), geoip=None)
 
   def too_old(self, date):
     return self.oldest_allowed_datetime > date
@@ -44,16 +46,15 @@ class Retention:
     if not kill_ids:
       return
 
-    with ManageEvents(self.r, self.keys, self.server) as manage:
-      with click.progressbar(kill_ids,
-                             show_eta=False,
-                             label='Killing %d kills' % len(kill_ids),
-                             item_show_func=lambda item: 'Kill ID %s' % item if item else '') as progressbar:
+    with click.progressbar(kill_ids,
+                           show_eta=False,
+                           label='Killing %d kills' % len(kill_ids),
+                           item_show_func=lambda item: 'Kill ID %s' % item if item else '') as progressbar:
 
-        for kill_id in progressbar:
-          kill_data = self.r.hget(self.keys.kill_data, kill_id)
-          if kill_data:
-            kill = Kill.from_redis(kill_data)
-          else:
-            kill = None
-          manage.rollback_kill(kill, kill_id)
+      for kill_id in progressbar:
+        kill_data = self.r.hget(self.keys.kill_data, kill_id)
+        if kill_data:
+          kill = Kill.from_redis(kill_data)
+        else:
+          kill = None
+        self.apply_events.rollback_kill(kill, kill_id)

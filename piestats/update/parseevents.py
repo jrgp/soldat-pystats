@@ -6,8 +6,8 @@ from datetime import datetime
 
 from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
-from piestats.models.events import (EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, MapList,
-                                    EventRestart, EventLogChange)
+from piestats.models.events import (EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog,
+                                    EventRestart)
 from piestats.models.kill import Kill
 
 flag_round_map_prefixes = ('ctf_', 'inf_', 'tw_')
@@ -109,7 +109,7 @@ class ParseEvents():
       Run our regexes against a line and return the first event object that matches
     '''
     for event, regex in self.event_regex:
-      m = regex.match(line.strip())
+      m = regex.match(line)
       if not m:
         continue
 
@@ -130,44 +130,9 @@ class ParseEvents():
       Run through a text file and yield all events we find in it
     '''
     for line in contents.splitlines():
-      event = self.parse_line(line)
-      if event is None:
-          continue
-
-      # If it's a restart request, prepare for a new map/round end event
-      if isinstance(event, EventRestart):
-          if self.last_map is not None:
-              self.requested_map = self.last_map
-          continue
-
-      # If it's a next map event, swallow it and do some logic
-      if isinstance(event, EventNextMap) or isinstance(event, EventRequestMap):
-        if event.map in self.map_titles:
-          self.requested_map = event.map
-        else:
-          self.requested_map = None
-
-          # Maybe doing shorthand Rotten for ctf_Rotten
-          for prefix in flag_round_map_prefixes:
-            potential_map = prefix + event.map
-            if potential_map in self.map_titles:
-              self.requested_map = potential_map
-              break
-
-        yield EventNextMap(map=None, date=event.date)
-        continue
-
-      # If it's a bare log event, see if it's the start message for that new map we almost got.
-      # If it is, yield the change map event
-      if isinstance(event, EventBareLog) and self.requested_map is not None:
-          if event.line.strip() == self.map_titles[self.requested_map]:
-              self.last_map = self.requested_map
-              yield EventNextMap(map=self.requested_map, date=event.date)
-              self.requested_map = None
-              continue
-
-      # Otherwise just yield the event
-      yield event
+      event = self.parse_line(line.strip())
+      if event:
+        yield event
 
   def get_events(self):
     '''
@@ -175,16 +140,5 @@ class ParseEvents():
     '''
 
     with self.filemanager.initialize():
-      self.map_titles, flag_score_maps = self.build_map_names()
-
-      # Provide list of valid maps
-      if self.map_titles and flag_score_maps:
-          yield MapList(maps=self.map_titles, score_maps=flag_score_maps)
-
       for path, position in self.filemanager.get_files('logs', 'consolelog*.txt'):
-
-        # Let ManageEvents be aware of the current logfile for things like round boundaries and resurrections
-        yield EventLogChange(path=self.filemanager.filename_key(path))
-
-        for event in self.parse_events(self.filemanager.get_data(path, position)):
-          yield event
+        yield self.filemanager.filename_key(path), (event for event in self.parse_events(self.filemanager.get_data(path, position)))
