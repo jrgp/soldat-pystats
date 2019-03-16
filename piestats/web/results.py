@@ -169,7 +169,6 @@ class Results():
 
   def get_last_rounds(self, startat=0, incr=20):
     ''' given pagination, get list of most recent Round objects '''
-    startat += 1
     round_ids = self.r.zrevrange(self.keys.round_log, startat, startat + incr)
     for round_id in round_ids:
       round_data = self.r.hgetall(self.keys.round_hash(round_id))
