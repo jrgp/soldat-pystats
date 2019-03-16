@@ -17,9 +17,6 @@ def update_events(r, keys, retention, filemanager, server):
   # Get raw events out of logs
   parse = ParseEvents(retention, filemanager, r, keys)
 
-  # Need these
-  map_titles, flag_score_maps = parse.build_map_names()
-
   # Manager of HWID <-> Name mappings
   hwid = Hwid(r, keys)
 
@@ -35,14 +32,20 @@ def update_events(r, keys, retention, filemanager, server):
   # Apply events with this
   apply_events = ApplyEvents(r=r, keys=keys, hwid=hwid, geoip=geoip_obj)
 
-  # Maintain round state with this
-  round_manager = RoundManager(r=r, keys=keys, flag_score_maps=flag_score_maps)
+  # Connect to ftp/ssh or no-op if getting local files
+  with filemanager.initialize():
 
-  for logfile, events in parse.get_events():
-    for decorated_event in decorate_events(events,
-                                           map_titles=map_titles,
-                                           ignore_maps=server.ignore_maps,
-                                           ignore_players=server.ignore_players,
-                                           round_manager=round_manager,
-                                           logfile=logfile):
-      apply_events.apply(decorated_event)
+    # Need to get these
+    map_titles, flag_score_maps = parse.build_map_names()
+
+    # Maintain round state with this
+    round_manager = RoundManager(r=r, keys=keys, flag_score_maps=flag_score_maps)
+
+    for logfile, events in parse.get_events():
+      for decorated_event in decorate_events(events,
+                                             map_titles=map_titles,
+                                             ignore_maps=server.ignore_maps,
+                                             ignore_players=server.ignore_players,
+                                             round_manager=round_manager,
+                                             logfile=logfile):
+        apply_events.apply(decorated_event)

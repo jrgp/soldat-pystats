@@ -41,10 +41,6 @@ class ParseEvents():
         (EventBareLog, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<line>[^$]+)$')),
     )
 
-    self.requested_map = None
-    self.last_map = None
-    self.map_titles = {}
-
   def build_map_names(self):
     map_titles = {}
     flag_score_maps = set()
@@ -139,6 +135,5 @@ class ParseEvents():
       Get all events from relevant console log files
     '''
 
-    with self.filemanager.initialize():
-      for path, position in self.filemanager.get_files('logs', 'consolelog*.txt'):
-        yield self.filemanager.filename_key(path), (event for event in self.parse_events(self.filemanager.get_data(path, position)))
+    for path, position in self.filemanager.get_files('logs', 'consolelog*.txt'):
+      yield self.filemanager.filename_key(path), (event for event in self.parse_events(self.filemanager.get_data(path, position)))
