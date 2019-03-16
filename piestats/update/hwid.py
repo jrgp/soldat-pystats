@@ -33,10 +33,11 @@ class BoundedCache:
 
 class Hwid:
     ''' Attempt to dedupe player names based on HWID. Optimistic with caveats. '''
-    def __init__(self, r, keys):
+    def __init__(self, r, keys, verbose=False):
         self.r = r
         self.keys = keys
         self.player_name_cache = BoundedCache(1000)
+        self.verbose = verbose
 
     def get_player_id_from_name(self, name):
         ''' get what player id this name currently maps to. if there is none, instantiate one '''
@@ -92,8 +93,9 @@ class Hwid:
             # Garbage fire of many-to-many mapping of HWID to playername
             if existing_hwid_id != existing_name_id:
                 player_id = existing_hwid_id
-                print ('\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
-                       hwid, existing_hwid_id, name, existing_name_id, player_id))
+                if self.verbose:
+                    print ('\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
+                           hwid, existing_hwid_id, name, existing_name_id, player_id))
                 self.r.hset(self.keys.hwid_to_id, hwid, player_id)
                 self.r.hset(self.keys.name_to_id, name, player_id)
 

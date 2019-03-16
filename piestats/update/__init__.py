@@ -12,13 +12,13 @@ except ImportError:
   GeoIP = None
 
 
-def update_events(r, keys, retention, filemanager, server):
+def update_events(r, keys, retention, filemanager, server, verbose):
 
   # Get raw events out of logs
   parse = ParseEvents(retention, filemanager, r, keys)
 
   # Manager of HWID <-> Name mappings
-  hwid = Hwid(r, keys)
+  hwid = Hwid(r, keys, verbose)
 
   # GeoIP lookups
   if GeoIP:

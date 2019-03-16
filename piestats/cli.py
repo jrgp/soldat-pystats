@@ -45,7 +45,12 @@ def cli():
     default=get_default_config_file,
     type=click.Path(exists=True, dir_okay=False),
     required=True)
-def update(config_path):
+@click.option(
+    '--verbose',
+    '-v',
+    help='Show HWID mismatches',
+    is_flag=True)
+def update(config_path, verbose):
   '''
     Run updates. Pass me path to config file which contains settings for redis
     as well as which soldat servers to process data for.
@@ -81,7 +86,7 @@ def update(config_path):
 
         # Console logs
         try:
-            update_events(r, keys, retention, filemanager, server)
+            update_events(r, keys, retention, filemanager, server, verbose)
         except Exception:
             logging.exception('Failed updating stats for %s (%s) (%s)', server.url_slug, server.title, server.log_source)
 
