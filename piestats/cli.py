@@ -12,6 +12,7 @@ from piestats.web import init_app
 from piestats.update.filemanager.local import LocalFileManager
 from piestats.update.filemanager.ssh import SshFileManager
 from piestats.update.filemanager.ftp import FtpFileManager
+from piestats.update.filemanager.ssh_2 import Ssh2FileManager
 
 
 def get_default_config_file():
@@ -81,6 +82,8 @@ def update(config_path, verbose):
           filemanager = LocalFileManager(r, keys, soldat_dir, retention)
         elif server.log_source == 'ssh':
           filemanager = SshFileManager(r, keys, soldat_dir, retention, server.connection_options)
+        elif server.log_source == 'ssh2':
+          filemanager = Ssh2FileManager(r, keys, soldat_dir, retention, server.connection_options)
         elif server.log_source == 'ftp':
           filemanager = FtpFileManager(r, keys, soldat_dir, retention, server.connection_options)
 

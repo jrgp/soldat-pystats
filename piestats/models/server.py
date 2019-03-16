@@ -53,7 +53,7 @@ class Server(JsonSerializableModel):
 
   @property
   def log_source(self):
-    options = ('local', 'ssh', 'ftp')
+    options = ('local', 'ssh', 'ssh2', 'ftp')
     given = self.info.get('source', None)
     if given in options:
       return given
