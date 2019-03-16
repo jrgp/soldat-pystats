@@ -1,6 +1,6 @@
 import unittest
 from piestats.update.parseevents import ParseEvents
-from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, EventRestart
+from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, EventShutdown, EventRestart
 from piestats.models.kill import Kill
 
 
@@ -115,3 +115,10 @@ class TestParseEvents(unittest.TestCase):
     self.assertEqual(event.weapon, 'Bow')
     self.assertEqual(event.killer_team, 'none')
     self.assertEqual(event.victim_team, 'none')
+
+  def test_parse_shutdown(self):
+    event = ParseEvents(retention, None, None, None).parse_line('18-09-19 04:10:47 Signal received, shutting down')
+    self.assertIsInstance(event, EventShutdown)
+
+    event = ParseEvents(retention, None, None, None).parse_line('18-09-19 04:10:47 Shutting down server...')
+    self.assertIsInstance(event, EventShutdown)

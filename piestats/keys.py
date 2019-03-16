@@ -49,6 +49,9 @@ class Keys:
     # map logfile name to last round ID in that file
     self.last_round_id_per_log = '%s:last_round_id_per_log' % self.key_prefix
 
+    # last logfile we had
+    self.last_logfile = '%s:last_logfile' % self.key_prefix
+
   def kills_per_day(self, day):
     ''' Plain keys for number of kills that happened on ``day`` '''
     return '%s:kills_per_day:%s' % (self.key_prefix, day)

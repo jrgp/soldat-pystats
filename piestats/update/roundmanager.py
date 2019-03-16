@@ -25,7 +25,10 @@ class RoundManager():
   def get_round_by_id(self, round_id):
     ''' Given a round ID, get back a round object with all info on it, or None '''
 
-    data = self.r.hgetall(self.keys.round_hash(int(round_id)))
+    round_id = int(round_id)
+
+    data = self.r.hgetall(self.keys.round_hash(round_id))
+    data['round_id'] = round_id
     if data:
       return Round(**data)
 
@@ -52,10 +55,12 @@ class RoundManager():
     self.r.hmset(self.keys.round_hash(round_id), {
         'started': date,
         'map': map,
-        'flags': 'yes' if map in self.flag_score_maps else 'no'
+        'flags': 'yes' if map in self.flag_score_maps else 'no',
+        'original_logfile': logfile  # for debugging purposes
     })
     self.r.hset(self.keys.last_round_id_per_log, logfile, round_id)
     self.r.zadd(self.keys.round_log, round_id, date)
+    self.r.set(self.keys.last_logfile, logfile)
 
     return round_id
 
@@ -77,3 +82,12 @@ class RoundManager():
         self.r.hincrby(self.keys.map_hash(old_round.map), 'wins:' + old_round.winning_team)
       elif old_round.tie:
         self.r.hincrby(self.keys.map_hash(old_round.map), 'ties')
+
+  def get_last_round_from_last_file(self, logfile):
+    ''' Get the last round we worked on if it occurred before this filename '''
+    last_logfile = self.r.get(self.keys.last_logfile)
+    if last_logfile is not None and last_logfile < logfile:
+      round_id = self.r.hget(self.keys.last_round_id_per_log, last_logfile)
+      if round_id:
+        return self.get_round_by_id(round_id)
+    return None

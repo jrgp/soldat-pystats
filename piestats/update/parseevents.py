@@ -7,7 +7,7 @@ from datetime import datetime
 from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
 from piestats.models.events import (EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog,
-                                    EventRestart)
+                                    EventRestart, EventShutdown)
 from piestats.models.kill import Kill
 
 flag_round_map_prefixes = ('ctf_', 'inf_', 'tw_')
@@ -35,6 +35,7 @@ class ParseEvents():
         (EventRestart, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) Restarting...$')),
         (EventInvalidMap, re.compile('\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d Map not found \((?P<map>\S+)\)')),
         (EventScore, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) scores for (?P<team>Alpha|Bravo) Team$')),
+        (EventShutdown, re.compile('(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (Signal received, shutting down|Shutting down server)')),
         (Kill, re.compile(kill_regex)),
 
         # Make absolutely sure this is last
