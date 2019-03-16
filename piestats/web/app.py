@@ -17,7 +17,7 @@ from piestats.config import Config
 from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from piestats.status import Status
-from piestats.web.helpers import PaginationHelper
+from piestats.web.pager import PaginationHelper
 
 ui_root = os.environ.get('STATIC_ROOT', os.path.abspath(os.path.dirname(__file__)))
 

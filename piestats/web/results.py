@@ -7,7 +7,7 @@ from piestats.models.player import Player
 from piestats.models.map import Map
 from piestats.models.kill import Kill
 from piestats.models.round import Round
-from piestats.web.helpers import remove_redundant_player_names
+from piestats.web.player_names import remove_redundant_player_names
 
 
 class Results():
