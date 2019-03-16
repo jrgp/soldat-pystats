@@ -44,6 +44,7 @@ def test_pager_last_page():
     assert pager.next_url is False
     assert pager.prev_url == '/server/players/pos/20'
 
+
 def test_pager_incorrect_page():
     pager = PaginationHelper(
         bare_route='/server/players',

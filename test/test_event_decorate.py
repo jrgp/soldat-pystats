@@ -1,5 +1,5 @@
 from piestats.update.decorateevents import decorate_events, decorate_event
-from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, EventRestart, DecoratedEvent
+from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventRequestMap, EventBareLog, EventRestart, DecoratedEvent
 from piestats.models.kill import Kill
 from piestats.models.round import Round
 
@@ -173,7 +173,7 @@ def test_round_recover():
   logfile = 'consolelog1.txt'
 
   round_manager = FakeRoundManager(old_logfile_rounds={
-    logfile: Round(map='ctf_IceBeam', round_id=5)
+      logfile: Round(map='ctf_IceBeam', round_id=5)
   })
 
   events = [
