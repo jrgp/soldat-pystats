@@ -9,6 +9,7 @@ from piestats.update.mapimage import generate_map_svg
 from piestats.models.events import (EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog,
                                     EventRestart, EventShutdown)
 from piestats.models.kill import Kill
+from piestats.progressbar import simple_progressbar
 
 flag_round_map_prefixes = ('ctf_', 'inf_', 'tw_')
 
@@ -49,9 +50,9 @@ class ParseEvents():
 
     map_paths = self.filemanager.get_file_paths('maps', '*.pms')
 
-    print 'Parsing %d maps' % len(map_paths)
-
-    for map_path in map_paths:
+    for map_path in simple_progressbar(map_paths,
+                                       label='Parsing %d maps' % len(map_paths),
+                                       item_show_func=lambda x: 'Parsing ' + os.path.basename(x) if x else None):
 
       map_filename = os.path.basename(map_path)[:-4]
 
@@ -82,7 +83,6 @@ class ParseEvents():
           try:
               generated_svg = generate_map_svg(reader)
               self.r.hset(self.keys.map_hash(map_filename), 'svg_image', generated_svg)
-              print 'Saved generated SVG for %s' % map_filename
           except Exception as e:
               print 'Failed generating SVG for %s: %s' % (map_filename, e)
 
