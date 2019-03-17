@@ -2,7 +2,7 @@ import re
 import os
 import time
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, date
 
 from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
@@ -138,3 +138,12 @@ class ParseEvents():
 
     for path, position in self.filemanager.get_files('logs', 'consolelog*.txt'):
       yield self.filemanager.filename_key(path), (event for event in self.parse_events(self.filemanager.get_data(path, position)))
+
+  @classmethod
+  def get_time_out_of_filename(cls, filename):
+    m = re.match('consolelog-(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)-\d+.txt', filename)
+    if not m:
+      raise ValueError('Cannot parse filename %s' % filename)
+    values = m.groupdict()
+    seconds = int(time.mktime(date(int(values['year']) + 2000, int(values['month']), int(values['day'])).timetuple()))
+    return seconds

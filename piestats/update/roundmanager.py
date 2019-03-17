@@ -1,4 +1,5 @@
 from piestats.models.round import Round
+from piestats.update.parseevents import ParseEvents
 
 
 class RoundManager():
@@ -86,8 +87,37 @@ class RoundManager():
   def get_last_round_from_last_file(self, logfile):
     ''' Get the last round we worked on if it occurred before this filename '''
     last_logfile = self.r.get(self.keys.last_logfile)
-    if last_logfile is not None and last_logfile < logfile:
+    if last_logfile is not None and self.logfile_comparable(logfile, last_logfile) and self.logfile_greater(logfile, last_logfile):
       round_id = self.r.hget(self.keys.last_round_id_per_log, last_logfile)
       if round_id:
         return self.get_round_by_id(round_id)
     return None
+
+  @classmethod
+  def logfile_comparable(cls, logfile1, logfile2):
+    ''' See if two logfile paths are part of the same server '''
+    # see if paths are the same exact for last bit. not using os.path as
+    # the leading logsource prefix would break it
+    dir1 = '/'.join(logfile1.split('/')[:-1])
+    dir2 = '/'.join(logfile2.split('/')[:-1])
+    return dir1 == dir2
+
+  @classmethod
+  def logfile_greater(cls, logfile1, logfile2):
+    ''' See if one logfile path (logfile1) came after another comparable logfile path (logfile2) '''
+    if not cls.logfile_comparable(logfile1, logfile2):
+      raise ValueError('Logfiles %s and %s are not comparable' % (logfile1, logfile2))
+
+    filename1 = logfile1.split('/')[-1]
+    filename2 = logfile2.split('/')[-1]
+
+    time1 = ParseEvents.get_time_out_of_filename(filename1)
+    time2 = ParseEvents.get_time_out_of_filename(filename2)
+
+    # f the date in the files is the same, compare the last bit after the date in consolelog-19-03-16-04.txt
+    if time2 == time1:
+      trailer1 = int(filename1.split('-')[-1].split('.')[0])
+      trailer2 = int(filename2.split('-')[-1].split('.')[0])
+      return trailer1 > trailer2
+    else:
+      return time1 > time2

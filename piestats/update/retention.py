@@ -1,8 +1,8 @@
 import click
-import re
-from time import time, mktime
-from datetime import datetime, date, timedelta
+from time import time
+from datetime import datetime, timedelta
 from piestats.update.applyevents import ApplyEvents
+from piestats.update.parseevents import ParseEvents
 from piestats.models.kill import Kill
 from piestats.update.hwid import Hwid
 
@@ -24,15 +24,7 @@ class Retention:
     return self.oldest_allowed_unix > seconds
 
   def too_old_filename(self, filename):
-    m = re.match('consolelog-(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+)-\d+.txt', filename)
-
-    if not m:
-      return False
-
-    values = m.groupdict()
-
-    seconds = int(mktime(date(int(values['year']) + 2000, int(values['month']), int(values['day'])).timetuple()))
-
+    seconds = ParseEvents.get_time_out_of_filename(filename)
     return self.oldest_allowed_unix > seconds
 
   def run_retention(self):

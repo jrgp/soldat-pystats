@@ -1,4 +1,5 @@
 import unittest
+import pytest
 from piestats.update.parseevents import ParseEvents
 from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog, EventShutdown, EventRestart
 from piestats.models.kill import Kill
@@ -122,3 +123,9 @@ class TestParseEvents(unittest.TestCase):
 
     event = ParseEvents(retention, None, None, None).parse_line('18-09-19 04:10:47 Shutting down server...')
     self.assertIsInstance(event, EventShutdown)
+
+  def test_get_time_out_of_filename(self):
+    assert ParseEvents.get_time_out_of_filename('consolelog-18-03-16-04.txt') == ParseEvents.get_time_out_of_filename('consolelog-18-03-16-05.txt')
+    assert ParseEvents.get_time_out_of_filename('consolelog-18-03-16-04.txt') == 1521183600
+    with pytest.raises(ValueError):
+      ParseEvents.get_time_out_of_filename('consolelsdfsdfog-18-03-16-04.txt')
