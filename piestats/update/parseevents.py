@@ -116,7 +116,7 @@ class ParseEvents():
       date = data.get('date')
       if date:
           parsed = datetime.strptime(data['date'], '%y-%m-%d %H:%M:%S')
-          if self.retention.too_old(parsed):
+          if self.retention is not None and self.retention.too_old(parsed):
             return None
           data['date'] = int(time.mktime(parsed.timetuple()))
 
