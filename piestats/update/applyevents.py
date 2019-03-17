@@ -4,7 +4,7 @@ from datetime import datetime
 from IPy import IP
 
 
-class ApplyEvents:
+class ApplyEvents(object):
   ''' Update counters/stats within redis with regards to generated events '''
   def __init__(self, hwid, keys, r, geoip):
     self.hwid = hwid
