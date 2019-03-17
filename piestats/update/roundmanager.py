@@ -78,6 +78,9 @@ class RoundManager():
     if old_round.empty:
       self.delete_round(round_id)
     else:
+      started = int(old_round.info['started'])
+      if started > date:
+        raise ValueError('Not finalizing round %d with a date (%d) older than the start date (%d)' % (round_id, date, started))
       self.r.hset(self.keys.round_hash(round_id), 'finished', date)
       if old_round.winning_team:
         self.r.hincrby(self.keys.map_hash(old_round.map), 'wins:' + old_round.winning_team)

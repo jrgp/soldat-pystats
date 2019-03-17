@@ -115,10 +115,12 @@ class ParseEvents():
       # Parse dates and ignore ancient events
       date = data.get('date')
       if date:
-          parsed = datetime.strptime(data['date'], '%y-%m-%d %H:%M:%S')
+          parsed = datetime.strptime(date, '%y-%m-%d %H:%M:%S')
           if self.retention is not None and self.retention.too_old(parsed):
             return None
-          data['date'] = int(time.mktime(parsed.timetuple()))
+
+          # Hacks hacks hacks because previous way using time.mktime(parsed.timetuple()) did not have hour precision :|
+          data['date'] = int((parsed - datetime(1970, 1, 1)).total_seconds())
 
       return event(**data)
 
