@@ -39,7 +39,7 @@ class RoundManager():
     round_id = self.r.hget(self.keys.last_round_id_per_log, logfile)
     if round_id:
       old_round = self.get_round_by_id(round_id)
-      if old_round.finished is None:
+      if old_round.started and old_round.finished is None:
         return old_round
 
   def new_round(self, map, date, logfile):
@@ -90,7 +90,9 @@ class RoundManager():
     if last_logfile is not None and self.logfile_comparable(logfile, last_logfile) and self.logfile_greater(logfile, last_logfile):
       round_id = self.r.hget(self.keys.last_round_id_per_log, last_logfile)
       if round_id:
-        return self.get_round_by_id(round_id)
+        old_round = self.get_round_by_id(round_id)
+        if old_round.started:
+          return old_round
     return None
 
   @classmethod
