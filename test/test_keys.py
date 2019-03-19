@@ -23,3 +23,6 @@ def test_keys():
   assert k.player_top_enemies('jrgp') == 'pystats:server1:player_top_enemies:jrgp'
   assert k.player_top_victims('jrgp') == 'pystats:server1:player_top_victims:jrgp'
   assert k.weapon_top_killers('HK MP5') == 'pystats:server1:weapon_top_killers:HK MP5'
+  assert k.map_hash('Adore') == 'pystats:server1:map:Adore'
+  assert k.round_hash(1) == 'pystats:server1:round_data:1'
+  assert k.player_id_to_names(1) == 'pystats:server1:player_id_to_names:1'

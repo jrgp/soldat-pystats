@@ -60,7 +60,7 @@ def decorate_events(events, map_titles=None, ignore_maps=None, ignore_players=No
         else:
           requested_map = None
 
-    elif t == EventInvalidMap and requested_map is not None:
+    elif t == EventInvalidMap and requested_map is not None and requested_map == event.map:
       requested_map = None
 
     elif t == EventBareLog and requested_map is not None:

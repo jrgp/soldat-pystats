@@ -1,5 +1,6 @@
 from piestats.update.decorateevents import decorate_events, decorate_event
-from piestats.models.events import EventPlayerJoin, EventNextMap, EventScore, EventRequestMap, EventBareLog, EventRestart, EventShutdown, DecoratedEvent
+from piestats.models.events import (EventPlayerJoin, EventNextMap, EventScore, EventRequestMap,
+                                    EventBareLog, EventRestart, EventShutdown, DecoratedEvent, EventInvalidMap)
 from piestats.models.kill import Kill
 from piestats.models.round import Round
 
@@ -121,6 +122,67 @@ def test_restart_map_change():
   ]
 
 
+def test_unknown_map_change():
+  events = [
+      EventScore('Foobar', 'Alpha', 0),
+      EventNextMap('ctf_IceBeam', 0),
+      EventBareLog('IceBeam by Zakath, Suow, Poop', 0),
+      EventScore('Foobar', 'Alpha', 0),
+      EventNextMap('UNKNOWN MAP', 0),
+      EventScore('Foobar', 'Alpha', 0),
+      EventBareLog('WRONG TITLE', 0),
+      EventScore('Foobar', 'Alpha', 0),
+  ]
+
+  map_titles = {
+      'ctf_IceBeam': 'IceBeam by Zakath, Suow, Poop',
+      'ctf_Ash': 'ASH'
+  }
+
+  assert list(decorate_events(events, map_titles)) == [
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), None, None),
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), 'ctf_IceBeam', None),
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), 'ctf_IceBeam', None),
+      DecoratedEvent(EventBareLog('WRONG TITLE', 0), 'ctf_IceBeam', None),
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), 'ctf_IceBeam', None),
+  ]
+
+
+def test_aborted_map_change():
+  events = [
+      EventScore('Foobar', 'Alpha', 0),
+      EventNextMap('ctf_IceBeam', 0),
+      EventBareLog('IceBeam by Zakath, Suow, Poop', 0),
+      EventScore('Foobar', 'Alpha', 0),
+      EventNextMap('ctf_Ash', 0),
+      EventInvalidMap('ctf_Ash'),
+      EventScore('Foobar', 'Alpha', 0),
+      EventScore('Foobar', 'Alpha', 0),
+  ]
+
+  map_titles = {
+      'ctf_IceBeam': 'IceBeam by Zakath, Suow, Poop',
+      'ctf_Ash': 'ASH'
+  }
+
+  assert list(decorate_events(events, map_titles)) == [
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), None, None),
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), 'ctf_IceBeam', None),
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), 'ctf_IceBeam', None),
+      DecoratedEvent(EventScore('Foobar', 'Alpha', 0), 'ctf_IceBeam', None),
+  ]
+
+
+def test_ignore_events_outside_of_round():
+  events = [
+      EventScore('Foobar', 'Alpha', 0),
+  ]
+
+  round_manager = FakeRoundManager()
+
+  assert list(decorate_events(events, round_manager=round_manager)) == []
+
+
 def test_kill():
   round_manager = FakeRoundManager()
 
@@ -222,6 +284,8 @@ def test_ignore_players():
   events = [
       EventPlayerJoin('Joe', None, None, None),
       EventPlayerJoin('Major', None, None, None),
+      Kill('Major', 'Zombie', 'MP5', 0),
+      Kill('Zombie', 'Major', 'MP5', 0)
   ]
 
   ignore_players = ['Major']

@@ -12,10 +12,7 @@ class PaginationHelper():
 
     @property
     def prev_url(self):
-        if self.offset is None:
-            return False
-
-        elif self.offset == self.interval:
+        if self.offset == self.interval:
             return self.bare_route
         elif self.offset >= self.interval:
             return self.bare_route + '/pos/%d' % (self.offset - self.interval)
