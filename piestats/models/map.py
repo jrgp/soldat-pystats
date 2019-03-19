@@ -6,7 +6,7 @@ class Map(JsonSerializableModel):
   ''' Object representing a map '''
 
   json_fields = ('name', 'flags', 'plays', 'kills', 'scores_alpha', 'scores_bravo',
-                 'wins_alpha', 'wins_bravo', 'ties', 'weapons', 'svg_exists')
+                 'wins_alpha', 'wins_bravo', 'ties', 'weapons', 'svg_exists', 'title')
 
   def __init__(self, *args, **kwargs):
     self.info = kwargs
@@ -26,6 +26,10 @@ class Map(JsonSerializableModel):
   @property
   def name(self):
     return self.info.get('name')
+
+  @property
+  def title(self):
+    return self.info.get('title')
 
   @property
   def flags(self):

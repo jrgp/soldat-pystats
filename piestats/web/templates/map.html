@@ -58,7 +58,7 @@
     {% if map.svg_exists %}
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="panel-title">Wireframe Polygons</h3>
+        <h3 class="panel-title">{{map.title}}</h3>
       </div>
       <a href="{{macro.mapsvgurl(urlargs, map.name)}}">
         <img style="margin: 20px;" src="{{macro.mapsvgurl(urlargs, map.name)}}"
