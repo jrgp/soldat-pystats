@@ -1,4 +1,3 @@
-import unittest
 import io
 import base64
 from piestats.status import Status
@@ -17,31 +16,25 @@ class FakeSocket():
     return self.fake_sock.read(n)
 
 
-class TestParseRefresh(unittest.TestCase):
+def test_parse():
 
-  def test_parse(self):
+  # It doesn't actually connect unless you run get_info which we're not
+  parser = Status('127.0.0.1', 23073, None)
 
-    # It doesn't actually connect unless you run get_info which we're not
-    parser = Status('127.0.0.1', 23073, None)
+  # Simple class that has a recv method to satisfy the parser function
+  fake_socket = FakeSocket(response)
 
-    # Simple class that has a recv method to satisfy the parser function
-    fake_socket = FakeSocket(response)
+  r = parser.parse_refresh(fake_socket)
 
-    r = parser.parse_refresh(fake_socket)
+  # Regurgitate these back
+  assert r['ip'] == '127.0.0.1'
+  assert r['port'] == 23073
 
-    # Regurgitate these back
-    self.assertEqual(r['ip'], '127.0.0.1')
-    self.assertEqual(r['port'], 23073)
+  # Parsed out of the decode base64 packet
+  assert r['map'] == 'ctf_Ash'
+  assert r['mode'] == 4
 
-    # Parsed out of the decode base64 packet
-    self.assertEqual(r['map'], 'ctf_Ash')
-    self.assertEqual(r['mode'], 4)
-
-    # Trivial player name parsing
-    names = ['CBebee', 'Zamyhrushka', 'Slav[1109]']
-    for i, name in enumerate(names):
-      self.assertEqual(r['players'][i]['name'], name)
-
-
-if __name__ == '__main__':
-  unittest.main()
+  # Trivial player name parsing
+  names = ['CBebee', 'Zamyhrushka', 'Slav[1109]']
+  for i, name in enumerate(names):
+    assert r['players'][i]['name'] == name
