@@ -134,6 +134,3 @@ class PmsReader(object):
   @property
   def texture(self):
     return self.header.Texture.filename()
-
-  def write(self):
-    pass

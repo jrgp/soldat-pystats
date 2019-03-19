@@ -77,6 +77,19 @@ class Kill(JsonSerializableModel):
   def from_tuple(cls, item):
     return cls(*item)
 
+  def __eq__(self, other):
+    '''
+      Compare two kill objects
+    '''
+    return (self.killer == other.killer and
+            self.victim == other.victim and
+            self.weapon == other.weapon and
+            self.date == other.date and
+            self._killer_team == other._killer_team and
+            self._victim_team == other._victim_team and
+            self.round_id == other.round_id and
+            self.map == other.map)
+
   def resolve_player_ids(self, resolver):
     '''
       Translate player IDs to names

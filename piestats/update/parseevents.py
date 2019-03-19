@@ -87,7 +87,7 @@ class ParseEvents():
               print 'Failed generating SVG for %s: %s' % (map_filename, e)
 
       if not map_title:
-          title = reader.header.Name.text[:reader.header.Name.length].strip()
+          title = reader.name.strip()
           map_titles[map_filename] = title
 
           self.r.hset(self.keys.map_hash(map_filename), 'title', title)

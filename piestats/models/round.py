@@ -131,11 +131,6 @@ class Round(JsonSerializableModel):
     return len(self.playerstats)
 
   @property
-  def events(self):
-    ''' All events captured during this round. Kills and scores to count '''
-    return []
-
-  @property
   def weapons(self):
     return self.weaponstats
 
