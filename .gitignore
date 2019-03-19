@@ -31,3 +31,8 @@ ftp_config.yml
 kills/
 soldat/
 .cache
+
+# unit test remnants
+htmlcov
+.coverage*
+.pytest_cache

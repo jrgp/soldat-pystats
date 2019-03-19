@@ -39,5 +39,12 @@ setup(name='piestats',
               'piestats = piestats.cli:cli',
           ]
       },
-      install_requires=get_runtime_deps()
+      install_requires=get_runtime_deps(),
+      extras_require={
+          'dev': [
+              'pytest',
+              'pytest-cov',
+              'flake8',
+          ]
+      }
       )
