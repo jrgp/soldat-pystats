@@ -2,7 +2,7 @@ import socket
 import logging
 from struct import unpack
 from IPy import IP
-import GeoIP
+import geoip2.database
 from collections import defaultdict
 import pkg_resources
 
@@ -17,7 +17,7 @@ class Status:
     self.password = password
 
     try:
-      self.geoip = GeoIP.open(pkg_resources.resource_filename('piestats.update', 'GeoIP.dat'), GeoIP.GEOIP_MMAP_CACHE)
+      self.geoip = geoip2.database.open(pkg_resources.resource_filename('piestats.update', 'GeoLite2-Country.mmdb'))
     except Exception as e:
       logger.exception('Failed loading geoip db %s', e)
       self.geoip = None
@@ -86,8 +86,11 @@ class Status:
       if player['ip'] == '0.0.0.0':
         player['bot'] = True
       elif IP(player['ip']).iptype() == 'PUBLIC' and self.geoip:
-        match = self.geoip.country_code_by_addr(player['ip'])
-        if match:
+        try:
+          match = self.geoip.country(player['ip']).country.iso_code
+        except ValueError:
+          pass
+        else:
           player['country'] = match.lower()
 
     # Remove empty players

@@ -6,10 +6,7 @@ from piestats.update.roundmanager import RoundManager
 from piestats.update.decorateevents import decorate_events
 from piestats.update.hwid import Hwid
 
-try:
-  import GeoIP
-except ImportError:
-  GeoIP = None
+import geoip2.database
 
 
 def update_events(r, keys, retention, filemanager, server, verbose):
@@ -21,13 +18,10 @@ def update_events(r, keys, retention, filemanager, server, verbose):
   hwid = Hwid(r, keys, verbose)
 
   # GeoIP lookups
-  if GeoIP:
-    try:
-      geoip_obj = GeoIP.open(pkg_resources.resource_filename('piestats.update', 'GeoIP.dat'), GeoIP.GEOIP_MMAP_CACHE)
-    except Exception as e:
-      print 'Failed loading geoip file %s' % e
-  else:
-    print 'GeoIP looking up not supported'
+  try:
+    geoip_obj = geoip2.database.Reader(pkg_resources.resource_filename('piestats.update', 'GeoLite2-Country.mmdb'))
+  except Exception as e:
+    print 'Failed loading geoip file %s' % e
 
   # Connect to ftp/ssh or no-op if getting local files
   with filemanager.initialize():

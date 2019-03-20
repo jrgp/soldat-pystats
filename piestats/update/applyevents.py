@@ -30,11 +30,13 @@ class ApplyEvents(object):
 
   def update_country(self, ip, player_id):
     ''' Set player's country based on IP they joined with '''
-    if not self.geoip:
-      return
     if IP(ip).iptype() != 'PUBLIC':
       return
-    country_code = self.geoip.country_code_by_addr(ip)
+    try:
+      country_code = self.geoip.country(ip).country.iso_code
+    except ValueError as e:
+      print 'Failed resolving %s to country: %s' % (ip, e)
+      return
     if not country_code:
       return
     if self.r.hset(self.keys.player_hash(player_id), 'lastcountry', country_code):

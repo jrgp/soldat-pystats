@@ -34,16 +34,9 @@ Statistics script which displays kill and player/country stats for multiple
 
 # Instructions
 
-Install GeoIP lib and update the database:
-
-    sudo apt-get install libgeoip-dev libgeoip1
-    curl -s http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | gzip -d > piestats/update/GeoIP.dat
-
 First, have an install of Redis database runnning. The following will do.
 
     sudo apt-get install redis-server
-
-### Quickstart
 
 Install python virtualenv tool as well as build dependencies
 
@@ -53,6 +46,10 @@ Download latest version of pystats
 
     git clone https://github.com/jrgp/soldat-pystats.git
     cd soldat-pystats
+
+Update ip to country database (for player country flags)
+
+    ./update_ip2c.sh
 
 Create & activate venv (run this before next commands):
 
