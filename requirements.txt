@@ -15,7 +15,7 @@ gunicorn==19.7.1
 idna==2.6
 ipaddress==1.0.19
 IPy==0.83
-Jinja2==2.10
+Jinja2>=2.10.1
 MarkupSafe==1.0
 mccabe==0.6.1
 msgpack==0.5.0
