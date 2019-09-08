@@ -24,8 +24,9 @@ class LocalFileManager(FileManager):
                            label='Parsing {0} local logs'.format(len(paths)),
                            item_show_func=self.progressbar_callback) as progressbar:
       for path in progressbar:
-        size = os.path.getsize(path)
-        mtime = os.path.getmtime(path)
+        info = os.stat(path)
+        size = info.st_size
+        mtime = info.st_mtime
 
         # Skip ancient files we have no business wasting time parsing
         if self.retention.too_old_unix(mtime) or self.retention.too_old_filename(os.path.basename(path)):
