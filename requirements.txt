@@ -35,5 +35,5 @@ redis==2.10.6
 setproctitle==1.1.10
 six==1.11.0
 tox==2.9.1
-ujson==1.35
+ujson==2.0.3
 virtualenv==15.1.0
