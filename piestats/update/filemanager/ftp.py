@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from piestats.update.filemanager import FileManager
+from piestats.compat import kill_bytes
 import os
 import logging
 import click
@@ -68,11 +69,11 @@ class FtpFileManager(FileManager):
           try:
             size = self.ftp.size(path)
           except ftplib.error_perm:
-            print 'Could not get size of %s' % path
+            print('Could not get size of %s' % path)
             continue
 
         key = self.filename_key(path)
-        prev = self.r.hget(self.keys.log_positions, key)
+        prev = kill_bytes(self.r.hget(self.keys.log_positions, key))
         if prev is None:
           pos = 0
         else:
@@ -80,7 +81,7 @@ class FtpFileManager(FileManager):
 
         if size > pos:
           if progressbar.is_hidden:
-            print('Reading {filename} from offset {pos}'.format(filename=path, pos=pos))
+            print('Reading {path} from offset {pos}'.format(path=path, pos=pos))
           yield path, pos
           self.r.hset(self.keys.log_positions, key, size)
 

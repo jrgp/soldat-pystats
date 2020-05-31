@@ -33,7 +33,7 @@ class Retention:
     '''
     kill_ids = self.r.zrangebyscore(self.keys.kill_log, -1, self.oldest_allowed_unix)
 
-    print 'Processing retention.. trimming events up until %s' % datetime.utcfromtimestamp(self.oldest_allowed_unix)
+    print('Processing retention.. trimming events up until %s' % datetime.utcfromtimestamp(self.oldest_allowed_unix))
 
     if not kill_ids:
       return

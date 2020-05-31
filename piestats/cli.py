@@ -121,7 +121,7 @@ def web(config_path):
       super(App, self).__init__()
 
     def load_config(self):
-      for key, value in self.options.iteritems():
+      for key, value in self.options.items():
         if key in self.cfg.settings and value is not None:
           self.cfg.set(key.lower(), value)
 

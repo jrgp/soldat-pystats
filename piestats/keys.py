@@ -56,21 +56,21 @@ class Keys:
     ''' Plain keys for number of kills that happened on ``day`` '''
     return '%s:kills_per_day:%s' % (self.key_prefix, day)
 
-  def player_hash(self, player):
+  def player_hash(self, player_id):
     ''' Hash of data for player ``player``'''
-    return '%s:player:%s' % (self.key_prefix, player)
+    return '%s:player:%d' % (self.key_prefix, player_id)
 
   def map_hash(self, _map):
     ''' Hash of data for map ``_map``'''
     return '%s:map:%s' % (self.key_prefix, _map)
 
-  def player_top_enemies(self, player):
+  def player_top_enemies(self, player_id):
     ''' Sorted set of people being killed by ``player`` '''
-    return '%s:player_top_enemies:%s' % (self.key_prefix, player)
+    return '%s:player_top_enemies:%d' % (self.key_prefix, player_id)
 
-  def player_top_victims(self, player):
+  def player_top_victims(self, player_id):
     ''' Sorted set of people killing ``player`` '''
-    return '%s:player_top_victims:%s' % (self.key_prefix, player)
+    return '%s:player_top_victims:%d' % (self.key_prefix, player_id)
 
   def weapon_top_killers(self, weapon):
     ''' Sorted set containing the amount of kills a player using a weapon has '''
@@ -78,7 +78,7 @@ class Keys:
 
   def round_hash(self, round_id):
     ''' Hash of data for round ID ``round_id``'''
-    return '%s:round_data:%s' % (self.key_prefix, round_id)
+    return '%s:round_data:%d' % (self.key_prefix, round_id)
 
   def player_id_to_names(self, player_id):
-    return '%s:player_id_to_names:%s' % (self.key_prefix, player_id)
+    return '%s:player_id_to_names:%d' % (self.key_prefix, player_id)

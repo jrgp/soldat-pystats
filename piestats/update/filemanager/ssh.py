@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from piestats.update.filemanager import FileManager
+from piestats.compat import kill_bytes
 import os
 import click
 from paramiko.client import SSHClient, WarningPolicy
@@ -44,14 +45,14 @@ class SshFileManager(FileManager):
         if self.retention.too_old_filename(os.path.basename(path)):
           continue
         key = self.filename_key(path)
-        prev = self.r.hget(self.keys.log_positions, key)
+        prev = kill_bytes(self.r.hget(self.keys.log_positions, key))
         if prev is None:
           pos = 0
         else:
           pos = int(prev)
         if size > pos:
           if progressbar.is_hidden:
-            print('Reading {filename} from offset {pos}'.format(filename=path, pos=pos))
+            print('Reading {path} from offset {pos}'.format(path=path, pos=pos))
           yield path, pos
           self.r.hset(self.keys.log_positions, key, size)
 

@@ -1,5 +1,5 @@
 import re
-trailing_name_count_matcher = re.compile('(.+)\((\d+)\)$')
+trailing_name_count_matcher = re.compile(r'(.+)\((\d+)\)$')
 
 
 def remove_redundant_player_names(names):

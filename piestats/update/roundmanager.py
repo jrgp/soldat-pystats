@@ -1,5 +1,6 @@
 from piestats.models.round import Round
 from piestats.update.parseevents import ParseEvents
+from piestats.compat import strip_bytes_from_dict, kill_bytes
 
 
 class RoundManager():
@@ -10,7 +11,7 @@ class RoundManager():
 
   def tweak_last_round(self):
     ''' If the last round for this server is empty, delete it'''
-    round_id = self.r.get(self.keys.last_round_id)
+    round_id = kill_bytes(self.r.get(self.keys.last_round_id))
     if round_id is not None:
       round_id = int(round_id)
       last_round = self.get_round_by_id(round_id)
@@ -28,7 +29,7 @@ class RoundManager():
 
     round_id = int(round_id)
 
-    data = self.r.hgetall(self.keys.round_hash(round_id))
+    data = strip_bytes_from_dict(self.r.hgetall(self.keys.round_hash(round_id)))
     data['round_id'] = round_id
     if data:
       return Round(**data)
@@ -36,31 +37,31 @@ class RoundManager():
   def get_old_round_for_log(self, logfile):
     ''' Get last round from this log file if there is one and if it is unfinished '''
 
-    round_id = self.r.hget(self.keys.last_round_id_per_log, logfile)
+    round_id = strip_bytes_from_dict(self.r.hget(self.keys.last_round_id_per_log, logfile))
     if round_id:
       old_round = self.get_round_by_id(round_id)
       if old_round.started and old_round.finished is None:
         return old_round
 
-  def new_round(self, map, date, logfile):
+  def new_round(self, current_map, date, logfile):
     ''' Start new round off and store its map and start date '''
 
-    if not map:
+    if not current_map:
       raise ValueError('Will not make a new round with no map')
 
     if not date:
       raise ValueError('Will not make a new round with no date')
 
-    self.r.zincrby(self.keys.top_maps, map)
+    self.r.zincrby(self.keys.top_maps, value=current_map, amount=1)
     round_id = int(self.r.incr(self.keys.last_round_id))
     self.r.hmset(self.keys.round_hash(round_id), {
         'started': date,
-        'map': map,
-        'flags': 'yes' if map in self.flag_score_maps else 'no',
+        'map': current_map,
+        'flags': 'yes' if current_map in self.flag_score_maps else 'no',
         'original_logfile': logfile  # for debugging purposes
     })
     self.r.hset(self.keys.last_round_id_per_log, logfile, round_id)
-    self.r.zadd(self.keys.round_log, round_id, date)
+    self.r.zadd(self.keys.round_log, {round_id: date})
     self.r.set(self.keys.last_logfile, logfile)
 
     return round_id
@@ -80,7 +81,9 @@ class RoundManager():
     else:
       started = int(old_round.info['started'])
       if started > date:
-        raise ValueError('Not finalizing round %d with a date (%d) older than the start date (%d)' % (round_id, date, started))
+        # This mostly happens if a previous update was interrupted
+        print('Not finalizing round %d with a date (%d) older than the start date (%d)' % (round_id, date, started))
+        return
       self.r.hset(self.keys.round_hash(round_id), 'finished', date)
       if old_round.winning_team:
         self.r.hincrby(self.keys.map_hash(old_round.map), 'wins:' + old_round.winning_team)
@@ -89,9 +92,9 @@ class RoundManager():
 
   def get_last_round_from_last_file(self, logfile):
     ''' Get the last round we worked on if it occurred before this filename '''
-    last_logfile = self.r.get(self.keys.last_logfile)
+    last_logfile = kill_bytes(self.r.get(self.keys.last_logfile))
     if last_logfile is not None and self.logfile_comparable(logfile, last_logfile) and self.logfile_greater(logfile, last_logfile):
-      round_id = self.r.hget(self.keys.last_round_id_per_log, last_logfile)
+      round_id = kill_bytes(self.r.hget(self.keys.last_round_id_per_log, last_logfile))
       if round_id:
         old_round = self.get_round_by_id(round_id)
         if old_round.started:

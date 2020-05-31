@@ -1,9 +1,10 @@
 import socket
 import logging
 from struct import unpack
-from IPy import IP
+import ipaddress
 import geoip2.database
 from collections import defaultdict
+from piestats.compat import kill_bytes
 import pkg_resources
 
 logger = logging.getLogger(__name__)
@@ -34,25 +35,25 @@ class Status:
     }
 
     # See http://wiki.soldat.pl/index.php/Refresh for docs on the binary response
-    for i in xrange(0, 32):
-      info['players'][i]['name'] = unpack('25p', sock.recv(25))[0]
+    for i in range(0, 32):
+      info['players'][i]['name'] = kill_bytes(unpack('25p', sock.recv(25))[0])
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['team'] = unpack('B', sock.recv(1))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['kills'] = unpack('H', sock.recv(2))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['deaths'] = unpack('H', sock.recv(2))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['ping'] = unpack('B', sock.recv(1))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['id'] = unpack('B', sock.recv(1))[0]
 
-    for i in xrange(0, 32):
+    for i in range(0, 32):
       info['players'][i]['ip'] = '.'.join(map(str, unpack('4B', sock.recv(4))))
 
     info['score'] = {
@@ -62,7 +63,7 @@ class Status:
         'delta': unpack('H', sock.recv(2))[0],
     }
 
-    info['map'] = unpack('17p', sock.recv(17))[0]
+    info['map'] = kill_bytes(unpack('17p', sock.recv(17))[0])
     info['timeLimit'] = unpack('i', sock.recv(4))[0]
     info['currentTime'] = unpack('i', sock.recv(4))[0]
     info['killLimit'] = unpack('H', sock.recv(2))[0]
@@ -72,7 +73,7 @@ class Status:
     empty_players = set()
 
     # Post processing of player results
-    for key, player in info['players'].iteritems():
+    for key, player in info['players'].items():
 
       # Disregard this player if the name field is empty
       if player['name'] == '':
@@ -85,7 +86,7 @@ class Status:
       # If player isn't a bot and IP is public try to get it to a country
       if player['ip'] == '0.0.0.0':
         player['bot'] = True
-      elif IP(player['ip']).iptype() == 'PUBLIC' and self.geoip:
+      elif not ipaddress.ip_address(player['ip']).is_private and self.geoip:
         try:
           match = self.geoip.country(player['ip']).country.iso_code
         except ValueError:
@@ -99,7 +100,7 @@ class Status:
 
     # Try doing an IP lookup on the server's IP, if it's public
     try:
-      if IP(self.ip).iptype() == 'PUBLIC' and self.geoip:
+      if not ipaddress.ip_address(player['ip']).is_private and self.geoip:
         match = self.geoip.country_code_by_addr(self.ip)
         if match:
           info['country'] = match.lower()
@@ -109,11 +110,11 @@ class Status:
       pass
 
     # Make the players object just an array
-    info['players'] = info['players'].values()
+    info['players'] = list(info['players'].values())
 
     # Convenience
     info['minutesLeft'] = info['currentTime'] / 60 / 60
-    info['botCount'] = len(filter(lambda x: x['bot'], info['players']))
+    info['botCount'] = len([x for x in info['players'] if x['bot']])
 
     return info
 

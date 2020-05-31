@@ -28,7 +28,7 @@ Statistics script which displays kill and player/country stats for multiple
 
 # Requirements
 
-- Python 2.7, with virtualenv/pip tools
+- Python 3.5+, with virtualenv/pip tools
 - Redis DB installed/running
 - Tested with soldat server version 2.8.1. You must have `EchoKills=1` set in `server.ini`
 
@@ -40,7 +40,7 @@ First, have an install of Redis database runnning. The following will do.
 
 Install python virtualenv tool as well as build dependencies
 
-    sudo apt-get install python-virtualenv python-dev libyaml-dev
+    sudo apt-get install python3 python3-virtualenv python3-venv python3-dev libyaml-dev
 
 Download latest version of pystats
 
@@ -53,12 +53,12 @@ Update ip to country database (for player country flags)
 
 Create & activate venv (run this before next commands):
 
-    virtualenv env
+    python3 -m venv env
     source env/bin/activate
 
 To install to your venv but point to your code so you can edit and dev and run:
 
-    python setup.py develop
+    python3 setup.py develop
 
 Copy `config.yml.samp` to `config.yml` after editing it to fit your setup
 

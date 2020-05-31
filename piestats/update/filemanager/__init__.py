@@ -6,19 +6,19 @@ from time import time
 class FileManager():
 
   def __init__(self):
-    raise NotImplemented('Should be implemented')
+    raise NotImplementedError
 
   def get_file_paths(self):
-    raise NotImplemented('Should be implemented')
+    raise NotImplementedError
 
   def get_files(self):
-    raise NotImplemented('Should be implemented')
+    raise NotImplementedError
 
   def get_data(self):
-    raise NotImplemented('Should be implemented')
+    raise NotImplementedError
 
   def filename_key(self):
-    raise NotImplemented('Should be implemented')
+    raise NotImplementedError
 
   @contextmanager
   def initialize(self):

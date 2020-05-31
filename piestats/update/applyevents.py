@@ -1,7 +1,8 @@
 from piestats.models.kill import Kill
 from piestats.models.events import EventPlayerJoin, EventScore
+from piestats.compat import kill_bytes
 from datetime import datetime
-from IPy import IP
+import ipaddress
 
 
 class ApplyEvents(object):
@@ -30,17 +31,17 @@ class ApplyEvents(object):
 
   def update_country(self, ip, player_id):
     ''' Set player's country based on IP they joined with '''
-    if IP(ip).iptype() != 'PUBLIC':
+    if ipaddress.ip_address(ip).is_private:
       return
     try:
       country_code = self.geoip.country(ip).country.iso_code
     except ValueError as e:
-      print 'Failed resolving %s to country: %s' % (ip, e)
+      print('Failed resolving %s to country: %s' % (ip, e))
       return
     if not country_code:
       return
     if self.r.hset(self.keys.player_hash(player_id), 'lastcountry', country_code):
-      self.r.zincrby(self.keys.top_countries, country_code)
+      self.r.zincrby(self.keys.top_countries, value=country_code, amount=1)
 
   def update_player_search(self, player_name):
     ''' Keep track of our player search database '''
@@ -69,7 +70,7 @@ class ApplyEvents(object):
       Apply a kill, incrementing (or decrementing) all relevant metrics
     '''
     if abs(incr) != 1:
-      print 'Invalid increment value for kill: {kill}'.format(kill=kill)
+      print('Invalid increment value for kill: {kill}'.format(kill=kill))
       return
 
     # Convert victim and killer to their IDs
@@ -83,7 +84,7 @@ class ApplyEvents(object):
 
       kill_id = int(self.r.incr(self.keys.last_kill_id))
       pipe.hset(self.keys.kill_data, kill_id, kill.to_redis())
-      pipe.zadd(self.keys.kill_log, kill_id, kill.date)
+      pipe.zadd(self.keys.kill_log, {kill_id: kill.date})
 
     # Map logic
     if kill.map:
@@ -101,7 +102,7 @@ class ApplyEvents(object):
 
     # Stuff that only makes sense for non suicides
     if not kill.suicide:
-      pipe.zincrby(self.keys.top_players, kill.killer, incr)
+      pipe.zincrby(self.keys.top_players, value=kill.killer, amount=incr)
       pipe.hincrby(self.keys.player_hash(kill.killer), 'kills', incr)
 
       if incr == 1 and kill.round_id:
@@ -117,7 +118,7 @@ class ApplyEvents(object):
       pipe.hsetnx(self.keys.player_hash(kill.killer), 'firstseen', kill.date)
 
       # Don't overwrite a previous bigger value with a smaller value
-      old_last_seen = int(self.r.hget(self.keys.player_hash(kill.killer), 'lastseen') or 0)
+      old_last_seen = int(kill_bytes(self.r.hget(self.keys.player_hash(kill.killer), 'lastseen')) or 0)
 
       if kill.date > old_last_seen:
         pipe.hset(self.keys.player_hash(kill.killer), 'lastseen', kill.date)
@@ -127,14 +128,14 @@ class ApplyEvents(object):
       pipe.hsetnx(self.keys.player_hash(kill.victim), 'firstseen', kill.date)
 
       # Don't overwrite a previous bigger value with a smaller value
-      old_last_seen = int(self.r.hget(self.keys.player_hash(kill.victim), 'lastseen') or 0)
+      old_last_seen = int(kill_bytes(self.r.hget(self.keys.player_hash(kill.victim), 'lastseen')) or 0)
 
       if kill.date > old_last_seen:
         pipe.hset(self.keys.player_hash(kill.victim), 'lastseen', kill.date)
 
     # Update weapon stats..
     if not kill.suicide:
-      pipe.zincrby(self.keys.top_weapons, kill.weapon)
+      pipe.zincrby(self.keys.top_weapons, value=kill.weapon, amount=1)
       pipe.hincrby(self.keys.player_hash(kill.killer), 'kills:%s' % kill.weapon, incr)
       pipe.hincrby(self.keys.player_hash(kill.victim), 'deaths:%s' % kill.weapon, incr)
 
@@ -144,10 +145,10 @@ class ApplyEvents(object):
     # If we're not a suicide, update top enemy kills for playepipe..
     if not kill.suicide:
       # Top people the killer has killed
-      pipe.zincrby(self.keys.player_top_enemies(kill.killer), kill.victim, incr)
+      pipe.zincrby(self.keys.player_top_enemies(kill.killer), value=kill.victim, amount=incr)
 
       # Top people the victim has died by
-      pipe.zincrby(self.keys.player_top_victims(kill.victim), kill.killer, incr)
+      pipe.zincrby(self.keys.player_top_victims(kill.victim), value=kill.killer, amount=incr)
 
     # If we're not a sucide, add this legit kill to the number of kills for this
     # day

@@ -1,5 +1,6 @@
 from time import time
 from collections import deque
+from piestats.compat import kill_bytes
 
 
 class BoundedCache:
@@ -46,17 +47,17 @@ class Hwid:
         if cached:
             return cached
 
-        existing_name_id = self.r.hget(self.keys.name_to_id, name)
+        existing_name_id = kill_bytes(self.r.hget(self.keys.name_to_id, name))
 
         # Case where we have track of player joining
         if existing_name_id is not None:
-            player_id = existing_name_id
+            player_id = int(existing_name_id)
 
         # Case where we don't. Bot? Start it off.
         else:
-            player_id = self.r.incr(self.keys.last_player_id)
+            player_id = int(self.r.incr(self.keys.last_player_id))
             self.r.hset(self.keys.name_to_id, name, player_id)
-            self.r.zadd(self.keys.player_id_to_names(player_id), name, time())
+            self.r.zadd(self.keys.player_id_to_names(player_id), {name: time()})
 
         self.player_name_cache.set(name, player_id)
 
@@ -68,12 +69,18 @@ class Hwid:
           called based on the "player join" console log lines. instantiate a player ID for this name or tie it to an existing name
         '''
         # Try to formulate proper mapping of hwid to id
-        existing_hwid_id = self.r.hget(self.keys.hwid_to_id, hwid)
-        existing_name_id = self.r.hget(self.keys.name_to_id, name)
+        existing_hwid_id = kill_bytes(self.r.hget(self.keys.hwid_to_id, hwid))
+        existing_name_id = kill_bytes(self.r.hget(self.keys.name_to_id, name))
+
+        if existing_hwid_id is not None:
+            existing_hwid_id = int(existing_hwid_id)
+
+        if existing_name_id is not None:
+            existing_name_id = int(existing_name_id)
 
         # No ID for this combo set yet? Map it
         if existing_hwid_id is None and existing_name_id is None:
-            player_id = self.r.incr(self.keys.last_player_id)
+            player_id = int(self.r.incr(self.keys.last_player_id))
 
             self.r.hset(self.keys.hwid_to_id, hwid, player_id)
             self.r.hset(self.keys.name_to_id, name, player_id)
@@ -94,8 +101,8 @@ class Hwid:
             if existing_hwid_id != existing_name_id:
                 player_id = existing_hwid_id
                 if self.verbose:
-                    print ('\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
-                           hwid, existing_hwid_id, name, existing_name_id, player_id))
+                    print('\nMismatch of IDs. HWID "%s" (%s) does not match Name "%s" (id %s). Defaulting to %s' % (
+                          hwid, existing_hwid_id, name, existing_name_id, player_id))
                 self.r.hset(self.keys.hwid_to_id, hwid, player_id)
                 self.r.hset(self.keys.name_to_id, name, player_id)
 
@@ -104,11 +111,11 @@ class Hwid:
                 player_id = existing_hwid_id
 
         # Keep track of latest name per this ID
-        self.r.zadd(self.keys.player_id_to_names(player_id), name, date)
+        self.r.zadd(self.keys.player_id_to_names(player_id), {name: date})
 
         # Also lastseen/firstseen accordingly for this player ID
         self.r.hsetnx(self.keys.player_hash(player_id), 'firstseen', date)
-        old_last_seen = int(self.r.hget(self.keys.player_hash(player_id), 'lastseen') or 0)
+        old_last_seen = int(kill_bytes(self.r.hget(self.keys.player_hash(player_id), 'lastseen')) or 0)
         if date > old_last_seen:
           self.r.hset(self.keys.player_hash(player_id), 'lastseen', date)
 

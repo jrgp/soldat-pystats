@@ -2,7 +2,7 @@ from piestats.update.applyevents import ApplyEvents
 
 from setproctitle import setproctitle
 import multiprocessing
-import Queue
+import queue
 import os
 
 
@@ -21,12 +21,12 @@ class MultiProcApplyEvents(ApplyEvents):
 
     while True:
       if os.getppid() != original_ppid:
-        print 'Parent changed. Worker %d dying.' % worker_number
+        print('Parent changed. Worker %d dying.' % worker_number)
         return
 
       try:
         kill, incr = self.kill_queue.get(True, .1)
-      except Queue.Empty:
+      except queue.Empty:
         if self.kill_event.is_set():
           return
         else:
@@ -43,7 +43,7 @@ class MultiProcApplyEvents(ApplyEvents):
     ''' Start all our worker procs '''
     original_pid = os.getpid()
 
-    for worker_number in xrange(multiprocessing.cpu_count()):
+    for worker_number in range(multiprocessing.cpu_count()):
       worker = multiprocessing.Process(target=self.kill_queue_worker, args=(worker_number, original_pid))
       worker.daemon = True
       worker.start()

@@ -12,5 +12,5 @@ def test_parse_map():
   with open(map_path, 'rb') as h:
     reader.parse(h)
 
-  assert reader.name == 'ctf_Ash by chakapoko maker'
-  assert reader.texture == 'riverbed.bmp'
+  assert reader.name == b'ctf_Ash by chakapoko maker'
+  assert reader.texture == b'riverbed.bmp'

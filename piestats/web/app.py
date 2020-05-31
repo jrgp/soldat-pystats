@@ -1,8 +1,9 @@
 import os
 import re
 import logging
-import urllib
-from collections import OrderedDict
+import urllib.request
+import urllib.parse
+import urllib.error
 from datetime import datetime, timedelta
 
 import falcon
@@ -18,6 +19,7 @@ from piestats.web.results import Results
 from piestats.exceptions import InvalidServer
 from piestats.status import Status
 from piestats.web.pager import PaginationHelper
+from piestats.compat import sanitize_for_json
 
 ui_root = os.environ.get('STATIC_ROOT', os.path.abspath(os.path.dirname(__file__)))
 
@@ -33,7 +35,7 @@ mimes = {'.css': 'text/css',
          '.woff': 'application/font-woff'}
 
 _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_.-]')
-_safe_username_re = re.compile('^[^.][a-zA-Z0-9-\. ]+$')
+_safe_username_re = re.compile(r'^[^.][a-zA-Z0-9-\. ]+$')
 
 
 def secure_filename(filename):
@@ -74,7 +76,7 @@ def player_url(server, username):
   if not username:
     return None
   if bad_username(username):
-    return '/{server}/player?name={username}'.format(server=server, username=urllib.quote_plus(username))
+    return '/{server}/player?name={username}'.format(server=server, username=urllib.parse.quote_plus(username))
   else:
     return '/{server}/player/{username}'.format(server=server, username=username)
 
@@ -93,7 +95,7 @@ class StaticResource(object):
         filepath = os.path.join(ui_root, self.path, secure_filename(filename))
         try:
             resp.stream = open(filepath, 'rb')
-            resp.stream_len = os.path.getsize(filepath)
+            resp.content_length = os.path.getsize(filepath)
         except IOError:
             raise HTTPNotFound()
 
@@ -128,7 +130,7 @@ class ServerBase(object):
             data.pop('page_title', None)
 
             # Give it
-            resp.body = ujson.dumps(data)
+            resp.body = ujson.dumps(sanitize_for_json(data))
             return
 
     # Add stuff needed for displaying the template
@@ -319,10 +321,8 @@ class Players(ServerBase):
 class Server(ServerBase):
   def on_get(self, req, resp, server):
     raw_kills_per_date = req.context['stats'].get_kills_for_date_range()
-    kills_per_date = OrderedDict(zip(
-                                 map(
-                                     lambda d: str(format_datetime(d.date(), 'yyyy-MM-dd', tzinfo=req.context['config'].timezone)), raw_kills_per_date.keys()),
-                                 raw_kills_per_date.values()))
+    kills_per_date_keys = [str(format_datetime(d.date(), 'yyyy-MM-dd', tzinfo=req.context['config'].timezone)) for d in list(raw_kills_per_date.keys())]
+    kills_per_date_values = list(raw_kills_per_date.values())
     colors = [
         'red',
         'blue',
@@ -334,7 +334,8 @@ class Server(ServerBase):
     ]
     data = dict(
         page_title='Stats overview',
-        killsperdate=kills_per_date,
+        kills_per_date_keys=kills_per_date_keys,
+        kills_per_date_values=kills_per_date_values,
         topcountries=[
             dict(
                 value=players,
@@ -343,7 +344,7 @@ class Server(ServerBase):
             )
             for country, players in req.context['stats'].get_top_countries(len(colors) - 1)],
         show_server_status=req.context['server'].admin_details is not None,
-        server_slug=req.context['server'].url_slug
+        server_slug=req.context['server'].url_slug,
     )
     self.render_template(req, resp, 'index.html', **data)
 
