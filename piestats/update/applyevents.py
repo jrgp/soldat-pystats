@@ -1,5 +1,5 @@
 from piestats.models.kill import Kill
-from piestats.models.events import EventPlayerJoin, EventScore
+from piestats.models.events import EventPlayerJoin, EventTeamJoin, EventScore
 from piestats.compat import kill_bytes
 from datetime import datetime
 import ipaddress
@@ -29,6 +29,9 @@ class ApplyEvents(object):
     elif t == EventScore:
       self.update_score(self.hwid.get_player_id_from_name(event.player), event.team, event.date, decorated_event.map, decorated_event.round_id)
 
+    elif t == EventTeamJoin:
+      self.update_team(self.hwid.get_player_id_from_name(event.player), event.team, decorated_event.round_id)
+
   def update_country(self, ip, player_id):
     ''' Set player's country based on IP they joined with '''
     if ipaddress.ip_address(ip).is_private:
@@ -46,6 +49,11 @@ class ApplyEvents(object):
   def update_player_search(self, player_name):
     ''' Keep track of our player search database '''
     self.r.hset(self.keys.player_search, player_name.lower(), player_name)
+
+  def update_team(self, player, team, round_id):
+    ''' Keep track of latest/current team for this player in this round '''
+    if round_id:
+        self.r.hset(self.keys.round_hash(round_id), 'team_player:%s' % player, team)
 
   def update_score(self, player, team, date, map, round_id):
     ''' Update scores for this team/round/map/player '''

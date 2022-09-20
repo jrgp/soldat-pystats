@@ -31,6 +31,10 @@ class Round(JsonSerializableModel):
         _, player_id = key.split(':', 1)
         player_id = int(player_id)
         self.playerstats[player_id]['deaths'] = int(value)
+      elif key.startswith('team_player:'):
+        _, player_id = key.split(':', 1)
+        player_id = int(player_id)
+        self.playerstats[player_id]['team'] = value
       elif key.startswith('kills_weapon:'):
         _, weapon = key.split(':', 1)
         self.weaponstats[weapon]['kills'] = int(value)

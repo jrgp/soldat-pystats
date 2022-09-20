@@ -7,7 +7,7 @@ from datetime import datetime, date
 from piestats.update.pms_parser import PmsReader
 from piestats.update.mapimage import generate_map_svg
 from piestats.models.events import (EventPlayerJoin, EventNextMap, EventScore, EventInvalidMap, EventRequestMap, EventBareLog,
-                                    EventRestart, EventShutdown)
+                                    EventRestart, EventTeamJoin, EventShutdown)
 from piestats.models.kill import Kill
 from piestats.progressbar import simple_progressbar
 from piestats.compat import kill_bytes
@@ -30,6 +30,7 @@ class ParseEvents():
 
     self.event_regex = (
         (EventPlayerJoin, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) joining game \((?P<ip>[^:]+):\d+\) HWID:(?P<hwid>\S+)')),
+        (EventTeamJoin, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) (?P<player>.+) has joined (?P<team>alpha|bravo) team.')),
         (EventNextMap, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) Next map: (?P<map>[^$]+)')),
         (EventNextMap, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) /map (?P<map>[^(\s]+)')),
         (EventRequestMap, re.compile(r'(?P<date>\d\d\-\d\d\-\d\d \d\d:\d\d:\d\d) \[.+\] !map (?P<map>[^(\s]+)')),

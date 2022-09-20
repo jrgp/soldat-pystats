@@ -90,6 +90,24 @@ class RoundManager():
       elif old_round.tie:
         self.r.hincrby(self.keys.map_hash(old_round.map), 'ties')
 
+      # Ensure all players have a team set. If they don't, look back at previous
+      # rounds
+      if old_round.flagmatch:
+        need_teams = set()
+        for player, data in old_round.playerstats.items():
+          if 'team' not in data:
+            need_teams.add(player)
+        for x in range(5):
+          if not need_teams:
+            break
+          prev_round_id = round_id - x
+          prev_round = self.get_round_by_id(prev_round_id)
+          if prev_round:
+            for player in list(need_teams):
+              if player in prev_round.playerstats and 'team' in prev_round.playerstats[player]:
+                self.r.hset(self.keys.round_hash(round_id), 'team_player:%s' % player, prev_round.playerstats[player]['team'])
+                need_teams.discard(player)
+
   def get_last_round_from_last_file(self, logfile):
     ''' Get the last round we worked on if it occurred before this filename '''
     last_logfile = kill_bytes(self.r.get(self.keys.last_logfile))

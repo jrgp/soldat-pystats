@@ -8,7 +8,7 @@ class Player(JsonSerializableModel):
 
   # Whitelist of object properties to be given when serialized to json
   json_fields = ('name', 'kills', 'deaths', 'firstseen', 'lastseen', 'weapons', 'kd',
-                 'lastcountry', 'scores_alpha', 'scores_bravo', 'maps', 'names')
+                 'lastcountry', 'scores_alpha', 'scores_bravo', 'maps', 'names', 'team')
 
   def __init__(self, *args, **kwargs):
     self.info = kwargs
@@ -93,6 +93,10 @@ class Player(JsonSerializableModel):
   @property
   def scores_bravo(self):
     return self.get_int('scores:Bravo')
+
+  @property
+  def team(self):
+    return self.info.get('team')
 
   @property
   def maps(self):

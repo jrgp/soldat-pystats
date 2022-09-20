@@ -1,5 +1,6 @@
 from collections import namedtuple
 EventPlayerJoin = namedtuple('EventPlayerJoin', ['player', 'ip', 'hwid', 'date'])
+EventTeamJoin = namedtuple('EventTeamJoin', ['player', 'team', 'date'])
 EventNextMap = namedtuple('EventNextMap', ['map', 'date'])
 EventRestart = namedtuple('EventRestart', ['date'])
 EventRequestMap = namedtuple('EventRequestMap', ['map', 'date'])
