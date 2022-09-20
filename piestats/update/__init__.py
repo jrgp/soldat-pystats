@@ -1,7 +1,7 @@
 import pkg_resources
 
 from piestats.update.parseevents import ParseEvents
-from piestats.update.multiprocapplyevents import MultiProcApplyEvents
+from piestats.update.applyevents import ApplyEvents
 from piestats.update.roundmanager import RoundManager
 from piestats.update.decorateevents import decorate_events
 from piestats.update.hwid import Hwid
@@ -27,22 +27,22 @@ def update_events(r, keys, retention, filemanager, server, verbose):
   with filemanager.initialize():
 
     # Apply events with this
-    with MultiProcApplyEvents(r=r, keys=keys, hwid=hwid, geoip=geoip_obj) as apply_events:
+    apply_events = ApplyEvents(r=r, keys=keys, hwid=hwid, geoip=geoip_obj)
 
-      # Need to get these
-      map_titles, flag_score_maps = parse.build_map_names()
+    # Need to get these
+    map_titles, flag_score_maps = parse.build_map_names()
 
-      # Maintain round state with this
-      round_manager = RoundManager(r=r, keys=keys, flag_score_maps=flag_score_maps)
+    # Maintain round state with this
+    round_manager = RoundManager(r=r, keys=keys, flag_score_maps=flag_score_maps)
 
-      # Maybe the last round is empty. Delete it if so
-      round_manager.tweak_last_round()
+    # Maybe the last round is empty. Delete it if so
+    round_manager.tweak_last_round()
 
-      for logfile, events in parse.get_events():
-        for decorated_event in decorate_events(events,
-                                               map_titles=map_titles,
-                                               ignore_maps=server.ignore_maps,
-                                               ignore_players=server.ignore_players,
-                                               round_manager=round_manager,
-                                               logfile=logfile):
-          apply_events.apply(decorated_event)
+    for logfile, events in parse.get_events():
+      for decorated_event in decorate_events(events,
+                                             map_titles=map_titles,
+                                             ignore_maps=server.ignore_maps,
+                                             ignore_players=server.ignore_players,
+                                             round_manager=round_manager,
+                                             logfile=logfile):
+        apply_events.apply(decorated_event)
